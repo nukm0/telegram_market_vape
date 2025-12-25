@@ -1,10 +1,240 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Market Vape</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vape Market | Telegram Shop</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        body {
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            padding: 20px;
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--tg-theme-hint-color, #999);
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .status-card {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--tg-theme-hint-color, #eee);
+        }
+        
+        .status-item:last-child {
+            border-bottom: none;
+        }
+        
+        .status-label {
+            font-weight: 500;
+            color: var(--tg-theme-hint-color, #666);
+        }
+        
+        .status-value {
+            font-weight: 600;
+        }
+        
+        .success {
+            color: #31b545;
+        }
+        
+        .warning {
+            color: #ffa500;
+        }
+        
+        .error {
+            color: #ff3b30;
+        }
+        
+        .btn {
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin: 10px 0;
+            transition: opacity 0.3s;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+        }
+        
+        .btn:active {
+            opacity: 0.8;
+        }
+        
+        .theme-test {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .theme-box {
+            flex: 1;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .light-theme {
+            background: #ffffff;
+            color: #000000;
+            border: 2px solid #000;
+        }
+        
+        .dark-theme {
+            background: #000000;
+            color: #ffffff;
+            border: 2px solid #fff;
+        }
+    </style>
 </head>
 <body>
-    <h1>Telegram Market Vape</h1>
-    <p>Приложение в разработке...</p>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Vape Market</h1>
+            <p>Telegram Mini App | Этап 1: Интеграция SDK</p>
+        </div>
+        
+        <div class="status-card">
+            <h2>📊 Статус интеграции Telegram</h2>
+            <div class="status-item">
+                <span class="status-label">SDK загружен:</span>
+                <span id="sdk-status" class="status-value">Проверка...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Платформа:</span>
+                <span id="platform" class="status-value">Загрузка...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Версия Telegram:</span>
+                <span id="tg-version" class="status-value">Загрузка...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">ID пользователя:</span>
+                <span id="user-id" class="status-value">Загрузка...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Имя пользователя:</span>
+                <span id="username" class="status-value">Загрузка...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Тема:</span>
+                <span id="theme" class="status-value">Загрузка...</span>
+            </div>
+        </div>
+        
+        <div class="status-card">
+            <h2>🎨 Тест темы Telegram</h2>
+            <p>Цвета должны соответствовать теме Telegram</p>
+            <div class="theme-test">
+                <div class="theme-box light-theme">Светлая тема</div>
+                <div class="theme-box dark-theme">Темная тема</div>
+            </div>
+        </div>
+        
+        <button class="btn" onclick="showAlert()">📢 Тест: Показать алерт</button>
+        <button class="btn" onclick="toggleTheme()">🔄 Тест: Сменить тему</button>
+        <button class="btn" onclick="closeApp()">❌ Закрыть приложение</button>
+        
+        <div class="status-card">
+            <h2>✅ Этап 1: Проверка</h2>
+            <p>Если все статусы показывают значения (не "Загрузка..."), значит SDK работает корректно.</p>
+            <p>Нажмите кнопки выше для теста взаимодействия с Telegram.</p>
+        </div>
+    </div>
+    
+    <script>
+        // Инициализация Telegram Web App
+        const tg = window.Telegram.WebApp;
+        
+        // Расширяем на весь экран
+        tg.expand();
+        
+        // Показываем кнопку "Назад" если нужно
+        tg.BackButton.show();
+        tg.BackButton.onClick(() => {
+            tg.close();
+        });
+        
+        // Функции для обновления статуса
+        function updateStatus() {
+            document.getElementById('sdk-status').textContent = 
+                tg.initDataUnsafe ? '✅ Готово' : '❌ Ошибка';
+            document.getElementById('sdk-status').className = 
+                'status-value ' + (tg.initDataUnsafe ? 'success' : 'error');
+            
+            document.getElementById('platform').textContent = tg.platform || 'Неизвестно';
+            document.getElementById('tg-version').textContent = tg.version || 'Неизвестно';
+            document.getElementById('user-id').textContent = 
+                tg.initDataUnsafe?.user?.id || 'Не авторизован';
+            document.getElementById('username').textContent = 
+                tg.initDataUnsafe?.user?.username || 'Нет username';
+            document.getElementById('theme').textContent = 
+                tg.colorScheme === 'dark' ? '🌙 Темная' : '☀️ Светлая';
+        }
+        
+        // Тестовые функции
+        function showAlert() {
+            tg.showAlert('Тестовое сообщение от Telegram Mini App!');
+        }
+        
+        function toggleTheme() {
+            const newTheme = tg.colorScheme === 'dark' ? 'light' : 'dark';
+            tg.setHeaderColor(newTheme === 'dark' ? '#000000' : '#ffffff');
+            updateStatus();
+        }
+        
+        function closeApp() {
+            tg.close();
+        }
+        
+        // Обновляем статус при загрузке
+        document.addEventListener('DOMContentLoaded', updateStatus);
+        
+        // Слушаем смену темы
+        tg.onEvent('themeChanged', updateStatus);
+        
+        // Обновляем каждые 2 секунды для демонстрации
+        setInterval(updateStatus, 2000);
+    </script>
 </body>
 </html>
