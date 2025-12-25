@@ -102,7 +102,7 @@
             margin-bottom: 10px;
         }
         
-        /* Категории - ИСПРАВЛЕНО */
+        /* Категории */
         .categories {
             display: flex;
             gap: 10px;
@@ -137,6 +137,29 @@
             background: var(--button-primary);
             border-color: var(--button-primary);
             color: white;
+        }
+        
+        /* Кнопка добавления объявления - ПЕРЕМЕЩЕНА ВВЕРХ */
+        .add-ad-btn-top {
+            width: 100%;
+            padding: 18px;
+            border-radius: 15px;
+            background: rgba(139, 92, 246, 0.3);
+            border: 2px solid rgba(139, 92, 246, 0.5);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .add-ad-btn-top:hover {
+            background: rgba(139, 92, 246, 0.4);
+            transform: translateY(-2px);
         }
         
         /* Объявление (товар + продавец вместе) */
@@ -384,30 +407,6 @@
         
         .contact-btn:hover {
             background: var(--button-hover);
-            transform: translateY(-2px);
-        }
-        
-        /* Кнопка добавления объявления */
-        .add-ad-btn {
-            width: 100%;
-            padding: 18px;
-            border-radius: 15px;
-            background: rgba(139, 92, 246, 0.3);
-            border: 2px solid rgba(139, 92, 246, 0.5);
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .add-ad-btn:hover {
-            background: rgba(139, 92, 246, 0.4);
             transform: translateY(-2px);
         }
         
@@ -732,6 +731,83 @@
             background: #8B5CF6;
             border-radius: 10px;
         }
+        
+        /* Модальное окно для загрузки фото */
+        .photo-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+        
+        .photo-modal.active {
+            display: flex;
+        }
+        
+        .photo-modal-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .photo-modal-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: white;
+        }
+        
+        .photo-option-btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(139, 92, 246, 0.3);
+            border: 2px solid rgba(139, 92, 246, 0.5);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .photo-option-btn:hover {
+            background: rgba(139, 92, 246, 0.4);
+        }
+        
+        .close-modal-btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(239, 68, 68, 0.2);
+            border: 2px solid rgba(239, 68, 68, 0.5);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .close-modal-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -748,6 +824,12 @@
         <main class="main-content" id="main-content">
             <!-- Страница 1: Объявления -->
             <div class="page active" id="page-ads">
+                <!-- Кнопка добавления объявления ВВЕРХУ -->
+                <button class="add-ad-btn-top" onclick="showAddForm()">
+                    <i class="fas fa-plus-circle"></i>
+                    Добавить объявление
+                </button>
+
                 <!-- Категории -->
                 <div class="categories">
                     <button class="category-btn active" onclick="filterCategory('all')">Все</button>
@@ -760,31 +842,25 @@
                 <!-- Объявления будут добавляться здесь -->
                 <div id="ads-container"></div>
 
-                <!-- Кнопка добавления объявления -->
-                <button class="add-ad-btn" onclick="showAddForm()">
-                    <i class="fas fa-plus-circle"></i>
-                    Добавить объявление
-                </button>
-
                 <!-- Форма добавления объявления -->
                 <div class="add-ad-form" id="addAdForm">
                     <div class="form-title">Новое объявление</div>
                     
                     <div class="photo-upload-section">
                         <div class="photo-gallery" id="uploaded-photos">
-                            <div class="photo-item" onclick="uploadPhoto(1)">
+                            <div class="photo-item" onclick="openPhotoModal(1)">
                                 <div class="photo-placeholder" id="photo-placeholder-1">
                                     <i class="fas fa-plus"></i>
                                     <span>Фото 1</span>
                                 </div>
                             </div>
-                            <div class="photo-item" onclick="uploadPhoto(2)">
+                            <div class="photo-item" onclick="openPhotoModal(2)">
                                 <div class="photo-placeholder" id="photo-placeholder-2">
                                     <i class="fas fa-plus"></i>
                                     <span>Фото 2</span>
                                 </div>
                             </div>
-                            <div class="photo-item" onclick="uploadPhoto(3)">
+                            <div class="photo-item" onclick="openPhotoModal(3)">
                                 <div class="photo-placeholder" id="photo-placeholder-3">
                                     <i class="fas fa-plus"></i>
                                     <span>Фото 3</span>
@@ -793,7 +869,7 @@
                         </div>
                         
                         <div class="upload-info">
-                            Можно загрузить до 3 фотографий (демо-версия)
+                            Можно загрузить до 3 фотографий
                         </div>
                     </div>
 
@@ -816,7 +892,7 @@
                         Опубликовать
                     </button>
                     
-                    <button class="add-ad-btn" onclick="hideAddForm()" style="background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.5); margin-top: 10px;">
+                    <button class="add-ad-btn-top" onclick="hideAddForm()" style="background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.5); margin-top: 10px;">
                         <i class="fas fa-times"></i>
                         Отмена
                     </button>
@@ -861,7 +937,7 @@
                         <!-- История будет добавляться здесь -->
                     </div>
                     
-                    <button class="add-ad-btn" onclick="clearHistory()" style="background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.5); margin-top: 10px;">
+                    <button class="add-ad-btn-top" onclick="clearHistory()" style="background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.5); margin-top: 10px;">
                         <i class="fas fa-trash"></i>
                         Очистить историю
                     </button>
@@ -888,7 +964,7 @@
                                 <i class="fas fa-chevron-down" id="faq-icon-1"></i>
                             </div>
                             <div class="faq-answer" id="faq-answer-1" style="display: none;">
-                                На главной странице нажмите кнопку "Добавить объявление" внизу. Заполните форму и добавьте до 3 фотографий.
+                                На главной странице нажмите кнопку "Добавить объявление" сверху. Заполните форму и добавьте до 3 фотографий.
                             </div>
                         </div>
                         
@@ -909,7 +985,7 @@
                                 <i class="fas fa-chevron-down" id="faq-icon-3"></i>
                             </div>
                             <div class="faq-answer" id="faq-answer-3" style="display: none;">
-                                В форме добавления объявления нажмите на пустое поле для фото. Можно загрузить до 3 фотографий из галереи устройства.
+                                В форме добавления объявления нажмите на пустое поле для фото. Выберите "Загрузить из галереи" чтобы выбрать фото с устройства.
                             </div>
                         </div>
                         
@@ -962,6 +1038,25 @@
             </button>
         </nav>
 
+        <!-- Модальное окно для загрузки фото -->
+        <div class="photo-modal" id="photoModal">
+            <div class="photo-modal-content">
+                <div class="photo-modal-title">Загрузить фото</div>
+                <button class="photo-option-btn" onclick="selectPhotoFromGallery()">
+                    <i class="fas fa-images"></i>
+                    Выбрать из галереи
+                </button>
+                <button class="photo-option-btn" onclick="takePhotoWithCamera()">
+                    <i class="fas fa-camera"></i>
+                    Сделать фото
+                </button>
+                <button class="close-modal-btn" onclick="closePhotoModal()">
+                    <i class="fas fa-times"></i>
+                    Отмена
+                </button>
+            </div>
+        </div>
+
         <!-- Уведомление -->
         <div class="notification" id="notification"></div>
     </div>
@@ -978,31 +1073,32 @@
             history: [],
             uploadedPhotos: [],
             nextAdId: 1,
-            currentCategory: 'all'
+            currentCategory: 'all',
+            currentPhotoSlot: null
         };
         
-        // Инициализация тестовых данных
+        // Инициализация тестовых данных с РЕАЛЬНЫМИ @username
         function initializeTestData() {
-            // Создаем тестовые объявления
+            // Создаем тестовые объявления с РЕАЛЬНЫМИ @username для теста переходов
             appData.ads = [
                 {
                     id: 1,
                     sellerId: 'seller1',
                     sellerName: 'Максим Вейперов',
-                    sellerUsername: '@vape_max',
+                    sellerUsername: '@durov', // Тестовый username
                     title: 'Жидкость для вейпа "Berry Mix" 60ml',
                     category: 'liquids',
                     price: 800,
                     description: 'Премиальная жидкость для вейпа, крепость 3mg. Свежая ягодная смесь с нотками мяты.',
                     photos: 2,
                     likes: 5,
-                    dislikes: 1
+                    dislikes: 2
                 },
                 {
                     id: 2,
                     sellerId: 'seller2',
                     sellerName: 'Анна Кузнецова',
-                    sellerUsername: '@anna_vapeshop',
+                    sellerUsername: '@telegram', // Тестовый username
                     title: 'Elf Bar BC5000 (Lush Ice)',
                     category: 'disposable',
                     price: 1200,
@@ -1015,7 +1111,7 @@
                     id: 3,
                     sellerId: 'seller3',
                     sellerName: 'Иван Подсистемов',
-                    sellerUsername: '@pod_master',
+                    sellerUsername: '@elonmusk', // Тестовый username
                     title: 'Voopoo Drag X Pod Kit',
                     category: 'pod',
                     price: 3500,
@@ -1023,6 +1119,19 @@
                     photos: 3,
                     likes: 12,
                     dislikes: 3
+                },
+                {
+                    id: 4,
+                    sellerId: 'seller4',
+                    sellerName: 'Дмитрий Расходников',
+                    sellerUsername: '@zuck', // Тестовый username
+                    title: 'Набор катушек 5 шт',
+                    category: 'consumables',
+                    price: 600,
+                    description: 'Набор катушек для вейпа, 5 штук в упаковке. Совместимы с большинством устройств.',
+                    photos: 1,
+                    likes: 15,
+                    dislikes: 5
                 }
             ];
             
@@ -1030,10 +1139,11 @@
             appData.userRatings = {
                 'seller1': {},
                 'seller2': {},
-                'seller3': {}
+                'seller3': {},
+                'seller4': {}
             };
             
-            appData.nextAdId = 4;
+            appData.nextAdId = 5;
         }
         
         // Показать уведомление
@@ -1196,7 +1306,7 @@
             });
         }
         
-        // Рассчитать рейтинг продавца
+        // Рассчитать рейтинг продавца - ИСПРАВЛЕННЫЙ РАСЧЕТ
         function calculateRating(sellerId) {
             if (!appData.userRatings[sellerId]) return 0;
             
@@ -1206,7 +1316,8 @@
             const likes = ratings.filter(r => r === 'like').length;
             const total = ratings.length;
             
-            // Формула: (лайки / общее количество оценок) * 5
+            // ИСПРАВЛЕНИЕ: Правильная формула
+            if (total === 0) return 0;
             return (likes / total) * 5;
         }
         
@@ -1290,12 +1401,27 @@
                 updateHistory();
             }
             
+            // В реальном Telegram Mini App можно открыть чат
             if (tg) {
-                tg.showAlert(`Открывается чат с продавцом ${username}`);
-                // В реальном приложении:
-                // tg.openTelegramLink(`https://t.me/${username.replace('@', '')}`);
+                // Пробуем открыть чат с продавцом
+                try {
+                    // Удаляем @ если есть
+                    const cleanUsername = username.replace('@', '');
+                    
+                    // Пытаемся открыть ссылку в Telegram
+                    tg.openTelegramLink(`https://t.me/${cleanUsername}`);
+                    showNotification(`Открывается чат с ${username}`, 'success');
+                } catch (error) {
+                    // Если не получается, показываем алерт
+                    tg.showAlert(`Для теста: откроется чат с ${username}`);
+                }
             } else {
-                showNotification(`Добавлено в историю: ${adTitle}`, 'success');
+                // Для теста в браузере
+                showNotification(`Тест: открывается чат с ${username}`, 'info');
+                console.log(`Открытие чата с ${username}`);
+                
+                // Можно также открыть в новом окне для теста
+                // window.open(`https://t.me/${username.replace('@', '')}`, '_blank');
             }
         }
         
@@ -1368,34 +1494,70 @@
             appData.uploadedPhotos = [];
         }
         
-        // Загрузить фото (демо-версия)
-        function uploadPhoto(photoNum) {
+        // Открыть модальное окно для загрузки фото
+        function openPhotoModal(photoSlot) {
+            appData.currentPhotoSlot = photoSlot;
+            document.getElementById('photoModal').classList.add('active');
+        }
+        
+        // Закрыть модальное окно
+        function closePhotoModal() {
+            document.getElementById('photoModal').classList.remove('active');
+            appData.currentPhotoSlot = null;
+        }
+        
+        // Выбрать фото из галереи
+        function selectPhotoFromGallery() {
+            if (!appData.currentPhotoSlot) return;
+            
             if (appData.uploadedPhotos.length >= 3) {
                 showNotification('Максимум 3 фотографии!', 'error');
+                closePhotoModal();
                 return;
             }
             
+            // В реальном приложении здесь будет вызов API для выбора фото
+            // Для демо создаем тестовое фото
+            
             const colors = ['#8B5CF6', '#7C3AED', '#6D28D9'];
-            const placeholder = document.getElementById(`photo-placeholder-${photoNum}`);
+            const placeholder = document.getElementById(`photo-placeholder-${appData.currentPhotoSlot}`);
             placeholder.innerHTML = `
-                <div style="width: 100%; height: 100%; background: ${colors[photoNum-1]}; 
+                <div style="width: 100%; height: 100%; background: ${colors[appData.currentPhotoSlot-1]}; 
                      display: flex; flex-direction: column; align-items: center; justify-content: center; color: white;">
                     <i class="fas fa-check" style="font-size: 24px; margin-bottom: 5px;"></i>
-                    <span style="font-size: 10px;">Фото ${photoNum}</span>
+                    <span style="font-size: 10px;">Фото ${appData.currentPhotoSlot}</span>
                 </div>
                 <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); 
                      color: white; width: 20px; height: 20px; border-radius: 50%; 
                      display: flex; align-items: center; justify-content: center; 
                      font-size: 12px; cursor: pointer;" 
-                     onclick="removePhoto(${photoNum})">×</div>
+                     onclick="removePhoto(${appData.currentPhotoSlot})">×</div>
             `;
             
-            appData.uploadedPhotos.push(photoNum);
-            showNotification(`Фото ${photoNum} добавлено (${appData.uploadedPhotos.length}/3)`, 'success');
+            if (!appData.uploadedPhotos.includes(appData.currentPhotoSlot)) {
+                appData.uploadedPhotos.push(appData.currentPhotoSlot);
+            }
+            
+            showNotification(`Фото ${appData.currentPhotoSlot} добавлено (${appData.uploadedPhotos.length}/3)`, 'success');
+            closePhotoModal();
+        }
+        
+        // Сделать фото камерой
+        function takePhotoWithCamera() {
+            if (!appData.currentPhotoSlot) return;
+            
+            showNotification('Функция камеры в разработке', 'info');
+            closePhotoModal();
+            
+            // В реальном приложении здесь будет вызов API камеры
+            // Для демо просто добавляем фото
+            selectPhotoFromGallery();
         }
         
         // Удалить фото
         function removePhoto(photoNum) {
+            event.stopPropagation(); // Чтобы не открывалось модальное окно
+            
             const placeholder = document.getElementById(`photo-placeholder-${photoNum}`);
             placeholder.innerHTML = `<i class="fas fa-plus"></i><span>Фото ${photoNum}</span>`;
             placeholder.style.display = 'flex';
@@ -1551,6 +1713,12 @@
             }
             
             showNotification('Добро пожаловать в Vape Market!', 'success');
+            
+            // Показываем тестовое уведомление о рейтинге
+            setTimeout(() => {
+                const testRating = calculateRating('seller1');
+                console.log(`Тестовый рейтинг seller1: ${testRating.toFixed(1)} (5 лайков, 2 дизлайка)`);
+            }, 1000);
         }
         
         // Запуск при загрузке
