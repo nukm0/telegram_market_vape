@@ -1,11 +1,45 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vape Market | Telegram Shop</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* CSS переменные для тем */
+        :root {
+            --tg-theme-bg-color: #ffffff;
+            --tg-theme-text-color: #000000;
+            --tg-theme-hint-color: #999999;
+            --tg-theme-link-color: #2481cc;
+            --tg-theme-button-color: #2481cc;
+            --tg-theme-button-text-color: #ffffff;
+            --tg-theme-secondary-bg-color: #f0f0f0;
+            --tg-theme-header-bg-color: #ffffff;
+        }
+
+        [data-theme="dark"] {
+            --tg-theme-bg-color: #000000;
+            --tg-theme-text-color: #ffffff;
+            --tg-theme-hint-color: #666666;
+            --tg-theme-link-color: #6ab3f3;
+            --tg-theme-button-color: #6ab3f3;
+            --tg-theme-button-text-color: #000000;
+            --tg-theme-secondary-bg-color: #1a1a1a;
+            --tg-theme-header-bg-color: #000000;
+        }
+
+        [data-theme="light"] {
+            --tg-theme-bg-color: #ffffff;
+            --tg-theme-text-color: #000000;
+            --tg-theme-hint-color: #999999;
+            --tg-theme-link-color: #2481cc;
+            --tg-theme-button-color: #2481cc;
+            --tg-theme-button-text-color: #ffffff;
+            --tg-theme-secondary-bg-color: #f0f0f0;
+            --tg-theme-header-bg-color: #ffffff;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -14,11 +48,11 @@
         }
         
         body {
-            background: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
+            background: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
             padding: 20px;
             min-height: 100vh;
-            transition: background 0.3s, color 0.3s;
+            transition: background-color 0.3s, color 0.3s;
         }
         
         .container {
@@ -30,7 +64,7 @@
             text-align: center;
             margin-bottom: 30px;
             padding: 20px 0;
-            border-bottom: 1px solid var(--tg-theme-hint-color, #999);
+            border-bottom: 1px solid var(--tg-theme-hint-color);
         }
         
         h1 {
@@ -39,18 +73,19 @@
         }
         
         .status-card {
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            background: var(--tg-theme-secondary-bg-color);
             border-radius: 15px;
             padding: 20px;
             margin: 20px 0;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: background-color 0.3s;
         }
         
         .status-item {
             display: flex;
             justify-content: space-between;
             padding: 10px 0;
-            border-bottom: 1px solid var(--tg-theme-hint-color, #eee);
+            border-bottom: 1px solid var(--tg-theme-hint-color);
         }
         
         .status-item:last-child {
@@ -59,7 +94,7 @@
         
         .status-label {
             font-weight: 500;
-            color: var(--tg-theme-hint-color, #666);
+            color: var(--tg-theme-hint-color);
         }
         
         .status-value {
@@ -79,8 +114,8 @@
         }
         
         .btn {
-            background: var(--tg-theme-button-color, #2481cc);
-            color: var(--tg-theme-button-text-color, #ffffff);
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
             border: none;
             padding: 15px 25px;
             border-radius: 10px;
@@ -89,7 +124,7 @@
             cursor: pointer;
             width: 100%;
             margin: 10px 0;
-            transition: opacity 0.3s;
+            transition: opacity 0.3s, background-color 0.3s;
         }
         
         .btn:hover {
@@ -125,6 +160,45 @@
             color: #ffffff;
             border: 2px solid #fff;
         }
+        
+        .theme-indicator {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        .theme-indicator.light {
+            background: #ffeb3b;
+            border: 2px solid #ff9800;
+        }
+        
+        .theme-indicator.dark {
+            background: #673ab7;
+            border: 2px solid #9c27b0;
+        }
+        
+        .log {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .log-item {
+            padding: 5px 0;
+            border-bottom: 1px dashed var(--tg-theme-hint-color);
+        }
+        
+        .log-item:last-child {
+            border-bottom: none;
+        }
     </style>
 </head>
 <body>
@@ -157,14 +231,17 @@
                 <span id="username" class="status-value">Загрузка...</span>
             </div>
             <div class="status-item">
-                <span class="status-label">Тема:</span>
-                <span id="theme" class="status-value">Загрузка...</span>
+                <span class="status-label">Текущая тема:</span>
+                <span id="theme" class="status-value">
+                    <span class="theme-indicator light" id="theme-icon"></span>
+                    <span id="theme-text">Загрузка...</span>
+                </span>
             </div>
         </div>
         
         <div class="status-card">
-            <h2>🎨 Тест темы Telegram</h2>
-            <p>Цвета должны соответствовать теме Telegram</p>
+            <h2>🎨 Управление темой</h2>
+            <p>Тема приложения синхронизирована с Telegram</p>
             <div class="theme-test">
                 <div class="theme-box light-theme">Светлая тема</div>
                 <div class="theme-box dark-theme">Темная тема</div>
@@ -172,8 +249,18 @@
         </div>
         
         <button class="btn" onclick="showAlert()">📢 Тест: Показать алерт</button>
-        <button class="btn" onclick="toggleTheme()">🔄 Тест: Сменить тему</button>
+        <button class="btn" onclick="toggleTheme()">
+            <span id="toggle-theme-text">🔄 Переключить тему</span>
+        </button>
         <button class="btn" onclick="closeApp()">❌ Закрыть приложение</button>
+        <button class="btn" onclick="requestPhone()">📞 Запросить номер телефона</button>
+        
+        <div class="status-card">
+            <h2>📝 Журнал событий</h2>
+            <div class="log" id="event-log">
+                <div class="log-item">Загрузка приложения...</div>
+            </div>
+        </div>
         
         <div class="status-card">
             <h2>✅ Этап 1: Проверка</h2>
@@ -185,56 +272,178 @@
     <script>
         // Инициализация Telegram Web App
         const tg = window.Telegram.WebApp;
+        let currentTheme = 'light';
         
-        // Расширяем на весь экран
-        tg.expand();
+        // Журнал событий
+        function logEvent(message) {
+            const logDiv = document.getElementById('event-log');
+            const logItem = document.createElement('div');
+            logItem.className = 'log-item';
+            logItem.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.prepend(logItem);
+            
+            // Ограничиваем количество записей
+            if (logDiv.children.length > 10) {
+                logDiv.removeChild(logDiv.lastChild);
+            }
+        }
         
-        // Показываем кнопку "Назад" если нужно
-        tg.BackButton.show();
-        tg.BackButton.onClick(() => {
-            tg.close();
-        });
+        // Функция применения темы
+        function applyTheme(theme) {
+            currentTheme = theme;
+            document.documentElement.setAttribute('data-theme', theme);
+            
+            // Обновляем цвет хедера и фона в Telegram
+            if (theme === 'dark') {
+                tg.setHeaderColor('#000000');
+                tg.setBackgroundColor('#000000');
+            } else {
+                tg.setHeaderColor('#ffffff');
+                tg.setBackgroundColor('#ffffff');
+            }
+            
+            // Обновляем UI
+            updateThemeUI();
+            logEvent(`Тема изменена на: ${theme === 'dark' ? 'Темная' : 'Светлая'}`);
+        }
+        
+        // Функция переключения темы
+        function toggleTheme() {
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            applyTheme(newTheme);
+            
+            // Сохраняем выбор пользователя в localStorage
+            localStorage.setItem('user_theme_preference', newTheme);
+        }
+        
+        // Обновление UI темы
+        function updateThemeUI() {
+            const themeIcon = document.getElementById('theme-icon');
+            const themeText = document.getElementById('theme-text');
+            const toggleBtn = document.getElementById('toggle-theme-text');
+            
+            if (currentTheme === 'dark') {
+                themeIcon.className = 'theme-indicator dark';
+                themeText.textContent = '🌙 Темная';
+                toggleBtn.textContent = '☀️ Переключить на светлую';
+            } else {
+                themeIcon.className = 'theme-indicator light';
+                themeText.textContent = '☀️ Светлая';
+                toggleBtn.textContent = '🌙 Переключить на темную';
+            }
+        }
         
         // Функции для обновления статуса
         function updateStatus() {
-            document.getElementById('sdk-status').textContent = 
-                tg.initDataUnsafe ? '✅ Готово' : '❌ Ошибка';
-            document.getElementById('sdk-status').className = 
-                'status-value ' + (tg.initDataUnsafe ? 'success' : 'error');
+            // Проверка SDK
+            const sdkLoaded = typeof tg !== 'undefined' && tg.initDataUnsafe;
+            document.getElementById('sdk-status').textContent = sdkLoaded ? '✅ Готово' : '❌ Ошибка';
+            document.getElementById('sdk-status').className = 'status-value ' + (sdkLoaded ? 'success' : 'error');
             
-            document.getElementById('platform').textContent = tg.platform || 'Неизвестно';
-            document.getElementById('tg-version').textContent = tg.version || 'Неизвестно';
-            document.getElementById('user-id').textContent = 
-                tg.initDataUnsafe?.user?.id || 'Не авторизован';
-            document.getElementById('username').textContent = 
-                tg.initDataUnsafe?.user?.username || 'Нет username';
-            document.getElementById('theme').textContent = 
-                tg.colorScheme === 'dark' ? '🌙 Темная' : '☀️ Светлая';
+            if (sdkLoaded) {
+                // Информация о платформе
+                document.getElementById('platform').textContent = tg.platform || 'Неизвестно';
+                document.getElementById('tg-version').textContent = tg.version || 'Неизвестно';
+                
+                // Информация о пользователе
+                const user = tg.initDataUnsafe.user || {};
+                document.getElementById('user-id').textContent = user.id || 'Не авторизован';
+                document.getElementById('username').textContent = user.username ? `@${user.username}` : 'Нет username';
+            } else {
+                document.getElementById('platform').textContent = 'Ошибка SDK';
+                document.getElementById('tg-version').textContent = 'Ошибка SDK';
+                document.getElementById('user-id').textContent = 'Ошибка SDK';
+                document.getElementById('username').textContent = 'Ошибка SDK';
+            }
+            
+            updateThemeUI();
         }
         
         // Тестовые функции
         function showAlert() {
             tg.showAlert('Тестовое сообщение от Telegram Mini App!');
-        }
-        
-        function toggleTheme() {
-            const newTheme = tg.colorScheme === 'dark' ? 'light' : 'dark';
-            tg.setHeaderColor(newTheme === 'dark' ? '#000000' : '#ffffff');
-            updateStatus();
+            logEvent('Показан алерт');
         }
         
         function closeApp() {
+            logEvent('Приложение закрыто');
             tg.close();
         }
         
-        // Обновляем статус при загрузке
-        document.addEventListener('DOMContentLoaded', updateStatus);
+        function requestPhone() {
+            if (tg.initDataUnsafe.user) {
+                tg.showPopup({
+                    title: 'Запрос номера',
+                    message: 'Разрешить доступ к номеру телефона?',
+                    buttons: [
+                        {id: 'yes', type: 'ok', text: 'Разрешить'},
+                        {id: 'no', type: 'cancel', text: 'Отмена'}
+                    ]
+                }, (buttonId) => {
+                    if (buttonId === 'yes') {
+                        tg.requestContact((contact) => {
+                            if (contact) {
+                                tg.showAlert(`Номер получен: ${contact.phone_number}`);
+                                logEvent(`Получен номер: ${contact.phone_number}`);
+                            }
+                        });
+                    }
+                });
+            } else {
+                tg.showAlert('Пользователь не авторизован');
+            }
+        }
         
-        // Слушаем смену темы
-        tg.onEvent('themeChanged', updateStatus);
+        // Инициализация приложения
+        function initApp() {
+            logEvent('Инициализация приложения');
+            
+            // Расширяем на весь экран
+            tg.expand();
+            logEvent('Приложение расширено на весь экран');
+            
+            // Показываем кнопку "Назад"
+            tg.BackButton.show();
+            tg.BackButton.onClick(() => {
+                logEvent('Нажата кнопка "Назад"');
+                tg.close();
+            });
+            
+            // Определяем начальную тему
+            let initialTheme = tg.colorScheme;
+            const savedTheme = localStorage.getItem('user_theme_preference');
+            
+            // Приоритет: сохраненная тема пользователя > тема Telegram > светлая
+            if (savedTheme && (savedTheme === 'dark' || savedTheme === 'light')) {
+                initialTheme = savedTheme;
+                logEvent(`Используется сохраненная тема: ${savedTheme}`);
+            } else {
+                logEvent(`Используется системная тема Telegram: ${initialTheme}`);
+            }
+            
+            // Применяем тему
+            applyTheme(initialTheme);
+            
+            // Обновляем статус
+            updateStatus();
+            
+            // Слушаем смену темы Telegram
+            tg.onEvent('themeChanged', (eventData) => {
+                logEvent(`Telegram изменил тему на: ${eventData.theme}`);
+                applyTheme(eventData.theme);
+            });
+            
+            logEvent('Приложение инициализировано');
+        }
         
-        // Обновляем каждые 2 секунды для демонстрации
-        setInterval(updateStatus, 2000);
+        // Запуск при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            // Даем время на загрузку SDK
+            setTimeout(initApp, 100);
+        });
+        
+        // Обновляем статус каждые 3 секунды для демонстрации
+        setInterval(updateStatus, 3000);
     </script>
 </body>
 </html>
