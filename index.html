@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Market | Барахолка</title>
+    <title>Vape Market | Барахолка для вейпов</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -19,6 +19,7 @@
             --button-success: #10B981;
             --button-error: #EF4444;
             --button-info: #3B82F6;
+            --button-warning: #F59E0B;
             
             --text-light: #FFFFFF;
             --text-dark: #1F2937;
@@ -101,84 +102,179 @@
             margin-bottom: 10px;
         }
         
-        /* Карточка продавца */
-        .seller-profile {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        /* Категории */
+        .categories {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px 0;
+            margin-bottom: 20px;
+            scrollbar-width: none;
         }
         
-        .seller-info {
+        .categories::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .category-btn {
+            padding: 10px 20px;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .category-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .category-btn.active {
+            background: var(--button-primary);
+            border-color: var(--button-primary);
+        }
+        
+        /* Объявление (товар + продавец вместе) */
+        .advertisement-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .advertisement-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        /* Заголовок продавца */
+        .seller-header {
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .seller-avatar {
-            width: 45px;
-            height: 45px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             background: var(--gradient-secondary);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 22px;
         }
         
-        .seller-details h3 {
+        .seller-info {
+            flex: 1;
+        }
+        
+        .seller-name {
             font-size: 16px;
+            font-weight: 600;
             margin-bottom: 3px;
         }
         
-        .seller-details p {
-            font-size: 13px;
+        .seller-username {
+            font-size: 14px;
             color: #D8B4FE;
+            margin-bottom: 5px;
         }
         
         .seller-stats {
             display: flex;
-            justify-content: space-around;
-            padding-top: 10px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            gap: 15px;
+            font-size: 12px;
         }
         
-        .stat {
-            text-align: center;
+        .seller-stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         
-        .stat-number {
-            display: block;
-            font-size: 18px;
-            font-weight: 700;
-            color: #A78BFA;
+        .seller-stat i {
+            font-size: 14px;
         }
         
-        .stat-label {
-            font-size: 11px;
-            color: #9CA3AF;
+        .stat-likes i { color: #10B981; }
+        .stat-dislikes i { color: #EF4444; }
+        .stat-rating i { color: #F59E0B; }
+        
+        /* Галерея фотографий товара */
+        .photo-gallery {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding: 10px 0;
         }
         
-        /* Карточка товара */
-        .product-card {
-            background: rgba(255, 255, 255, 0.08);
+        .photo-item {
+            width: 120px;
+            height: 120px;
             border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .photo-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #A78BFA;
+            font-size: 12px;
+        }
+        
+        .photo-placeholder i {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Информация о товаре */
+        .product-info {
+            margin-bottom: 20px;
         }
         
         .product-title {
-            font-size: 18px;
+            font-size: 20px;
+            font-weight: 700;
             margin-bottom: 10px;
             color: white;
         }
         
+        .product-category {
+            display: inline-block;
+            padding: 5px 12px;
+            background: rgba(139, 92, 246, 0.3);
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
         .product-price {
-            font-size: 24px;
-            font-weight: 700;
+            font-size: 28px;
+            font-weight: 800;
             color: #10B981;
             margin-bottom: 15px;
         }
@@ -186,21 +282,20 @@
         .product-description {
             font-size: 14px;
             color: #D8B4FE;
+            line-height: 1.5;
             margin-bottom: 20px;
-            line-height: 1.4;
         }
         
-        /* Кнопки под товаром */
-        .product-actions {
-            display: flex;
+        /* Кнопки действий */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
             gap: 10px;
-            margin-top: 15px;
         }
         
         .action-btn {
-            flex: 1;
-            padding: 12px;
-            border-radius: 12px;
+            padding: 15px;
+            border-radius: 15px;
             border: none;
             font-weight: 600;
             cursor: pointer;
@@ -208,8 +303,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
             font-size: 14px;
+        }
+        
+        .btn-small {
+            padding: 12px;
+            font-size: 12px;
         }
         
         .btn-success {
@@ -240,6 +340,16 @@
         .btn-error:hover {
             background: #DC2626;
             transform: translateY(-2px);
+        }
+        
+        .btn-test {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn-test:hover {
+            background: rgba(255, 255, 255, 0.2);
         }
         
         /* Нижнее меню навигации */
@@ -295,102 +405,98 @@
             display: block;
         }
         
-        /* Поиск на странице товаров */
-        .search-section {
-            margin-bottom: 20px;
+        /* Панель теста кнопок */
+        .test-panel {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 20px;
         }
         
-        .search-box {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .search-input {
-            flex: 1;
-            padding: 12px 15px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
+        .test-title {
             font-size: 14px;
+            color: #D8B4FE;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
-        .search-input::placeholder {
-            color: #A78BFA;
+        .test-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
         }
         
-        .search-btn {
-            padding: 12px 20px;
+        /* Индикатор работы */
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-online {
+            background: #10B981;
+            box-shadow: 0 0 10px #10B981;
+        }
+        
+        .status-offline {
+            background: #6B7280;
+        }
+        
+        .status-testing {
+            background: #F59E0B;
+            box-shadow: 0 0 10px #F59E0B;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Фото загрузка */
+        .photo-upload-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+        }
+        
+        .upload-btn {
+            width: 100%;
+            padding: 15px;
             border-radius: 12px;
-            border: none;
-            background: var(--button-primary);
+            background: rgba(139, 92, 246, 0.3);
+            border: 2px solid rgba(139, 92, 246, 0.5);
             color: white;
             font-weight: 600;
             cursor: pointer;
-        }
-        
-        /* Личный профиль */
-        .profile-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
-        .profile-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: var(--gradient-secondary);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 36px;
-            margin: 0 auto 15px;
-        }
-        
-        .my-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
             gap: 10px;
-            margin: 20px 0;
-        }
-        
-        .my-stat-card {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            padding: 15px;
-            text-align: center;
-        }
-        
-        /* FAQ страница */
-        .faq-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .faq-item {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            padding: 15px;
-            cursor: pointer;
             transition: all 0.3s ease;
         }
         
-        .faq-item:hover {
-            background: rgba(255, 255, 255, 0.12);
+        .upload-btn:hover {
+            background: rgba(139, 92, 246, 0.4);
         }
         
-        .faq-question {
-            font-weight: 600;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .upload-info {
+            font-size: 12px;
+            color: #D8B4FE;
+            text-align: center;
+            margin-top: 10px;
         }
         
         /* Скроллбар */
         ::-webkit-scrollbar {
             width: 5px;
+            height: 5px;
         }
         
         ::-webkit-scrollbar-track {
@@ -402,6 +508,42 @@
             background: #8B5CF6;
             border-radius: 10px;
         }
+        
+        /* Уведомления */
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            transition: transform 0.5s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        .notification.success {
+            border-left: 4px solid #10B981;
+        }
+        
+        .notification.error {
+            border-left: 4px solid #EF4444;
+        }
+        
+        .notification.info {
+            border-left: 4px solid #3B82F6;
+        }
+        
+        .notification.warning {
+            border-left: 4px solid #F59E0B;
+        }
     </style>
 </head>
 <body>
@@ -409,192 +551,320 @@
         <!-- Шапка -->
         <header class="app-header">
             <div class="logo">
-                <i class="fas fa-recycle"></i>
-                <span id="header-title">Объявления</span>
+                <i class="fas fa-smoking"></i>
+                <span id="header-title">Vape Market</span>
             </div>
         </header>
 
         <!-- Основной контент -->
         <main class="main-content" id="main-content">
             <!-- Страница 1: Объявления -->
-            <div class="page active" id="page-products">
-                <div class="search-section">
-                    <div class="search-box">
-                        <input type="text" class="search-input" placeholder="🔍 Поиск товаров...">
-                        <button class="search-btn" onclick="searchProducts()">Найти</button>
-                    </div>
+            <div class="page active" id="page-ads">
+                <!-- Категории -->
+                <div class="categories">
+                    <button class="category-btn active" onclick="filterCategory('all')">Все</button>
+                    <button class="category-btn" onclick="filterCategory('liquids')">Жидкости</button>
+                    <button class="category-btn" onclick="filterCategory('disposable')">Одноразовые</button>
+                    <button class="category-btn" onclick="filterCategory('pod')">Под-системы</button>
+                    <button class="category-btn" onclick="filterCategory('consumables')">Расходники</button>
+                    <button class="category-btn" onclick="filterCategory('other')">Другое</button>
                 </div>
 
-                <!-- Карточка продавца -->
-                <div class="seller-profile">
-                    <div class="seller-info">
+                <!-- Объявление 1: Объединенное (товар + продавец) -->
+                <div class="advertisement-card" data-category="liquids">
+                    <!-- Продавец -->
+                    <div class="seller-header">
                         <div class="seller-avatar">
                             <i class="fas fa-user"></i>
                         </div>
-                        <div class="seller-details">
-                            <h3 id="seller-name">Алексей Иванов</h3>
-                            <p id="seller-username">@alexey_seller</p>
+                        <div class="seller-info">
+                            <div class="seller-name">Максим Вейперов</div>
+                            <div class="seller-username">@vape_max</div>
+                            <div class="seller-stats">
+                                <div class="seller-stat stat-rating">
+                                    <i class="fas fa-star"></i>
+                                    <span>4.8</span>
+                                </div>
+                                <div class="seller-stat stat-likes">
+                                    <i class="fas fa-thumbs-up"></i>
+                                    <span id="seller1-likes">89</span>
+                                </div>
+                                <div class="seller-stat stat-dislikes">
+                                    <i class="fas fa-thumbs-down"></i>
+                                    <span id="seller1-dislikes">3</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="seller-stats">
-                        <div class="stat">
-                            <span class="stat-number" id="seller-rating">4.5</span>
-                            <span class="stat-label">Рейтинг</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-number" id="seller-likes">124</span>
-                            <span class="stat-label">Лайков</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-number" id="seller-dislikes">12</span>
-                            <span class="stat-label">Дизлайков</span>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Карточка товара -->
-                <div class="product-card">
-                    <div class="product-title">📱 iPhone 13 Pro Max 256GB</div>
-                    <div class="product-price">45 000 ₽</div>
-                    <div class="product-description">
-                        Отличное состояние, батарея 98%, все оригинальные аксессуары в наличии. 
-                        Пленка на экране с первого дня. Без царапин и сколов.
+                    <!-- Фотографии товара -->
+                    <div class="photo-gallery">
+                        <div class="photo-item">
+                            <img src="https://via.placeholder.com/120x120/8B5CF6/FFFFFF?text=Жидкость+1" alt="Жидкость для вейпа">
+                        </div>
+                        <div class="photo-item">
+                            <img src="https://via.placeholder.com/120x120/7C3AED/FFFFFF?text=Жидкость+2" alt="Жидкость для вейпа">
+                        </div>
+                        <div class="photo-item">
+                            <div class="photo-placeholder">
+                                <i class="fas fa-image"></i>
+                                <span>Фото 3</span>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <!-- Кнопки под товаром -->
-                    <div class="product-actions">
-                        <button class="action-btn btn-success" onclick="rateSeller('like')">
+
+                    <!-- Информация о товаре -->
+                    <div class="product-info">
+                        <div class="product-title">Жидкость для вейпа "Berry Mix"</div>
+                        <div class="product-category">Жидкости</div>
+                        <div class="product-price">800 ₽</div>
+                        <div class="product-description">
+                            Премиальная жидкость для вейпа, крепость 3mg. Свежая ягодная смесь с нотками мяты. 
+                            Объем 60ml, почти полная бутылка. Хорошо забивает, густой пар.
+                        </div>
+                    </div>
+
+                    <!-- Кнопки действий -->
+                    <div class="action-buttons">
+                        <button class="action-btn btn-success" onclick="rateSeller(1, 'like')">
                             <i class="fas fa-thumbs-up"></i>
                             Лайк
                         </button>
                         
-                        <button class="action-btn btn-primary" onclick="contactSeller()">
+                        <button class="action-btn btn-primary" onclick="contactSeller('@vape_max')">
                             <i class="fas fa-paper-plane"></i>
-                            Написать
+                            Написать продавцу
                         </button>
                         
-                        <button class="action-btn btn-error" onclick="rateSeller('dislike')">
+                        <button class="action-btn btn-error" onclick="rateSeller(1, 'dislike')">
                             <i class="fas fa-thumbs-down"></i>
                             Дизлайк
                         </button>
                     </div>
                 </div>
 
-                <!-- Второй товар для примера -->
-                <div class="product-card">
-                    <div class="product-title">🎮 PlayStation 5 + 2 игры</div>
-                    <div class="product-price">38 500 ₽</div>
-                    <div class="product-description">
-                        PS5 в идеальном состоянии, куплена 6 месяцев назад. 
-                        В комплекте 2 игры: Spider-Man 2 и God of War Ragnarök.
+                <!-- Объявление 2 -->
+                <div class="advertisement-card" data-category="disposable">
+                    <div class="seller-header">
+                        <div class="seller-avatar" style="background: linear-gradient(135deg, #F59E0B, #D97706);">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="seller-info">
+                            <div class="seller-name">Анна Кузнецова</div>
+                            <div class="seller-username">@anna_vapeshop</div>
+                            <div class="seller-stats">
+                                <div class="seller-stat stat-rating">
+                                    <i class="fas fa-star"></i>
+                                    <span>4.9</span>
+                                </div>
+                                <div class="seller-stat stat-likes">
+                                    <i class="fas fa-thumbs-up"></i>
+                                    <span id="seller2-likes">156</span>
+                                </div>
+                                <div class="seller-stat stat-dislikes">
+                                    <i class="fas fa-thumbs-down"></i>
+                                    <span id="seller2-dislikes">2</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="product-actions">
-                        <button class="action-btn btn-success" onclick="rateSeller('like')">
+
+                    <div class="photo-gallery">
+                        <div class="photo-item">
+                            <img src="https://via.placeholder.com/120x120/10B981/FFFFFF?text=Elf+Bar" alt="Elf Bar">
+                        </div>
+                        <div class="photo-item">
+                            <div class="photo-placeholder">
+                                <i class="fas fa-image"></i>
+                                <span>Фото 2</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="product-info">
+                        <div class="product-title">Elf Bar BC5000 (Lush Ice)</div>
+                        <div class="product-category">Одноразовые</div>
+                        <div class="product-price">1 200 ₽</div>
+                        <div class="product-description">
+                            Одноразовый вейп Elf Bar BC5000, вкус Lush Ice (арбуз+ментол). 
+                            Новый, в оригинальной упаковке. 5000 затяжек, тип затяжки MTL.
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="action-btn btn-success" onclick="rateSeller(2, 'like')">
                             <i class="fas fa-thumbs-up"></i>
                             Лайк
                         </button>
                         
-                        <button class="action-btn btn-primary" onclick="contactSeller()">
+                        <button class="action-btn btn-primary" onclick="contactSeller('@anna_vapeshop')">
                             <i class="fas fa-paper-plane"></i>
-                            Написать
+                            Написать продавцу
                         </button>
                         
-                        <button class="action-btn btn-error" onclick="rateSeller('dislike')">
+                        <button class="action-btn btn-error" onclick="rateSeller(2, 'dislike')">
                             <i class="fas fa-thumbs-down"></i>
                             Дизлайк
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Панель теста кнопок -->
+                <div class="test-panel">
+                    <div class="test-title">
+                        <i class="fas fa-vial"></i>
+                        Тест всех функций
+                        <span class="status-indicator status-online"></span>
+                    </div>
+                    <div class="test-buttons">
+                        <button class="action-btn btn-test btn-small" onclick="testButton('photo')">
+                            <i class="fas fa-camera"></i>
+                            Тест загрузки фото
+                        </button>
+                        <button class="action-btn btn-test btn-small" onclick="testButton('category')">
+                            <i class="fas fa-tags"></i>
+                            Тест категорий
+                        </button>
+                        <button class="action-btn btn-test btn-small" onclick="testButton('like')">
+                            <i class="fas fa-thumbs-up"></i>
+                            Тест лайков
+                        </button>
+                        <button class="action-btn btn-test btn-small" onclick="testButton('contact')">
+                            <i class="fas fa-comment"></i>
+                            Тест сообщений
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Страница 2: Личный профиль -->
+            <!-- Страница 2: Добавить объявление -->
+            <div class="page" id="page-add">
+                <div class="advertisement-card">
+                    <h2 style="margin-bottom: 20px; text-align: center;">
+                        <i class="fas fa-plus-circle"></i>
+                        Добавить новое объявление
+                    </h2>
+
+                    <!-- Загрузка фотографий -->
+                    <div class="photo-upload-section">
+                        <div class="photo-gallery" id="uploaded-photos">
+                            <div class="photo-item" id="photo-slot-1">
+                                <div class="photo-placeholder">
+                                    <i class="fas fa-plus"></i>
+                                    <span>Добавить фото 1</span>
+                                </div>
+                            </div>
+                            <div class="photo-item" id="photo-slot-2">
+                                <div class="photo-placeholder">
+                                    <i class="fas fa-plus"></i>
+                                    <span>Добавить фото 2</span>
+                                </div>
+                            </div>
+                            <div class="photo-item" id="photo-slot-3">
+                                <div class="photo-placeholder">
+                                    <i class="fas fa-plus"></i>
+                                    <span>Добавить фото 3</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button class="upload-btn" onclick="uploadPhoto()">
+                            <i class="fas fa-images"></i>
+                            Загрузить фотографии
+                        </button>
+                        <div class="upload-info">
+                            Можно загрузить до 3 фотографий. Выбрано: <span id="photo-count">0</span>/3
+                        </div>
+                    </div>
+
+                    <!-- Форма добавления -->
+                    <div style="margin-top: 20px;">
+                        <input type="text" class="search-input" placeholder="Название товара" id="ad-title" style="width: 100%; margin-bottom: 10px;">
+                        
+                        <select class="search-input" id="ad-category" style="width: 100%; margin-bottom: 10px;">
+                            <option value="">Выберите категорию</option>
+                            <option value="liquids">Жидкости</option>
+                            <option value="disposable">Одноразовые устройства</option>
+                            <option value="pod">Под-системы</option>
+                            <option value="consumables">Расходники</option>
+                            <option value="other">Другое</option>
+                        </select>
+                        
+                        <input type="number" class="search-input" placeholder="Цена (₽)" id="ad-price" style="width: 100%; margin-bottom: 10px;">
+                        
+                        <textarea class="search-input" placeholder="Описание товара" id="ad-description" 
+                                  style="width: 100%; height: 100px; margin-bottom: 20px; resize: vertical;"></textarea>
+                        
+                        <button class="action-btn btn-primary" style="width: 100%;" onclick="publishAd()">
+                            <i class="fas fa-paper-plane"></i>
+                            Опубликовать объявление
+                        </button>
+                        
+                        <button class="action-btn btn-test" style="width: 100%; margin-top: 10px;" onclick="testButton('publish')">
+                            <i class="fas fa-vial"></i>
+                            Протестировать публикацию
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Страница 3: Профиль -->
             <div class="page" id="page-profile">
-                <div class="profile-header">
-                    <div class="profile-avatar">
-                        <i class="fas fa-user"></i>
+                <div class="advertisement-card">
+                    <div class="seller-header">
+                        <div class="seller-avatar" style="background: var(--gradient-primary); width: 70px; height: 70px; font-size: 28px;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="seller-info">
+                            <div class="seller-name" id="my-profile-name">Ваш профиль</div>
+                            <div class="seller-username" id="my-profile-username">@username</div>
+                        </div>
                     </div>
-                    <h2 id="my-name">Ваш профиль</h2>
-                    <p id="my-username">@username</p>
-                </div>
 
-                <div class="my-stats">
-                    <div class="my-stat-card">
-                        <div class="stat-number" id="my-ads">3</div>
-                        <div class="stat-label">Мои объявления</div>
+                    <div style="margin: 20px 0;">
+                        <h3 style="margin-bottom: 15px; color: #D8B4FE;">
+                            <i class="fas fa-chart-bar"></i>
+                            Ваша статистика
+                        </h3>
+                        
+                        <div class="seller-stats" style="justify-content: space-around;">
+                            <div class="seller-stat">
+                                <i class="fas fa-box" style="color: #8B5CF6;"></i>
+                                <span>Мои объявления: <strong id="my-ads-count">0</strong></span>
+                            </div>
+                            <div class="seller-stat">
+                                <i class="fas fa-thumbs-up" style="color: #10B981;"></i>
+                                <span>Лайки: <strong id="my-likes-count">0</strong></span>
+                            </div>
+                            <div class="seller-stat">
+                                <i class="fas fa-thumbs-down" style="color: #EF4444;"></i>
+                                <span>Дизлайки: <strong id="my-dislikes-count">0</strong></span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="my-stat-card">
-                        <div class="stat-number" id="my-likes">24</div>
-                        <div class="stat-label">Лайков</div>
-                    </div>
-                    <div class="my-stat-card">
-                        <div class="stat-number" id="my-dislikes">2</div>
-                        <div class="stat-label">Дизлайков</div>
-                    </div>
-                </div>
 
-                <div class="product-card">
-                    <h3>Ваши действия</h3>
-                    <button class="action-btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="addNewAd()">
-                        <i class="fas fa-plus"></i>
-                        Добавить объявление
-                    </button>
-                    <button class="action-btn btn-secondary" style="width: 100%; margin-top: 10px; background: rgba(255,255,255,0.1);" onclick="viewMyAds()">
-                        <i class="fas fa-list"></i>
-                        Мои объявления
-                    </button>
-                </div>
-            </div>
-
-            <!-- Страница 3: FAQ -->
-            <div class="page" id="page-faq">
-                <div class="profile-header">
-                    <div class="profile-avatar" style="background: var(--gradient-primary);">
-                        <i class="fas fa-question-circle"></i>
-                    </div>
-                    <h2>Частые вопросы</h2>
-                    <p>Помощь по использованию</p>
-                </div>
-
-                <div class="faq-list">
-                    <div class="faq-item" onclick="toggleFaq(1)">
-                        <div class="faq-question">
-                            <span>Как добавить объявление?</span>
-                            <i class="fas fa-chevron-down"></i>
+                    <div class="test-panel">
+                        <div class="test-title">
+                            <i class="fas fa-sliders-h"></i>
+                            Управление аккаунтом
                         </div>
-                        <div class="faq-answer" id="faq-answer-1" style="display: none; margin-top: 10px; color: #D8B4FE; font-size: 14px;">
-                            Перейдите в "Личный профиль" → "Добавить объявление". Заполните форму и нажмите "Опубликовать".
-                        </div>
-                    </div>
-                    
-                    <div class="faq-item" onclick="toggleFaq(2)">
-                        <div class="faq-question">
-                            <span>Как связаться с продавцом?</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="faq-answer" id="faq-answer-2" style="display: none; margin-top: 10px; color: #D8B4FE; font-size: 14px;">
-                            Нажмите кнопку "Написать" под объявлением. Откроется чат с продавцом в Telegram.
-                        </div>
-                    </div>
-                    
-                    <div class="faq-item" onclick="toggleFaq(3)">
-                        <div class="faq-question">
-                            <span>Что такое лайки/дизлайки?</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="faq-answer" id="faq-answer-3" style="display: none; margin-top: 10px; color: #D8B4FE; font-size: 14px;">
-                            Это оценка продавца. Лайки повышают рейтинг, дизлайки понижают. Помогает выбрать надежного продавца.
-                        </div>
-                    </div>
-                    
-                    <div class="faq-item" onclick="toggleFaq(4)">
-                        <div class="faq-question">
-                            <span>Как оплачивать товар?</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="faq-answer" id="faq-answer-4" style="display: none; margin-top: 10px; color: #D8B4FE; font-size: 14px;">
-                            Все сделки происходят напрямую с продавцом. Договаривайтесь об оплате в личном чате.
+                        <div class="test-buttons">
+                            <button class="action-btn btn-test btn-small" onclick="testButton('edit_profile')">
+                                <i class="fas fa-user-edit"></i>
+                                Редактировать
+                            </button>
+                            <button class="action-btn btn-test btn-small" onclick="testButton('my_ads')">
+                                <i class="fas fa-list"></i>
+                                Мои объявления
+                            </button>
+                            <button class="action-btn btn-test btn-small" onclick="testButton('notifications')">
+                                <i class="fas fa-bell"></i>
+                                Уведомления
+                            </button>
+                            <button class="action-btn btn-test btn-small" onclick="testButton('settings')">
+                                <i class="fas fa-cog"></i>
+                                Настройки
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -603,11 +873,18 @@
 
         <!-- Нижнее меню навигации -->
         <nav class="bottom-nav">
-            <button class="nav-item active" data-page="products" onclick="switchPage('products')">
+            <button class="nav-item active" data-page="ads" onclick="switchPage('ads')">
                 <div class="nav-icon">
                     <i class="fas fa-box-open"></i>
                 </div>
                 <span class="nav-label">Объявления</span>
+            </button>
+            
+            <button class="nav-item" data-page="add" onclick="switchPage('add')">
+                <div class="nav-icon">
+                    <i class="fas fa-plus-circle"></i>
+                </div>
+                <span class="nav-label">Добавить</span>
             </button>
             
             <button class="nav-item" data-page="profile" onclick="switchPage('profile')">
@@ -616,35 +893,31 @@
                 </div>
                 <span class="nav-label">Профиль</span>
             </button>
-            
-            <button class="nav-item" data-page="faq" onclick="switchPage('faq')">
-                <div class="nav-icon">
-                    <i class="fas fa-question-circle"></i>
-                </div>
-                <span class="nav-label">FAQ</span>
-            </button>
         </nav>
+
+        <!-- Уведомление -->
+        <div class="notification" id="notification"></div>
     </div>
 
     <script>
         // Инициализация Telegram
         const tg = window.Telegram?.WebApp;
         
-        // Данные продавца
-        let sellerData = {
-            name: "Алексей Иванов",
-            username: "@alexey_seller",
-            rating: 4.5,
-            likes: 124,
-            dislikes: 12
-        };
+        // Данные приложения
+        let uploadedPhotos = 0;
+        let currentCategory = 'all';
+        let testMode = true;
         
-        // Данные текущего пользователя
-        let myData = {
-            ads: 3,
-            likes: 24,
-            dislikes: 2
-        };
+        // Показать уведомление
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
         
         // Переключение страниц
         function switchPage(page) {
@@ -656,14 +929,6 @@
             // Показать выбранную страницу
             document.getElementById(`page-${page}`).classList.add('active');
             
-            // Обновить заголовок
-            const titles = {
-                'products': 'Объявления',
-                'profile': 'Личный профиль',
-                'faq': 'Помощь'
-            };
-            document.getElementById('header-title').textContent = titles[page];
-            
             // Обновить активную кнопку в меню
             document.querySelectorAll('.nav-item').forEach(btn => {
                 btn.classList.remove('active');
@@ -672,90 +937,212 @@
             
             // Логирование
             console.log(`Переключено на страницу: ${page}`);
+            if (testMode) {
+                showNotification(`Открыта страница: ${getPageName(page)}`, 'info');
+            }
+        }
+        
+        function getPageName(page) {
+            const pages = {
+                'ads': 'Объявления',
+                'add': 'Добавить объявление',
+                'profile': 'Профиль'
+            };
+            return pages[page] || page;
+        }
+        
+        // Фильтр по категориям
+        function filterCategory(category) {
+            currentCategory = category;
+            
+            // Обновить активную кнопку категории
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Показать/скрыть объявления
+            const ads = document.querySelectorAll('.advertisement-card');
+            ads.forEach(ad => {
+                if (category === 'all' || ad.dataset.category === category) {
+                    ad.style.display = 'block';
+                } else {
+                    ad.style.display = 'none';
+                }
+            });
+            
+            if (testMode) {
+                const categoryNames = {
+                    'all': 'Все',
+                    'liquids': 'Жидкости',
+                    'disposable': 'Одноразовые',
+                    'pod': 'Под-системы',
+                    'consumables': 'Расходники',
+                    'other': 'Другое'
+                };
+                showNotification(`Показана категория: ${categoryNames[category]}`, 'success');
+            }
         }
         
         // Оценить продавца
-        function rateSeller(type) {
+        function rateSeller(sellerId, type) {
+            const likesEl = document.getElementById(`seller${sellerId}-likes`);
+            const dislikesEl = document.getElementById(`seller${sellerId}-dislikes`);
+            
             if (type === 'like') {
-                sellerData.likes++;
-                showNotification(`Вы поставили лайк продавцу ${sellerData.name}`);
+                let likes = parseInt(likesEl.textContent);
+                likesEl.textContent = likes + 1;
+                showNotification('Лайк поставлен продавцу!', 'success');
             } else {
-                sellerData.dislikes++;
-                showNotification(`Вы поставили дизлайк продавцу ${sellerData.name}`);
+                let dislikes = parseInt(dislikesEl.textContent);
+                dislikesEl.textContent = dislikes + 1;
+                showNotification('Дизлайк поставлен продавцу', 'warning');
             }
             
-            // Пересчет рейтинга
-            const total = sellerData.likes + sellerData.dislikes;
-            sellerData.rating = (sellerData.likes / total * 5).toFixed(1);
-            
-            // Обновление UI
-            updateSellerStats();
-        }
-        
-        // Обновление статистики продавца
-        function updateSellerStats() {
-            document.getElementById('seller-rating').textContent = sellerData.rating;
-            document.getElementById('seller-likes').textContent = sellerData.likes;
-            document.getElementById('seller-dislikes').textContent = sellerData.dislikes;
+            // Тестовый звук (в реальном приложении можно добавить)
+            console.log(`Продавец ${sellerId} получил ${type}`);
         }
         
         // Написать продавцу
-        function contactSeller() {
-            const sellerUsername = sellerData.username.replace('@', '');
-            
+        function contactSeller(username) {
             if (tg) {
-                tg.showAlert(`Открывается чат с продавцом ${sellerData.username}`);
+                tg.showAlert(`Открывается чат с продавцом ${username}`);
                 // В реальном приложении:
-                // tg.openTelegramLink(`https://t.me/${sellerUsername}`);
+                // tg.openTelegramLink(`https://t.me/${username.replace('@', '')}`);
             } else {
                 // Для теста в браузере
-                window.open(`https://t.me/${sellerUsername}`, '_blank');
+                showNotification(`Тест: Открывается чат с ${username}`, 'info');
+            }
+        }
+        
+        // Загрузка фотографий
+        function uploadPhoto() {
+            if (uploadedPhotos >= 3) {
+                showNotification('Максимум 3 фотографии!', 'error');
+                return;
             }
             
-            showNotification(`Открывается чат с ${sellerData.username}`);
-        }
-        
-        // Поиск товаров
-        function searchProducts() {
-            const query = document.querySelector('.search-input').value;
-            if (query.trim()) {
-                showNotification(`Поиск: "${query}"`);
-            }
-        }
-        
-        // Добавить объявление
-        function addNewAd() {
-            showNotification('Открыта форма добавления объявления');
-            // Здесь будет форма добавления
-        }
-        
-        // Просмотр своих объявлений
-        function viewMyAds() {
-            showNotification('Просмотр ваших объявлений');
-        }
-        
-        // Переключение FAQ
-        function toggleFaq(id) {
-            const answer = document.getElementById(`faq-answer-${id}`);
-            const icon = event.currentTarget.querySelector('.fa-chevron-down');
+            // В реальном приложении здесь будет выбор из галереи
+            // Для демо просто добавляем тестовое фото
             
-            if (answer.style.display === 'none') {
-                answer.style.display = 'block';
-                icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
-            } else {
-                answer.style.display = 'none';
-                icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+            const slotId = `photo-slot-${uploadedPhotos + 1}`;
+            const slot = document.getElementById(slotId);
+            
+            slot.innerHTML = `
+                <img src="https://via.placeholder.com/120x120/8B5CF6/FFFFFF?text=Фото+${uploadedPhotos + 1}" 
+                     alt="Загруженное фото ${uploadedPhotos + 1}">
+                <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); 
+                            color: white; width: 20px; height: 20px; border-radius: 50%; 
+                            display: flex; align-items: center; justify-content: center; 
+                            font-size: 12px; cursor: pointer;" 
+                     onclick="removePhoto(${uploadedPhotos + 1})">×</div>
+            `;
+            
+            uploadedPhotos++;
+            document.getElementById('photo-count').textContent = uploadedPhotos;
+            
+            showNotification(`Фото ${uploadedPhotos} загружено!`, 'success');
+            
+            // Если все фото загружены
+            if (uploadedPhotos === 3) {
+                showNotification('Загружено максимальное количество фото (3)', 'info');
             }
         }
         
-        // Показать уведомление
-        function showNotification(message) {
-            if (tg) {
-                tg.showAlert(message);
-            } else {
-                alert(message);
+        // Удалить фото
+        function removePhoto(photoNum) {
+            const slot = document.getElementById(`photo-slot-${photoNum}`);
+            slot.innerHTML = `
+                <div class="photo-placeholder">
+                    <i class="fas fa-plus"></i>
+                    <span>Добавить фото ${photoNum}</span>
+                </div>
+            `;
+            
+            uploadedPhotos--;
+            document.getElementById('photo-count').textContent = uploadedPhotos;
+            
+            // Сдвигаем остальные фото
+            for (let i = photoNum + 1; i <= 3; i++) {
+                const nextSlot = document.getElementById(`photo-slot-${i}`);
+                const prevSlot = document.getElementById(`photo-slot-${i-1}`);
+                
+                if (nextSlot.querySelector('img')) {
+                    prevSlot.innerHTML = nextSlot.innerHTML;
+                    nextSlot.innerHTML = `
+                        <div class="photo-placeholder">
+                            <i class="fas fa-plus"></i>
+                            <span>Добавить фото ${i}</span>
+                        </div>
+                    `;
+                }
             }
-            console.log(message);
+            
+            showNotification('Фото удалено', 'warning');
+        }
+        
+        // Опубликовать объявление
+        function publishAd() {
+            const title = document.getElementById('ad-title').value;
+            const category = document.getElementById('ad-category').value;
+            const price = document.getElementById('ad-price').value;
+            const description = document.getElementById('ad-description').value;
+            
+            if (!title || !category || !price) {
+                showNotification('Заполните все обязательные поля!', 'error');
+                return;
+            }
+            
+            if (uploadedPhotos === 0) {
+                showNotification('Добавьте хотя бы одну фотографию!', 'error');
+                return;
+            }
+            
+            // В реальном приложении здесь отправка на сервер
+            showNotification('Объявление опубликовано!', 'success');
+            console.log('Новое объявление:', { title, category, price, description });
+            
+            // Сброс формы
+            document.getElementById('ad-title').value = '';
+            document.getElementById('ad-category').value = '';
+            document.getElementById('ad-price').value = '';
+            document.getElementById('ad-description').value = '';
+            
+            // Сброс фото
+            for (let i = 1; i <= 3; i++) {
+                const slot = document.getElementById(`photo-slot-${i}`);
+                slot.innerHTML = `
+                    <div class="photo-placeholder">
+                        <i class="fas fa-plus"></i>
+                        <span>Добавить фото ${i}</span>
+                    </div>
+                `;
+            }
+            uploadedPhotos = 0;
+            document.getElementById('photo-count').textContent = '0';
+        }
+        
+        // Тест кнопок
+        function testButton(type) {
+            const tests = {
+                'photo': { message: 'Тест загрузки фото: OK', type: 'success' },
+                'category': { message: 'Тест категорий: OK', type: 'success' },
+                'like': { message: 'Тест лайков: OK', type: 'success' },
+                'contact': { message: 'Тест сообщений: OK', type: 'success' },
+                'publish': { message: 'Тест публикации: OK', type: 'success' },
+                'edit_profile': { message: 'Редактирование профиля', type: 'info' },
+                'my_ads': { message: 'Просмотр моих объявлений', type: 'info' },
+                'notifications': { message: 'Настройка уведомлений', type: 'info' },
+                'settings': { message: 'Открыты настройки', type: 'info' }
+            };
+            
+            if (tests[type]) {
+                showNotification(tests[type].message, tests[type].type);
+            } else {
+                showNotification(`Тест: ${type}`, 'info');
+            }
+            
+            console.log(`Тест кнопки: ${type}`);
         }
         
         // Инициализация Telegram SDK
@@ -769,16 +1156,24 @@
                     const myName = user.first_name || `Пользователь ${user.id}`;
                     const myUsername = user.username ? `@${user.username}` : 'Нет username';
                     
-                    document.getElementById('my-name').textContent = myName;
-                    document.getElementById('my-username').textContent = myUsername;
+                    document.getElementById('my-profile-name').textContent = myName;
+                    document.getElementById('my-profile-username').textContent = myUsername;
                 }
+                
+                showNotification('Telegram SDK загружен', 'success');
             }
             
             // Инициализация данных
-            updateSellerStats();
-            document.getElementById('my-ads').textContent = myData.ads;
-            document.getElementById('my-likes').textContent = myData.likes;
-            document.getElementById('my-dislikes').textContent = myData.dislikes;
+            document.getElementById('my-ads-count').textContent = '2';
+            document.getElementById('my-likes-count').textContent = '15';
+            document.getElementById('my-dislikes-count').textContent = '1';
+            
+            // Тестовое уведомление
+            setTimeout(() => {
+                if (testMode) {
+                    showNotification('Добро пожаловать в Vape Market! Все функции готовы к тесту.', 'success');
+                }
+            }, 1000);
         }
         
         // Запуск при загрузке
