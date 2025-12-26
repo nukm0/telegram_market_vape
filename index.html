@@ -281,6 +281,11 @@
             overflow: hidden;
             border: 2px solid rgba(255, 255, 255, 0.2);
             position: relative;
+            cursor: pointer;
+        }
+        
+        .photo-item:hover {
+            border-color: #8B5CF6;
         }
         
         .photo-placeholder {
@@ -551,7 +556,38 @@
             display: block;
         }
         
-        /* Личный кабинет */
+        /* Личный кабинет - вкладки */
+        .profile-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .profile-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .profile-tab.active {
+            background: rgba(139, 92, 246, 0.3);
+        }
+        
+        .profile-tab-content {
+            display: none;
+        }
+        
+        .profile-tab-content.active {
+            display: block;
+        }
+        
         .profile-card {
             background: rgba(255, 255, 255, 0.08);
             border-radius: 20px;
@@ -652,6 +688,73 @@
             font-size: 12px;
         }
         
+        /* Мои объявления */
+        .my-ads-list {
+            margin-top: 20px;
+        }
+        
+        .my-ad-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .my-ad-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        
+        .my-ad-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .my-ad-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: #10B981;
+        }
+        
+        .my-ad-description {
+            font-size: 14px;
+            color: #D8B4FE;
+            margin-bottom: 10px;
+        }
+        
+        .my-ad-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .edit-ad-btn, .delete-ad-btn {
+            flex: 1;
+            padding: 8px;
+            border-radius: 8px;
+            border: none;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        
+        .edit-ad-btn {
+            background: rgba(59, 130, 246, 0.3);
+            border: 1px solid rgba(59, 130, 246, 0.5);
+        }
+        
+        .delete-ad-btn {
+            background: rgba(239, 68, 68, 0.3);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+        }
+        
         /* FAQ страница */
         .faq-list {
             display: flex;
@@ -684,6 +787,102 @@
             color: #D8B4FE;
             font-size: 14px;
             line-height: 1.5;
+        }
+        
+        /* Кнопка жалобы */
+        .complaint-btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 15px;
+            background: rgba(239, 68, 68, 0.2);
+            border: 2px solid rgba(239, 68, 68, 0.5);
+            color: #EF4444;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .complaint-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        /* Модальное окно для фото */
+        .photo-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        
+        .photo-modal.active {
+            display: flex;
+        }
+        
+        .photo-modal-img {
+            max-width: 90%;
+            max-height: 70%;
+            object-fit: contain;
+            border-radius: 10px;
+        }
+        
+        .photo-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .photo-modal-counter {
+            color: white;
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        
+        .photo-modal-nav {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            transform: translateY(-50%);
+        }
+        
+        .photo-modal-nav-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         /* Уведомления */
@@ -916,16 +1115,34 @@
                         </div>
                     </div>
 
-                    <h3 style="margin-bottom: 15px; color: #D8B4FE;">История просмотров</h3>
-                    
-                    <div class="history-list" id="historyList">
-                        <!-- История будет добавляться здесь -->
+                    <!-- Вкладки в личном кабинете -->
+                    <div class="profile-tabs">
+                        <div class="profile-tab active" onclick="switchProfileTab('my-ads')">
+                            Мои объявления
+                        </div>
+                        <div class="profile-tab" onclick="switchProfileTab('history')">
+                            История
+                        </div>
                     </div>
-                    
-                    <button class="cancel-btn" onclick="clearHistory()" style="width: 100%; margin-top: 10px;">
-                        <i class="fas fa-trash"></i>
-                        Очистить историю
-                    </button>
+
+                    <!-- Содержимое вкладки "Мои объявления" -->
+                    <div class="profile-tab-content active" id="my-ads-tab">
+                        <div class="my-ads-list" id="myAdsList">
+                            <!-- Мои объявления будут здесь -->
+                        </div>
+                    </div>
+
+                    <!-- Содержимое вкладки "История" -->
+                    <div class="profile-tab-content" id="history-tab">
+                        <div class="history-list" id="historyList">
+                            <!-- История будет добавляться здесь -->
+                        </div>
+                        
+                        <button class="cancel-btn" onclick="clearHistory()" style="width: 100%; margin-top: 10px;">
+                            <i class="fas fa-trash"></i>
+                            Очистить историю
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -959,7 +1176,7 @@
                                 <i class="fas fa-chevron-down" id="faq-icon-2"></i>
                             </div>
                             <div class="faq-answer" id="faq-answer-2" style="display: none;">
-                                Рейтинг рассчитывается по формуле: 5 × (лайки / (лайки + дизлайки)). 
+                                Рейтинг рассчитывается по формуле: 0.1 + (лайки / (лайки + дизлайки)) * 4.9. 
                                 Каждый пользователь может поставить только одну оценку.
                             </div>
                         </div>
@@ -997,6 +1214,12 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Кнопка подачи жалобы -->
+                    <button class="complaint-btn" onclick="submitComplaint()">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Подать жалобу
+                    </button>
                 </div>
             </div>
         </main>
@@ -1025,6 +1248,23 @@
             </button>
         </nav>
 
+        <!-- Модальное окно для просмотра фото -->
+        <div class="photo-modal" id="photoModal">
+            <button class="photo-modal-close" onclick="closePhotoModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="photo-modal-nav">
+                <button class="photo-modal-nav-btn" onclick="prevPhoto()">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="photo-modal-nav-btn" onclick="nextPhoto()">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            <img class="photo-modal-img" id="modalPhoto" src="" alt="Просмотр фото">
+            <div class="photo-modal-counter" id="photoCounter">1 / 1</div>
+        </div>
+
         <!-- Уведомление -->
         <div class="notification" id="notification"></div>
     </div>
@@ -1041,6 +1281,9 @@
             history: [],
             uploadedPhotos: [],
             uploadedPhotoFiles: [], // Массив для хранения файлов фото
+            uploadedPhotoUrls: [], // Массив для хранения URL загруженных фото
+            currentPhotoIndex: 0,
+            currentPhotoList: [],
             nextAdId: 1,
             currentCategory: 'all',
             currentPhotoSlot: null
@@ -1060,6 +1303,10 @@
                     price: 800,
                     description: 'Премиальная жидкость для вейпа, крепость 3mg. Свежая ягодная смесь с нотками мяты.',
                     photos: 2,
+                    photoUrls: [
+                        'https://via.placeholder.com/400x400/8B5CF6/FFFFFF?text=Жидкость+BERRY',
+                        'https://via.placeholder.com/400x400/7C3AED/FFFFFF?text=Бутылка+60ml'
+                    ],
                     likes: 5,
                     dislikes: 2
                 },
@@ -1073,6 +1320,9 @@
                     price: 1200,
                     description: 'Одноразовый вейп Elf Bar BC5000, вкус Lush Ice (арбуз+ментол). Новый в упаковке.',
                     photos: 1,
+                    photoUrls: [
+                        'https://via.placeholder.com/400x400/10B981/FFFFFF?text=ELF+BAR'
+                    ],
                     likes: 8,
                     dislikes: 2
                 },
@@ -1086,6 +1336,11 @@
                     price: 3500,
                     description: 'Под-система Voopoo Drag X, черный цвет. В отличном состоянии, все оригинальное.',
                     photos: 3,
+                    photoUrls: [
+                        'https://via.placeholder.com/400x400/3B82F6/FFFFFF?text=VOOPOO',
+                        'https://via.placeholder.com/400x400/8B5CF6/FFFFFF?text=Под+система',
+                        'https://via.placeholder.com/400x400/10B981/FFFFFF?text=Комплект'
+                    ],
                     likes: 12,
                     dislikes: 3
                 }
@@ -1143,9 +1398,25 @@
             
             // Обновить историю если открыли кабинет
             if (page === 'profile') {
-                updateHistory();
                 updateProfileStats();
+                updateMyAdsList();
+                updateHistory();
             }
+        }
+        
+        // Переключение вкладок в личном кабинете
+        function switchProfileTab(tab) {
+            // Обновить активную вкладку
+            document.querySelectorAll('.profile-tab').forEach(t => {
+                t.classList.remove('active');
+            });
+            document.querySelector(`[onclick="switchProfileTab('${tab}')"]`).classList.add('active');
+            
+            // Показать содержимое выбранной вкладки
+            document.querySelectorAll('.profile-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tab}-tab`).classList.add('active');
         }
         
         // Переключение формы добавления
@@ -1198,7 +1469,7 @@
             
             // Рендерим каждое объявление
             filteredAds.forEach(ad => {
-                // Рассчитываем рейтинг продавца ПО ПРАВИЛЬНОЙ ФОРМУЛЕ
+                // Рассчитываем рейтинг продавца ПО НОВОЙ ФОРМУЛЕ
                 const rating = calculateRating(ad.sellerId);
                 
                 // Проверяем, поставил ли текущий пользователь оценку
@@ -1211,20 +1482,31 @@
                 adElement.id = `ad-${ad.id}`;
                 adElement.dataset.category = ad.category;
                 
-                // Генерируем цветные фото-заглушки
-                const photoColors = ['#8B5CF6', '#7C3AED', '#6D28D9'];
+                // Генерируем фото
                 const photoElements = [];
                 
-                for (let i = 0; i < ad.photos; i++) {
-                    const color = photoColors[i % photoColors.length];
-                    photoElements.push(`
-                        <div class="photo-item">
-                            <div class="photo-placeholder" style="background: ${color};">
-                                <i class="fas fa-image"></i>
+                if (ad.photoUrls && ad.photoUrls.length > 0) {
+                    ad.photoUrls.forEach((photoUrl, index) => {
+                        photoElements.push(`
+                            <div class="photo-item" onclick="openPhotoViewer(${ad.id}, ${index})">
+                                <img src="${photoUrl}" alt="Фото товара ${index + 1}">
+                                <div class="photo-label">Фото ${index + 1}</div>
                             </div>
-                            <div class="photo-label">Фото ${i + 1}</div>
-                        </div>
-                    `);
+                        `);
+                    });
+                } else {
+                    // Если фото нет, показываем заглушки
+                    for (let i = 0; i < ad.photos; i++) {
+                        const color = i % 2 === 0 ? '#8B5CF6' : '#7C3AED';
+                        photoElements.push(`
+                            <div class="photo-item" onclick="showNoPhotoMessage()">
+                                <div class="photo-placeholder" style="background: ${color};">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                                <div class="photo-label">Фото ${i + 1}</div>
+                            </div>
+                        `);
+                    }
                 }
                 
                 adElement.innerHTML = `
@@ -1285,21 +1567,80 @@
             });
         }
         
-        // Рассчитать рейтинг продавца ПО ПРАВИЛЬНОЙ ФОРМУЛЕ
-        // Рейтинг = 5 × (x / (x + y)), где x — лайки, y — дизлайки
+        // Рассчитать рейтинг продавца ПО НОВОЙ ФОРМУЛЕ
+        // Формула: 0.1 + (лайки / (лайки + дизлайки)) * 4.9
         function calculateRating(sellerId) {
-            if (!appData.userRatings[sellerId]) return 0;
+            if (!appData.userRatings[sellerId]) return 0.1;
             
             const ratings = Object.values(appData.userRatings[sellerId]);
-            if (ratings.length === 0) return 0;
+            if (ratings.length === 0) return 0.1;
             
             const likes = ratings.filter(r => r === 'like').length;
             const dislikes = ratings.filter(r => r === 'dislike').length;
             const total = likes + dislikes;
             
-            // Формула: 5 × (лайки / (лайки + дизлайки))
-            if (total === 0) return 0;
-            return 5 * (likes / total);
+            // НОВАЯ ФОРМУЛА: 0.1 + (лайки / (лайки + дизлайки)) * 4.9
+            if (total === 0) return 0.1;
+            
+            const ratio = likes / total;
+            return 0.1 + ratio * 4.9;
+        }
+        
+        // Открыть просмотр фото
+        function openPhotoViewer(adId, photoIndex) {
+            const ad = appData.ads.find(a => a.id === adId);
+            if (!ad || !ad.photoUrls || ad.photoUrls.length === 0) {
+                showNotification('Фотографии для этого объявления не найдены', 'error');
+                return;
+            }
+            
+            appData.currentPhotoList = ad.photoUrls;
+            appData.currentPhotoIndex = photoIndex;
+            
+            const modal = document.getElementById('photoModal');
+            const modalImg = document.getElementById('modalPhoto');
+            const counter = document.getElementById('photoCounter');
+            
+            modalImg.src = ad.photoUrls[photoIndex];
+            counter.textContent = `${photoIndex + 1} / ${ad.photoUrls.length}`;
+            
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Закрыть просмотр фото
+        function closePhotoModal() {
+            const modal = document.getElementById('photoModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Следующее фото
+        function nextPhoto() {
+            if (appData.currentPhotoList.length === 0) return;
+            
+            appData.currentPhotoIndex = (appData.currentPhotoIndex + 1) % appData.currentPhotoList.length;
+            document.getElementById('modalPhoto').src = appData.currentPhotoList[appData.currentPhotoIndex];
+            document.getElementById('photoCounter').textContent = 
+                `${appData.currentPhotoIndex + 1} / ${appData.currentPhotoList.length}`;
+        }
+        
+        // Предыдущее фото
+        function prevPhoto() {
+            if (appData.currentPhotoList.length === 0) return;
+            
+            appData.currentPhotoIndex = appData.currentPhotoIndex === 0 
+                ? appData.currentPhotoList.length - 1 
+                : appData.currentPhotoIndex - 1;
+            
+            document.getElementById('modalPhoto').src = appData.currentPhotoList[appData.currentPhotoIndex];
+            document.getElementById('photoCounter').textContent = 
+                `${appData.currentPhotoIndex + 1} / ${appData.currentPhotoList.length}`;
+        }
+        
+        // Сообщение об отсутствии фото
+        function showNoPhotoMessage() {
+            showNotification('Фотография не загружена для этого объявления', 'warning');
         }
         
         // Оценить продавца
@@ -1341,6 +1682,7 @@
             // Обновляем UI
             updateAdStats(adId);
             renderAds();
+            updateProfileStats();
             
             // Анимация кнопки
             const btn = event.currentTarget;
@@ -1436,6 +1778,85 @@
             });
         }
         
+        // Обновить список моих объявлений
+        function updateMyAdsList() {
+            const myAdsList = document.getElementById('myAdsList');
+            myAdsList.innerHTML = '';
+            
+            const myAds = appData.ads.filter(ad => ad.sellerId === 'current_user');
+            
+            if (myAds.length === 0) {
+                myAdsList.innerHTML = '<div style="text-align: center; color: #D8B4FE; padding: 20px;">У вас пока нет объявлений</div>';
+                return;
+            }
+            
+            myAds.forEach(ad => {
+                const adElement = document.createElement('div');
+                adElement.className = 'my-ad-item';
+                
+                // Рассчитываем рейтинг для этого объявления
+                const rating = calculateRating('current_user');
+                
+                adElement.innerHTML = `
+                    <div class="my-ad-header">
+                        <div class="my-ad-title">${ad.title}</div>
+                        <div class="my-ad-price">${ad.price.toLocaleString()} ₽</div>
+                    </div>
+                    <div class="product-category" style="display: inline-block; margin-bottom: 10px;">
+                        ${getCategoryName(ad.category)}
+                    </div>
+                    <div class="my-ad-description">${ad.description}</div>
+                    <div style="display: flex; gap: 15px; font-size: 12px; color: #D8B4FE;">
+                        <div><i class="fas fa-thumbs-up"></i> ${ad.likes}</div>
+                        <div><i class="fas fa-thumbs-down"></i> ${ad.dislikes}</div>
+                        <div><i class="fas fa-star"></i> ${rating.toFixed(1)}</div>
+                    </div>
+                    <div class="my-ad-actions">
+                        <button class="edit-ad-btn" onclick="editAd(${ad.id})">
+                            <i class="fas fa-edit"></i> Редактировать
+                        </button>
+                        <button class="delete-ad-btn" onclick="deleteAd(${ad.id})">
+                            <i class="fas fa-trash"></i> Удалить
+                        </button>
+                    </div>
+                `;
+                myAdsList.appendChild(adElement);
+            });
+        }
+        
+        // Удалить объявление
+        function deleteAd(adId) {
+            if (!confirm('Вы уверены, что хотите удалить это объявление?')) {
+                return;
+            }
+            
+            appData.ads = appData.ads.filter(ad => ad.id !== adId);
+            renderAds();
+            updateProfileStats();
+            updateMyAdsList();
+            showNotification('Объявление удалено', 'warning');
+        }
+        
+        // Редактировать объявление
+        function editAd(adId) {
+            const ad = appData.ads.find(a => a.id === adId);
+            if (!ad) return;
+            
+            // Заполняем форму данными объявления
+            document.getElementById('adTitle').value = ad.title;
+            document.getElementById('adCategory').value = ad.category;
+            document.getElementById('adPrice').value = ad.price;
+            document.getElementById('adDescription').value = ad.description;
+            
+            // Показываем форму
+            toggleAddForm();
+            
+            // Помечаем, что редактируем
+            appData.editingAdId = adId;
+            
+            showNotification('Редактирование объявления', 'info');
+        }
+        
         // Удалить из истории
         function removeFromHistory(id) {
             appData.history = appData.history.filter(item => item.id !== id);
@@ -1445,6 +1866,15 @@
         
         // Очистить историю
         function clearHistory() {
+            if (appData.history.length === 0) {
+                showNotification('История уже пуста', 'info');
+                return;
+            }
+            
+            if (!confirm('Вы уверены, что хотите очистить всю историю?')) {
+                return;
+            }
+            
             appData.history = [];
             updateHistory();
             showNotification('История очищена', 'warning');
@@ -1470,6 +1900,7 @@
             // Очищаем предыдущие фото
             appData.uploadedPhotos = [];
             appData.uploadedPhotoFiles = [];
+            appData.uploadedPhotoUrls = [];
             
             // Очищаем все фото-слоты
             for (let i = 1; i <= 3; i++) {
@@ -1497,6 +1928,9 @@
                              font-size: 12px; cursor: pointer;" 
                              onclick="removePhoto(${slotNumber})">×</div>
                     `;
+                    
+                    // Сохраняем URL для отображения
+                    appData.uploadedPhotoUrls.push(e.target.result);
                 };
                 reader.readAsDataURL(file);
                 
@@ -1527,6 +1961,7 @@
             if (index !== -1) {
                 appData.uploadedPhotos.splice(index, 1);
                 appData.uploadedPhotoFiles.splice(index, 1);
+                appData.uploadedPhotoUrls.splice(index, 1);
             }
             
             // Обновляем счетчик
@@ -1551,7 +1986,10 @@
             
             appData.uploadedPhotos = [];
             appData.uploadedPhotoFiles = [];
+            appData.uploadedPhotoUrls = [];
             document.getElementById('photo-count').textContent = '0';
+            
+            delete appData.editingAdId;
         }
         
         // Опубликовать объявление
@@ -1582,6 +2020,28 @@
                 return;
             }
             
+            // Если редактируем существующее объявление
+            if (appData.editingAdId) {
+                const ad = appData.ads.find(a => a.id === appData.editingAdId);
+                if (ad) {
+                    ad.title = title;
+                    ad.category = category;
+                    ad.price = price;
+                    ad.description = description || 'Без описания';
+                    ad.photoUrls = [...appData.uploadedPhotoUrls];
+                    ad.photos = appData.uploadedPhotos.length;
+                    
+                    renderAds();
+                    updateProfileStats();
+                    updateMyAdsList();
+                    hideAddForm();
+                    
+                    delete appData.editingAdId;
+                    showNotification('Объявление обновлено!', 'success');
+                }
+                return;
+            }
+            
             // Создаем новое объявление
             const newAd = {
                 id: appData.nextAdId++,
@@ -1593,6 +2053,7 @@
                 price: price,
                 description: description || 'Без описания',
                 photos: appData.uploadedPhotos.length,
+                photoUrls: [...appData.uploadedPhotoUrls], // Сохраняем URL загруженных фото
                 likes: 0,
                 dislikes: 0
             };
@@ -1607,6 +2068,7 @@
             
             // Обновляем статистику профиля
             updateProfileStats();
+            updateMyAdsList();
             
             // Обновляем отображение
             renderAds();
@@ -1635,7 +2097,7 @@
             document.getElementById('myLikesCount').textContent = myLikes;
             document.getElementById('myDislikesCount').textContent = myDislikes;
             
-            // Рассчитываем мой рейтинг
+            // Рассчитываем мой рейтинг ПО НОВОЙ ФОРМУЛЕ
             const myRating = calculateRating('current_user');
             document.getElementById('myRating').textContent = myRating.toFixed(1);
         }
@@ -1651,6 +2113,25 @@
             } else {
                 answer.style.display = 'none';
                 icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+            }
+        }
+        
+        // Подать жалобу
+        function submitComplaint() {
+            const message = encodeURIComponent('Хочу подать жалобу!');
+            const telegramUrl = `https://t.me/nukm0?start=${message}`;
+            
+            if (tg) {
+                try {
+                    tg.openTelegramLink(telegramUrl);
+                    showNotification('Открывается чат для подачи жалобы', 'info');
+                } catch (error) {
+                    tg.showAlert(`Для подачи жалобы напишите @nukm0 в Telegram с текстом: "Хочу подать жалобу!"`);
+                }
+            } else {
+                // Для теста в браузере
+                alert('Для подачи жалобы напишите @nukm0 в Telegram с текстом: "Хочу подать жалобу!"');
+                showNotification('Напишите @nukm0 в Telegram', 'info');
             }
         }
         
@@ -1699,6 +2180,10 @@
             for (let i = 1; i <= 5; i++) {
                 document.getElementById(`faq-answer-${i}`).style.display = 'none';
             }
+            
+            // Обновляем статистику профиля
+            updateProfileStats();
+            updateMyAdsList();
             
             showNotification('Добро пожаловать в Vape Market!', 'success');
         }
