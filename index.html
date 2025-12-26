@@ -1373,6 +1373,64 @@
         .registration-note i {
             margin-right: 5px;
         }
+        
+        /* Кнопка выхода */
+        .logout-btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 15px;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.3) 0%, rgba(245, 158, 11, 0.2) 100%);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: #F59E0B;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .logout-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
+            border-radius: 13px;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .logout-btn:hover::before {
+            opacity: 1;
+        }
+        
+        .logout-btn:hover {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.4) 0%, rgba(245, 158, 11, 0.3) 100%);
+            transform: translateY(-2px);
+        }
+        
+        .logout-btn.telegram-user {
+            background: linear-gradient(135deg, rgba(107, 114, 128, 0.3) 0%, rgba(107, 114, 128, 0.2) 100%);
+            color: #9CA3AF;
+            cursor: not-allowed;
+        }
+        
+        .logout-btn.telegram-user:hover {
+            background: linear-gradient(135deg, rgba(107, 114, 128, 0.3) 0%, rgba(107, 114, 128, 0.2) 100%);
+            transform: none;
+        }
+        
+        .logout-btn.telegram-user:hover::before {
+            opacity: 0;
+        }
     </style>
 </head>
 <body>
@@ -1534,6 +1592,18 @@
                         <button class="cancel-btn" onclick="clearHistory()" style="width: 100%; margin-top: 10px;">
                             <i class="fas fa-trash"></i>
                             Очистить историю
+                        </button>
+                        
+                        <!-- Кнопка выхода (только для браузерных пользователей) -->
+                        <button class="logout-btn" id="logoutButton" onclick="logoutUser()" style="margin-top: 10px;">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Выйти из аккаунта
+                        </button>
+                        
+                        <!-- Кнопка удаления аккаунта (только для браузерных пользователей) -->
+                        <button class="complaint-btn" onclick="deleteAccount()" id="deleteAccountButton" style="margin-top: 10px; display: none;">
+                            <i class="fas fa-user-slash"></i>
+                            Удалить аккаунт полностью
                         </button>
                     </div>
                 </div>
@@ -1750,11 +1820,17 @@
     </div>
 
     <script>
-        // ==================== СИСТЕМА РЕГИСТРАЦИИ ====================
+        // ==================== СИСТЕМА БЕЗОПАСНОЙ РЕГИСТРАЦИИ ====================
         
         // Глобальные переменные для регистрации
         let currentUser = null;
         let isUserRegistered = false;
+        let userSessionToken = null;
+        
+        // Генерировать уникальный токен сессии
+        function generateSessionToken() {
+            return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
         
         // Проверка регистрации пользователя
         function checkUserRegistration() {
@@ -1764,17 +1840,28 @@
                 const user = tg.initDataUnsafe?.user;
                 
                 if (user && user.id) {
+                    // Генерируем уникальный токен сессии для Telegram пользователя
+                    const sessionToken = generateSessionToken();
+                    
                     // Сохраняем данные Telegram пользователя
                     currentUser = {
                         id: user.id.toString(),
                         name: user.first_name || 'Пользователь',
                         username: user.username ? '@' + user.username : null,
-                        isTelegramUser: true
+                        isTelegramUser: true,
+                        userType: 'telegram',
+                        sessionToken: sessionToken
                     };
                     
+                    // Сохраняем в localStorage с защитой
+                    localStorage.setItem('vapeMarketSessionToken', sessionToken);
                     localStorage.setItem('vapeMarketUserId', currentUser.id);
                     localStorage.setItem('vapeMarketUserName', currentUser.name);
+                    localStorage.setItem('vapeMarketUserType', 'telegram');
+                    localStorage.setItem('vapeMarketIsTelegram', 'true');
+                    
                     isUserRegistered = true;
+                    userSessionToken = sessionToken;
                     
                     console.log('Telegram user detected:', currentUser);
                     initApp(); // Инициализируем приложение
@@ -1782,21 +1869,32 @@
                 }
             }
             
-            // 2. Проверяем сохраненный User ID
+            // 2. Проверяем сохраненную сессию (для браузерных пользователей)
+            const savedSessionToken = localStorage.getItem('vapeMarketSessionToken');
             const savedUserId = localStorage.getItem('vapeMarketUserId');
-            if (savedUserId) {
+            const savedUserType = localStorage.getItem('vapeMarketUserType');
+            const savedIsTelegram = localStorage.getItem('vapeMarketIsTelegram');
+            
+            // Если есть валидная сессия
+            if (savedSessionToken && savedUserId && savedUserType) {
+                // Восстанавливаем пользователя из сессии
                 currentUser = {
                     id: savedUserId,
                     name: localStorage.getItem('vapeMarketUserName') || 'Пользователь',
-                    isTelegramUser: false
+                    isTelegramUser: savedIsTelegram === 'true',
+                    userType: savedUserType,
+                    sessionToken: savedSessionToken
                 };
+                
                 isUserRegistered = true;
-                console.log('Saved user found:', currentUser);
+                userSessionToken = savedSessionToken;
+                
+                console.log('Session restored:', currentUser);
                 initApp(); // Инициализируем приложение
                 return;
             }
             
-            // 3. Если нет User ID - показываем регистрацию
+            // 3. Если нет сессии - показываем регистрацию
             showRegistrationModal();
         }
         
@@ -1812,7 +1910,7 @@
             document.body.style.overflow = 'auto';
         }
         
-        // Завершить регистрацию
+        // Завершить регистрацию (БЕЗОПАСНАЯ версия)
         function completeRegistration() {
             const userId = document.getElementById('userIdInput').value.trim();
             const userName = document.getElementById('userNameInput').value.trim();
@@ -1827,16 +1925,37 @@
                 return;
             }
             
-            // Сохраняем данные
+            // Проверяем, не пытается ли пользователь войти под чужим ID
+            const existingSession = localStorage.getItem('vapeMarketUserId');
+            if (existingSession && existingSession !== userId) {
+                if (!confirm('⚠️ ВНИМАНИЕ!\n\nУ вас уже есть сохраненный аккаунт с другим User ID.\n\nХотите выйти из текущего аккаунта и войти с новым?')) {
+                    return;
+                }
+                // Очищаем старую сессию
+                clearUserSession();
+            }
+            
+            // Генерируем новый токен сессии
+            const sessionToken = generateSessionToken();
+            
+            // Сохраняем данные как БРАУЗЕРНОГО пользователя
             currentUser = {
                 id: userId,
                 name: userName,
-                isTelegramUser: false
+                isTelegramUser: false,
+                userType: 'browser',
+                sessionToken: sessionToken
             };
             
+            // Сохраняем в localStorage с защитой
+            localStorage.setItem('vapeMarketSessionToken', sessionToken);
             localStorage.setItem('vapeMarketUserId', userId);
             localStorage.setItem('vapeMarketUserName', userName);
+            localStorage.setItem('vapeMarketUserType', 'browser');
+            localStorage.setItem('vapeMarketIsTelegram', 'false');
+            
             isUserRegistered = true;
+            userSessionToken = sessionToken;
             
             // Скрываем модальное окно
             hideRegistrationModal();
@@ -1868,6 +1987,145 @@
             showNotification('Вы вошли как гость. Только просмотр объявлений.', 'info');
         }
         
+        // Выйти из аккаунта (ТОЛЬКО для браузерных пользователей)
+        function logoutUser() {
+            // Проверяем тип пользователя
+            if (currentUser?.userType === 'telegram') {
+                showNotification('Пользователи Telegram не могут выйти из аккаунта', 'error');
+                return;
+            }
+            
+            if (!confirm('Вы уверены, что хотите выйти из аккаунта?\n\nВы сможете войти с другим аккаунтом.')) {
+                return;
+            }
+            
+            // 1. Очищаем сессию пользователя
+            clearUserSession();
+            
+            // 2. Сбрасываем текущего пользователя
+            currentUser = null;
+            isUserRegistered = false;
+            userSessionToken = null;
+            
+            // 3. Скрываем страницы
+            hideAllPages();
+            
+            // 4. Показываем регистрацию
+            showRegistrationModal();
+            
+            showNotification('Вы вышли из аккаунта', 'success');
+        }
+        
+        // Удалить аккаунт и все данные (ТОЛЬКО для браузерных пользователей)
+        function deleteAccount() {
+            // Проверяем тип пользователя
+            if (currentUser?.userType === 'telegram') {
+                showNotification('Пользователи Telegram не могут удалить аккаунт', 'error');
+                return;
+            }
+            
+            if (!confirm('❌ ВНИМАНИЕ!\n\nВы уверены, что хотите УДАЛИТЬ АККАУНТ?\n\nУдалится:\n• Ваш профиль\n• Ваши объявления\n• Ваши оценки\n\nЭто действие НЕОБРАТИМО!')) {
+                return;
+            }
+            
+            const userId = currentUser?.id;
+            
+            // 1. Удаляем ВСЕ объявления пользователя
+            appData.ads = appData.ads.filter(ad => ad.sellerId !== userId);
+            
+            // 2. Удаляем оценки пользователя
+            // Удаляем оценки, которые этот пользователь ставил другим
+            Object.keys(appData.userRatings).forEach(sellerId => {
+                if (appData.userRatings[sellerId][userId]) {
+                    delete appData.userRatings[sellerId][userId];
+                }
+            });
+            
+            // 3. Удаляем рейтинги этого пользователя (если другие ставили ему оценки)
+            delete appData.userRatings[userId];
+            
+            // 4. Очищаем историю
+            appData.history = [];
+            
+            // 5. Очищаем сессию пользователя
+            clearUserSession();
+            
+            // 6. Сбрасываем текущего пользователя
+            currentUser = null;
+            isUserRegistered = false;
+            userSessionToken = null;
+            appData.currentUserId = null;
+            
+            // 7. Скрываем страницы
+            hideAllPages();
+            
+            // 8. Показываем регистрацию
+            showRegistrationModal();
+            
+            // 9. Обновляем отображение
+            renderAds();
+            
+            showNotification('Аккаунт полностью удален', 'warning');
+        }
+        
+        // Очистить сессию пользователя
+        function clearUserSession() {
+            localStorage.removeItem('vapeMarketSessionToken');
+            localStorage.removeItem('vapeMarketUserId');
+            localStorage.removeItem('vapeMarketUserName');
+            localStorage.removeItem('vapeMarketUserType');
+            localStorage.removeItem('vapeMarketIsTelegram');
+        }
+        
+        // Скрыть все страницы
+        function hideAllPages() {
+            document.querySelectorAll('.page').forEach(p => {
+                p.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                btn.classList.remove('active');
+            });
+        }
+        
+        // Обновить отображение кнопки выхода
+        function updateLogoutButton() {
+            const logoutBtn = document.getElementById('logoutButton');
+            const deleteBtn = document.getElementById('deleteAccountButton');
+            
+            if (!logoutBtn || !currentUser) return;
+            
+            if (currentUser.userType === 'telegram') {
+                logoutBtn.innerHTML = `
+                    <i class="fab fa-telegram"></i>
+                    Telegram пользователь (выход невозможен)
+                `;
+                logoutBtn.className = 'logout-btn telegram-user';
+                logoutBtn.onclick = function() {
+                    showNotification('Пользователи Telegram не могут выйти из аккаунта', 'error');
+                };
+                
+                if (deleteBtn) {
+                    deleteBtn.style.display = 'none';
+                }
+            } else if (currentUser.userType === 'browser') {
+                logoutBtn.innerHTML = `
+                    <i class="fas fa-sign-out-alt"></i>
+                    Выйти из аккаунта
+                `;
+                logoutBtn.className = 'logout-btn';
+                logoutBtn.onclick = logoutUser;
+                
+                if (deleteBtn) {
+                    deleteBtn.style.display = 'block';
+                }
+            } else if (currentUser.isGuest) {
+                logoutBtn.style.display = 'none';
+                if (deleteBtn) {
+                    deleteBtn.style.display = 'none';
+                }
+            }
+        }
+        
         // Обновить профиль в UI
         function updateUserProfileUI() {
             if (!currentUser) return;
@@ -1879,8 +2137,13 @@
             
             const profileUsername = document.getElementById('profileUsername');
             if (profileUsername) {
-                profileUsername.textContent = currentUser.isGuest ? 'Гость (только просмотр)' : 
-                                             currentUser.isTelegramUser ? 'Telegram пользователь' : 'Зарегистрирован';
+                if (currentUser.isGuest) {
+                    profileUsername.textContent = 'Гость (только просмотр)';
+                } else if (currentUser.userType === 'telegram') {
+                    profileUsername.textContent = currentUser.username || 'Telegram пользователь';
+                } else {
+                    profileUsername.textContent = 'Зарегистрированный пользователь';
+                }
             }
             
             // Обновляем аватар профиля
@@ -1888,6 +2151,11 @@
             if (profileAvatar && currentUser.name) {
                 const firstLetter = currentUser.name.charAt(0).toUpperCase();
                 profileAvatar.innerHTML = `<span style="font-size: 28px; font-weight: bold;">${firstLetter}</span>`;
+                
+                // Для Telegram пользователей добавляем иконку
+                if (currentUser.userType === 'telegram') {
+                    profileAvatar.innerHTML = `<i class="fab fa-telegram" style="font-size: 28px;"></i>`;
+                }
             }
             
             // Показываем/скрываем кнопки в зависимости от статуса
@@ -1901,6 +2169,9 @@
                     addBtn.disabled = false;
                 }
             }
+            
+            // Обновляем кнопку выхода
+            updateLogoutButton();
         }
         
         // ==================== ОСНОВНОЕ ПРИЛОЖЕНИЕ ====================
@@ -2062,7 +2333,7 @@
             });
             document.querySelector(`[onclick="switchProfileTab('${tab}')"]`).classList.add('active');
             
-            // Показать содержимое выбранной вкладка
+            // Показать содержимое выбранной вкладки
             document.querySelectorAll('.profile-tab-content').forEach(content => {
                 content.classList.remove('active');
             });
