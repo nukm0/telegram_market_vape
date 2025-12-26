@@ -102,6 +102,56 @@
             margin-bottom: 10px;
         }
         
+        /* Кнопка добавления объявления - ВМЕСТЕ С ФОРМОЙ СВЕРХУ */
+        .add-ad-section {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .add-ad-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .add-ad-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .toggle-form-btn {
+            padding: 10px 20px;
+            border-radius: 12px;
+            background: rgba(139, 92, 246, 0.3);
+            border: 2px solid rgba(139, 92, 246, 0.5);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-form-btn:hover {
+            background: rgba(139, 92, 246, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        /* Форма добавления объявления */
+        .add-ad-form {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .add-ad-form.active {
+            display: block;
+        }
+        
         /* Категории */
         .categories {
             display: flex;
@@ -137,29 +187,6 @@
             background: var(--button-primary);
             border-color: var(--button-primary);
             color: white;
-        }
-        
-        /* Кнопка добавления объявления - ПЕРЕМЕЩЕНА ВВЕРХ */
-        .add-ad-btn-top {
-            width: 100%;
-            padding: 18px;
-            border-radius: 15px;
-            background: rgba(139, 92, 246, 0.3);
-            border: 2px solid rgba(139, 92, 246, 0.5);
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
-        }
-        
-        .add-ad-btn-top:hover {
-            background: rgba(139, 92, 246, 0.4);
-            transform: translateY(-2px);
         }
         
         /* Объявление (товар + продавец вместе) */
@@ -410,26 +437,7 @@
             transform: translateY(-2px);
         }
         
-        /* Форма добавления объявления */
-        .add-ad-form {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-            padding: 20px;
-            margin-top: 20px;
-            display: none;
-        }
-        
-        .add-ad-form.active {
-            display: block;
-        }
-        
-        .form-title {
-            font-size: 18px;
-            margin-bottom: 20px;
-            text-align: center;
-            color: white;
-        }
-        
+        /* Форма добавления */
         .form-input {
             width: 100%;
             padding: 15px;
@@ -732,48 +740,24 @@
             border-radius: 10px;
         }
         
-        /* Модальное окно для загрузки фото */
-        .photo-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
+        /* Скрытый input для загрузки фото */
+        .hidden-file-input {
             display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            padding: 20px;
         }
         
-        .photo-modal.active {
+        /* Кнопки формы */
+        .form-buttons {
             display: flex;
+            gap: 10px;
+            margin-top: 20px;
         }
         
-        .photo-modal-content {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 400px;
-            width: 100%;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .photo-modal-title {
-            font-size: 20px;
-            margin-bottom: 20px;
-            text-align: center;
-            color: white;
-        }
-        
-        .photo-option-btn {
-            width: 100%;
+        .publish-btn {
+            flex: 2;
             padding: 15px;
             border-radius: 12px;
-            background: rgba(139, 92, 246, 0.3);
-            border: 2px solid rgba(139, 92, 246, 0.5);
+            background: var(--button-primary);
+            border: none;
             color: white;
             font-weight: 600;
             cursor: pointer;
@@ -781,16 +765,10 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            margin-bottom: 15px;
-            transition: all 0.3s ease;
         }
         
-        .photo-option-btn:hover {
-            background: rgba(139, 92, 246, 0.4);
-        }
-        
-        .close-modal-btn {
-            width: 100%;
+        .cancel-btn {
+            flex: 1;
             padding: 15px;
             border-radius: 12px;
             background: rgba(239, 68, 68, 0.2);
@@ -802,11 +780,6 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            transition: all 0.3s ease;
-        }
-        
-        .close-modal-btn:hover {
-            background: rgba(239, 68, 68, 0.3);
         }
     </style>
 </head>
@@ -824,11 +797,79 @@
         <main class="main-content" id="main-content">
             <!-- Страница 1: Объявления -->
             <div class="page active" id="page-ads">
-                <!-- Кнопка добавления объявления ВВЕРХУ -->
-                <button class="add-ad-btn-top" onclick="showAddForm()">
-                    <i class="fas fa-plus-circle"></i>
-                    Добавить объявление
-                </button>
+                <!-- Секция добавления объявления СВЕРХУ -->
+                <div class="add-ad-section">
+                    <div class="add-ad-header">
+                        <div class="add-ad-title">Разместить объявление</div>
+                        <button class="toggle-form-btn" onclick="toggleAddForm()">
+                            <i class="fas fa-plus-circle"></i>
+                            <span id="toggle-btn-text">Добавить</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Форма добавления объявления -->
+                    <div class="add-ad-form" id="addAdForm">
+                        <!-- Скрытый input для загрузки фото -->
+                        <input type="file" id="photoInput" class="hidden-file-input" accept="image/*" multiple 
+                               onchange="handlePhotoUpload(event)">
+                        
+                        <div class="photo-upload-section">
+                            <div class="photo-gallery" id="uploaded-photos">
+                                <div class="photo-item" onclick="openPhotoPicker(1)">
+                                    <div class="photo-placeholder" id="photo-placeholder-1">
+                                        <i class="fas fa-plus"></i>
+                                        <span>Фото 1</span>
+                                    </div>
+                                </div>
+                                <div class="photo-item" onclick="openPhotoPicker(2)">
+                                    <div class="photo-placeholder" id="photo-placeholder-2">
+                                        <i class="fas fa-plus"></i>
+                                        <span>Фото 2</span>
+                                    </div>
+                                </div>
+                                <div class="photo-item" onclick="openPhotoPicker(3)">
+                                    <div class="photo-placeholder" id="photo-placeholder-3">
+                                        <i class="fas fa-plus"></i>
+                                        <span>Фото 3</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button class="upload-btn" onclick="openPhotoPicker(0)">
+                                <i class="fas fa-images"></i>
+                                Загрузить фотографии
+                            </button>
+                            <div class="upload-info">
+                                Можно загрузить до 3 фотографий. Выбрано: <span id="photo-count">0</span>/3
+                            </div>
+                        </div>
+
+                        <input type="text" class="form-input" placeholder="Название товара" id="adTitle">
+                        
+                        <select class="form-input" id="adCategory">
+                            <option value="">Выберите категорию</option>
+                            <option value="liquids">Жидкости</option>
+                            <option value="disposable">Одноразовые устройства</option>
+                            <option value="pod">Под-системы</option>
+                            <option value="consumables">Расходники</option>
+                        </select>
+                        
+                        <input type="number" class="form-input" placeholder="Цена (₽)" id="adPrice">
+                        
+                        <textarea class="form-input" placeholder="Описание товара" id="adDescription" rows="3"></textarea>
+                        
+                        <div class="form-buttons">
+                            <button class="publish-btn" onclick="publishAd()">
+                                <i class="fas fa-paper-plane"></i>
+                                Опубликовать
+                            </button>
+                            <button class="cancel-btn" onclick="toggleAddForm()">
+                                <i class="fas fa-times"></i>
+                                Отмена
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Категории -->
                 <div class="categories">
@@ -841,62 +882,6 @@
 
                 <!-- Объявления будут добавляться здесь -->
                 <div id="ads-container"></div>
-
-                <!-- Форма добавления объявления -->
-                <div class="add-ad-form" id="addAdForm">
-                    <div class="form-title">Новое объявление</div>
-                    
-                    <div class="photo-upload-section">
-                        <div class="photo-gallery" id="uploaded-photos">
-                            <div class="photo-item" onclick="openPhotoModal(1)">
-                                <div class="photo-placeholder" id="photo-placeholder-1">
-                                    <i class="fas fa-plus"></i>
-                                    <span>Фото 1</span>
-                                </div>
-                            </div>
-                            <div class="photo-item" onclick="openPhotoModal(2)">
-                                <div class="photo-placeholder" id="photo-placeholder-2">
-                                    <i class="fas fa-plus"></i>
-                                    <span>Фото 2</span>
-                                </div>
-                            </div>
-                            <div class="photo-item" onclick="openPhotoModal(3)">
-                                <div class="photo-placeholder" id="photo-placeholder-3">
-                                    <i class="fas fa-plus"></i>
-                                    <span>Фото 3</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="upload-info">
-                            Можно загрузить до 3 фотографий
-                        </div>
-                    </div>
-
-                    <input type="text" class="form-input" placeholder="Название товара" id="adTitle">
-                    
-                    <select class="form-input" id="adCategory">
-                        <option value="">Выберите категорию</option>
-                        <option value="liquids">Жидкости</option>
-                        <option value="disposable">Одноразовые устройства</option>
-                        <option value="pod">Под-системы</option>
-                        <option value="consumables">Расходники</option>
-                    </select>
-                    
-                    <input type="number" class="form-input" placeholder="Цена (₽)" id="adPrice">
-                    
-                    <textarea class="form-input" placeholder="Описание товара" id="adDescription" rows="3"></textarea>
-                    
-                    <button class="contact-btn" onclick="publishAd()" style="width: 100%; margin-top: 10px;">
-                        <i class="fas fa-paper-plane"></i>
-                        Опубликовать
-                    </button>
-                    
-                    <button class="add-ad-btn-top" onclick="hideAddForm()" style="background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.5); margin-top: 10px;">
-                        <i class="fas fa-times"></i>
-                        Отмена
-                    </button>
-                </div>
             </div>
 
             <!-- Страница 2: Личный кабинет -->
@@ -937,7 +922,7 @@
                         <!-- История будет добавляться здесь -->
                     </div>
                     
-                    <button class="add-ad-btn-top" onclick="clearHistory()" style="background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.5); margin-top: 10px;">
+                    <button class="cancel-btn" onclick="clearHistory()" style="width: 100%; margin-top: 10px;">
                         <i class="fas fa-trash"></i>
                         Очистить историю
                     </button>
@@ -964,7 +949,7 @@
                                 <i class="fas fa-chevron-down" id="faq-icon-1"></i>
                             </div>
                             <div class="faq-answer" id="faq-answer-1" style="display: none;">
-                                На главной странице нажмите кнопку "Добавить объявление" сверху. Заполните форму и добавьте до 3 фотографий.
+                                Нажмите кнопку "Добавить" сверху. Заполните форму и загрузите до 3 фотографий из галереи.
                             </div>
                         </div>
                         
@@ -974,8 +959,8 @@
                                 <i class="fas fa-chevron-down" id="faq-icon-2"></i>
                             </div>
                             <div class="faq-answer" id="faq-answer-2" style="display: none;">
-                                Каждый пользователь может поставить только одну оценку другому пользователю (лайк или дизлайк). 
-                                Рейтинг рассчитывается по формуле: (лайки / (лайки + дизлайки)) * 5.
+                                Рейтинг рассчитывается по формуле: 5 × (лайки / (лайки + дизлайки)). 
+                                Каждый пользователь может поставить только одну оценку.
                             </div>
                         </div>
                         
@@ -985,18 +970,19 @@
                                 <i class="fas fa-chevron-down" id="faq-icon-3"></i>
                             </div>
                             <div class="faq-answer" id="faq-answer-3" style="display: none;">
-                                В форме добавления объявления нажмите на пустое поле для фото. Выберите "Загрузить из галереи" чтобы выбрать фото с устройства.
+                                Нажмите на поле для фото → "Загрузить фотографии" → откроется галерея устройства. 
+                                Можно выбрать до 3 фото.
                             </div>
                         </div>
                         
                         <div class="faq-item" onclick="toggleFaq(4)">
                             <div class="faq-question">
-                                <span>Что такое история просмотров?</span>
+                                <span>Как написать продавцу?</span>
                                 <i class="fas fa-chevron-down" id="faq-icon-4"></i>
                             </div>
                             <div class="faq-answer" id="faq-answer-4" style="display: none;">
-                                В личном кабинете сохраняются объявления, на которые вы нажимали "Написать продавцу". 
-                                Вы можете очистить историю в любое время.
+                                Нажмите кнопку "Написать продавцу". В чат автоматически добавится сообщение 
+                                о товаре и его категории.
                             </div>
                         </div>
                         
@@ -1006,7 +992,8 @@
                                 <i class="fas fa-chevron-down" id="faq-icon-5"></i>
                             </div>
                             <div class="faq-answer" id="faq-answer-5" style="display: none;">
-                                Все сделки происходят напрямую с продавцом в Telegram. Договаривайтесь об оплате в личном чате.
+                                Все сделки происходят напрямую с продавцом в Telegram. 
+                                Договаривайтесь об оплате в личном чате.
                             </div>
                         </div>
                     </div>
@@ -1038,25 +1025,6 @@
             </button>
         </nav>
 
-        <!-- Модальное окно для загрузки фото -->
-        <div class="photo-modal" id="photoModal">
-            <div class="photo-modal-content">
-                <div class="photo-modal-title">Загрузить фото</div>
-                <button class="photo-option-btn" onclick="selectPhotoFromGallery()">
-                    <i class="fas fa-images"></i>
-                    Выбрать из галереи
-                </button>
-                <button class="photo-option-btn" onclick="takePhotoWithCamera()">
-                    <i class="fas fa-camera"></i>
-                    Сделать фото
-                </button>
-                <button class="close-modal-btn" onclick="closePhotoModal()">
-                    <i class="fas fa-times"></i>
-                    Отмена
-                </button>
-            </div>
-        </div>
-
         <!-- Уведомление -->
         <div class="notification" id="notification"></div>
     </div>
@@ -1072,20 +1040,21 @@
             userRatings: {}, // {sellerId: {userId: 'like/dislike'}}
             history: [],
             uploadedPhotos: [],
+            uploadedPhotoFiles: [], // Массив для хранения файлов фото
             nextAdId: 1,
             currentCategory: 'all',
             currentPhotoSlot: null
         };
         
-        // Инициализация тестовых данных с РЕАЛЬНЫМИ @username
+        // Инициализация тестовых данных
         function initializeTestData() {
-            // Создаем тестовые объявления с РЕАЛЬНЫМИ @username для теста переходов
+            // Создаем тестовые объявления
             appData.ads = [
                 {
                     id: 1,
                     sellerId: 'seller1',
                     sellerName: 'Максим Вейперов',
-                    sellerUsername: '@durov', // Тестовый username
+                    sellerUsername: '@durov',
                     title: 'Жидкость для вейпа "Berry Mix" 60ml',
                     category: 'liquids',
                     price: 800,
@@ -1098,7 +1067,7 @@
                     id: 2,
                     sellerId: 'seller2',
                     sellerName: 'Анна Кузнецова',
-                    sellerUsername: '@telegram', // Тестовый username
+                    sellerUsername: '@telegram',
                     title: 'Elf Bar BC5000 (Lush Ice)',
                     category: 'disposable',
                     price: 1200,
@@ -1111,7 +1080,7 @@
                     id: 3,
                     sellerId: 'seller3',
                     sellerName: 'Иван Подсистемов',
-                    sellerUsername: '@elonmusk', // Тестовый username
+                    sellerUsername: '@elonmusk',
                     title: 'Voopoo Drag X Pod Kit',
                     category: 'pod',
                     price: 3500,
@@ -1119,19 +1088,6 @@
                     photos: 3,
                     likes: 12,
                     dislikes: 3
-                },
-                {
-                    id: 4,
-                    sellerId: 'seller4',
-                    sellerName: 'Дмитрий Расходников',
-                    sellerUsername: '@zuck', // Тестовый username
-                    title: 'Набор катушек 5 шт',
-                    category: 'consumables',
-                    price: 600,
-                    description: 'Набор катушек для вейпа, 5 штук в упаковке. Совместимы с большинством устройств.',
-                    photos: 1,
-                    likes: 15,
-                    dislikes: 5
                 }
             ];
             
@@ -1139,11 +1095,10 @@
             appData.userRatings = {
                 'seller1': {},
                 'seller2': {},
-                'seller3': {},
-                'seller4': {}
+                'seller3': {}
             };
             
-            appData.nextAdId = 5;
+            appData.nextAdId = 4;
         }
         
         // Показать уведомление
@@ -1193,6 +1148,30 @@
             }
         }
         
+        // Переключение формы добавления
+        function toggleAddForm() {
+            const form = document.getElementById('addAdForm');
+            const btnText = document.getElementById('toggle-btn-text');
+            
+            if (form.classList.contains('active')) {
+                form.classList.remove('active');
+                btnText.textContent = 'Добавить';
+            } else {
+                form.classList.add('active');
+                btnText.textContent = 'Скрыть';
+            }
+        }
+        
+        // Скрыть форму добавления
+        function hideAddForm() {
+            const form = document.getElementById('addAdForm');
+            const btnText = document.getElementById('toggle-btn-text');
+            
+            form.classList.remove('active');
+            btnText.textContent = 'Добавить';
+            clearAddForm();
+        }
+        
         // Фильтр по категориям
         function filterCategory(category) {
             appData.currentCategory = category;
@@ -1219,7 +1198,7 @@
             
             // Рендерим каждое объявление
             filteredAds.forEach(ad => {
-                // Рассчитываем рейтинг продавца
+                // Рассчитываем рейтинг продавца ПО ПРАВИЛЬНОЙ ФОРМУЛЕ
                 const rating = calculateRating(ad.sellerId);
                 
                 // Проверяем, поставил ли текущий пользователь оценку
@@ -1290,7 +1269,7 @@
                             <i class="fas fa-thumbs-up"></i>
                         </button>
                         
-                        <button class="contact-btn" onclick="contactSeller('${ad.sellerUsername}', ${ad.id}, '${ad.title}')">
+                        <button class="contact-btn" onclick="contactSeller('${ad.sellerUsername}', ${ad.id}, '${ad.title}', '${ad.category}')">
                             <i class="fas fa-paper-plane"></i>
                             Написать продавцу
                         </button>
@@ -1306,7 +1285,8 @@
             });
         }
         
-        // Рассчитать рейтинг продавца - ИСПРАВЛЕННЫЙ РАСЧЕТ
+        // Рассчитать рейтинг продавца ПО ПРАВИЛЬНОЙ ФОРМУЛЕ
+        // Рейтинг = 5 × (x / (x + y)), где x — лайки, y — дизлайки
         function calculateRating(sellerId) {
             if (!appData.userRatings[sellerId]) return 0;
             
@@ -1314,14 +1294,15 @@
             if (ratings.length === 0) return 0;
             
             const likes = ratings.filter(r => r === 'like').length;
-            const total = ratings.length;
+            const dislikes = ratings.filter(r => r === 'dislike').length;
+            const total = likes + dislikes;
             
-            // ИСПРАВЛЕНИЕ: Правильная формула
+            // Формула: 5 × (лайки / (лайки + дизлайки))
             if (total === 0) return 0;
-            return (likes / total) * 5;
+            return 5 * (likes / total);
         }
         
-        // Оценить продавца (с ограничением 1 оценка на пользователя)
+        // Оценить продавца
         function rateSeller(sellerId, type, adId) {
             if (!appData.currentUserId) {
                 appData.currentUserId = 'user_' + Date.now();
@@ -1383,15 +1364,20 @@
             if (dislikesEl) dislikesEl.textContent = ad.dislikes;
         }
         
-        // Написать продавцу и добавить в историю
-        function contactSeller(username, adId, adTitle) {
+        // Написать продавцу с АВТОМАТИЧЕСКИМ ТЕКСТОМ
+        function contactSeller(username, adId, adTitle, category) {
+            // Формируем сообщение
+            const categoryName = getCategoryName(category);
+            const message = `Привет! Я пишу по объявлению "${adTitle}" с приложения Vape Market в Telegram по категории ${categoryName}. Интересуюсь товаром, можно подробнее?`;
+            
             // Добавляем в историю
             const historyItem = {
                 id: Date.now(),
                 adId: adId,
                 title: adTitle,
                 sellerUsername: username,
-                date: new Date().toLocaleDateString('ru-RU')
+                date: new Date().toLocaleDateString('ru-RU'),
+                category: categoryName
             };
             
             appData.history.unshift(historyItem);
@@ -1401,27 +1387,26 @@
                 updateHistory();
             }
             
-            // В реальном Telegram Mini App можно открыть чат
+            // Открываем чат в Telegram с готовым сообщением
             if (tg) {
-                // Пробуем открыть чат с продавцом
                 try {
-                    // Удаляем @ если есть
                     const cleanUsername = username.replace('@', '');
+                    // Кодируем сообщение для URL
+                    const encodedMessage = encodeURIComponent(message);
                     
-                    // Пытаемся открыть ссылку в Telegram
-                    tg.openTelegramLink(`https://t.me/${cleanUsername}`);
+                    // Формируем ссылку с текстом сообщения
+                    const telegramUrl = `https://t.me/${cleanUsername}?text=${encodedMessage}`;
+                    
+                    // Пытаемся открыть чат с сообщением
+                    tg.openTelegramLink(telegramUrl);
                     showNotification(`Открывается чат с ${username}`, 'success');
                 } catch (error) {
-                    // Если не получается, показываем алерт
-                    tg.showAlert(`Для теста: откроется чат с ${username}`);
+                    tg.showAlert(`Для теста: откроется чат с ${username}\n\nСообщение: ${message}`);
                 }
             } else {
                 // Для теста в браузере
-                showNotification(`Тест: открывается чат с ${username}`, 'info');
-                console.log(`Открытие чата с ${username}`);
-                
-                // Можно также открыть в новом окне для теста
-                // window.open(`https://t.me/${username.replace('@', '')}`, '_blank');
+                alert(`Сообщение для ${username}:\n\n${message}\n\n(В Telegram Mini App сообщение автоматически добавится в чат)`);
+                showNotification(`Тест: сообщение для ${username}`, 'info');
             }
         }
         
@@ -1441,7 +1426,7 @@
                 historyItem.innerHTML = `
                     <div class="history-info">
                         <h4>${item.title}</h4>
-                        <p>${item.sellerUsername} • ${item.date}</p>
+                        <p>${item.sellerUsername} • ${item.category} • ${item.date}</p>
                     </div>
                     <button class="remove-history-btn" onclick="removeFromHistory(${item.id})">
                         Удалить
@@ -1465,16 +1450,89 @@
             showNotification('История очищена', 'warning');
         }
         
-        // Показать форму добавления
-        function showAddForm() {
-            document.getElementById('addAdForm').classList.add('active');
-            showNotification('Заполните форму для нового объявления', 'info');
+        // Открыть выбор фото
+        function openPhotoPicker(slotNumber) {
+            appData.currentPhotoSlot = slotNumber;
+            document.getElementById('photoInput').click();
         }
         
-        // Скрыть форму добавления
-        function hideAddForm() {
-            document.getElementById('addAdForm').classList.remove('active');
-            clearAddForm();
+        // Обработка загрузки фото
+        function handlePhotoUpload(event) {
+            const files = event.target.files;
+            const maxFiles = 3;
+            
+            // Проверяем количество файлов
+            if (files.length > maxFiles) {
+                showNotification(`Можно загрузить только ${maxFiles} фото!`, 'error');
+                return;
+            }
+            
+            // Очищаем предыдущие фото
+            appData.uploadedPhotos = [];
+            appData.uploadedPhotoFiles = [];
+            
+            // Очищаем все фото-слоты
+            for (let i = 1; i <= 3; i++) {
+                const placeholder = document.getElementById(`photo-placeholder-${i}`);
+                placeholder.innerHTML = `<i class="fas fa-plus"></i><span>Фото ${i}</span>`;
+                placeholder.style.display = 'flex';
+            }
+            
+            // Обрабатываем каждый файл
+            Array.from(files).forEach((file, index) => {
+                if (index >= maxFiles) return;
+                
+                const slotNumber = index + 1;
+                const placeholder = document.getElementById(`photo-placeholder-${slotNumber}`);
+                
+                // Создаем URL для предпросмотра
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    placeholder.innerHTML = `
+                        <img src="${e.target.result}" alt="Фото ${slotNumber}">
+                        <div class="photo-label">Фото ${slotNumber}</div>
+                        <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); 
+                             color: white; width: 20px; height: 20px; border-radius: 50%; 
+                             display: flex; align-items: center; justify-content: center; 
+                             font-size: 12px; cursor: pointer;" 
+                             onclick="removePhoto(${slotNumber})">×</div>
+                    `;
+                };
+                reader.readAsDataURL(file);
+                
+                // Сохраняем информацию о фото
+                appData.uploadedPhotos.push(slotNumber);
+                appData.uploadedPhotoFiles.push(file);
+            });
+            
+            // Обновляем счетчик
+            document.getElementById('photo-count').textContent = files.length;
+            
+            showNotification(`Загружено ${files.length} фото`, 'success');
+            
+            // Сбрасываем input
+            event.target.value = '';
+        }
+        
+        // Удалить фото
+        function removePhoto(photoNum) {
+            event.stopPropagation();
+            
+            const placeholder = document.getElementById(`photo-placeholder-${photoNum}`);
+            placeholder.innerHTML = `<i class="fas fa-plus"></i><span>Фото ${photoNum}</span>`;
+            placeholder.style.display = 'flex';
+            
+            // Удаляем из массивов
+            const index = appData.uploadedPhotos.indexOf(photoNum);
+            if (index !== -1) {
+                appData.uploadedPhotos.splice(index, 1);
+                appData.uploadedPhotoFiles.splice(index, 1);
+            }
+            
+            // Обновляем счетчик
+            document.getElementById('photo-count').textContent = appData.uploadedPhotos.length;
+            
+            showNotification(`Фото удалено (${appData.uploadedPhotos.length}/3)`, 'warning');
         }
         
         // Очистить форму
@@ -1492,78 +1550,8 @@
             }
             
             appData.uploadedPhotos = [];
-        }
-        
-        // Открыть модальное окно для загрузки фото
-        function openPhotoModal(photoSlot) {
-            appData.currentPhotoSlot = photoSlot;
-            document.getElementById('photoModal').classList.add('active');
-        }
-        
-        // Закрыть модальное окно
-        function closePhotoModal() {
-            document.getElementById('photoModal').classList.remove('active');
-            appData.currentPhotoSlot = null;
-        }
-        
-        // Выбрать фото из галереи
-        function selectPhotoFromGallery() {
-            if (!appData.currentPhotoSlot) return;
-            
-            if (appData.uploadedPhotos.length >= 3) {
-                showNotification('Максимум 3 фотографии!', 'error');
-                closePhotoModal();
-                return;
-            }
-            
-            // В реальном приложении здесь будет вызов API для выбора фото
-            // Для демо создаем тестовое фото
-            
-            const colors = ['#8B5CF6', '#7C3AED', '#6D28D9'];
-            const placeholder = document.getElementById(`photo-placeholder-${appData.currentPhotoSlot}`);
-            placeholder.innerHTML = `
-                <div style="width: 100%; height: 100%; background: ${colors[appData.currentPhotoSlot-1]}; 
-                     display: flex; flex-direction: column; align-items: center; justify-content: center; color: white;">
-                    <i class="fas fa-check" style="font-size: 24px; margin-bottom: 5px;"></i>
-                    <span style="font-size: 10px;">Фото ${appData.currentPhotoSlot}</span>
-                </div>
-                <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); 
-                     color: white; width: 20px; height: 20px; border-radius: 50%; 
-                     display: flex; align-items: center; justify-content: center; 
-                     font-size: 12px; cursor: pointer;" 
-                     onclick="removePhoto(${appData.currentPhotoSlot})">×</div>
-            `;
-            
-            if (!appData.uploadedPhotos.includes(appData.currentPhotoSlot)) {
-                appData.uploadedPhotos.push(appData.currentPhotoSlot);
-            }
-            
-            showNotification(`Фото ${appData.currentPhotoSlot} добавлено (${appData.uploadedPhotos.length}/3)`, 'success');
-            closePhotoModal();
-        }
-        
-        // Сделать фото камерой
-        function takePhotoWithCamera() {
-            if (!appData.currentPhotoSlot) return;
-            
-            showNotification('Функция камеры в разработке', 'info');
-            closePhotoModal();
-            
-            // В реальном приложении здесь будет вызов API камеры
-            // Для демо просто добавляем фото
-            selectPhotoFromGallery();
-        }
-        
-        // Удалить фото
-        function removePhoto(photoNum) {
-            event.stopPropagation(); // Чтобы не открывалось модальное окно
-            
-            const placeholder = document.getElementById(`photo-placeholder-${photoNum}`);
-            placeholder.innerHTML = `<i class="fas fa-plus"></i><span>Фото ${photoNum}</span>`;
-            placeholder.style.display = 'flex';
-            
-            appData.uploadedPhotos = appData.uploadedPhotos.filter(p => p !== photoNum);
-            showNotification(`Фото удалено (${appData.uploadedPhotos.length}/3)`, 'warning');
+            appData.uploadedPhotoFiles = [];
+            document.getElementById('photo-count').textContent = '0';
         }
         
         // Опубликовать объявление
@@ -1670,7 +1658,7 @@
         function getCategoryName(category) {
             const categories = {
                 'liquids': 'Жидкости',
-                'disposable': 'Одноразовые',
+                'disposable': 'Одноразовые устройства',
                 'pod': 'Под-системы',
                 'consumables': 'Расходники'
             };
@@ -1713,12 +1701,6 @@
             }
             
             showNotification('Добро пожаловать в Vape Market!', 'success');
-            
-            // Показываем тестовое уведомление о рейтинге
-            setTimeout(() => {
-                const testRating = calculateRating('seller1');
-                console.log(`Тестовый рейтинг seller1: ${testRating.toFixed(1)} (5 лайков, 2 дизлайка)`);
-            }, 1000);
         }
         
         // Запуск при загрузке
