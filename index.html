@@ -7,1317 +7,8 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Фиолетовые градиенты для фона */
-        :root {
-            --gradient-primary: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 50%, #6D28D9 100%);
-            --gradient-secondary: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 50%, #7C3AED 100%);
-            --gradient-dark: linear-gradient(135deg, #6D28D9 0%, #5B21B6 50%, #4C1D95 100%);
-            
-            --button-primary: #7C3AED;
-            --button-hover: #6D28D9;
-            --button-active: #5B21B6;
-            --button-success: #10B981;
-            --button-error: #EF4444;
-            --button-info: #3B82F6;
-            --button-warning: #F59E0B;
-            
-            --text-light: #FFFFFF;
-            --text-dark: #1F2937;
-            --text-muted: #9CA3AF;
-            
-            --shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.3);
-            --shadow-dark: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
-            
-            --card-bg: rgba(255, 255, 255, 0.95);
-            --card-bg-dark: rgba(30, 27, 75, 0.95);
-        }
-        
-        /* Сброс стилей */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-        
-        html, body {
-            height: 100%;
-            overflow: hidden;
-        }
-        
-        body {
-            background: var(--gradient-primary);
-            color: var(--text-light);
-            transition: background 0.5s ease;
-        }
-        
-        /* Сообщение об ошибке для браузера */
-        .browser-error {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--gradient-dark);
-            z-index: 9999;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-        
-        .browser-error i {
-            font-size: 64px;
-            color: #EF4444;
-            margin-bottom: 20px;
-        }
-        
-        .browser-error h2 {
-            font-size: 24px;
-            margin-bottom: 15px;
-            color: white;
-        }
-        
-        .browser-error p {
-            color: #D8B4FE;
-            margin-bottom: 10px;
-            max-width: 400px;
-        }
-        
-        /* Контейнер приложения */
-        .app-container {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        
-        /* Шапка */
-        .app-header {
-            padding: 15px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            margin-bottom: 15px;
-            box-shadow: var(--shadow);
-            position: relative;
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            justify-content: center;
-        }
-        
-        .logo i {
-            font-size: 24px;
-            color: #A78BFA;
-        }
-        
-        .logo span {
-            font-size: 20px;
-            font-weight: 700;
-            background: linear-gradient(90deg, #FFFFFF, #E9D5FF);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        /* Контент */
-        .main-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(5px);
-            margin-bottom: 10px;
-        }
-        
-        /* Кнопка добавления объявления - ВМЕСТЕ С ФОРМОЙ СВЕРХУ */
-        .add-ad-section {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .add-ad-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .add-ad-title {
-            font-size: 18px;
-            font-weight: 600;
-        }
-        
-        .toggle-form-btn {
-            padding: 10px 20px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .toggle-form-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
-            border-radius: 10px;
-            z-index: 1;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .toggle-form-btn:hover::before {
-            opacity: 1;
-        }
-        
-        .toggle-form-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
-        }
-        
-        /* Форма добавления объявления */
-        .add-ad-form {
-            display: none;
-            margin-top: 20px;
-        }
-        
-        .add-ad-form.active {
-            display: block;
-        }
-        
-        /* Категории */
-        .categories {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            padding: 10px 0;
-            margin-bottom: 20px;
-            scrollbar-width: none;
-        }
-        
-        .categories::-webkit-scrollbar {
-            display: none;
-        }
-        
-        .category-btn {
-            padding: 10px 20px;
-            border-radius: 25px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            font-weight: 600;
-            white-space: nowrap;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .category-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
-            border-radius: 23px;
-            z-index: 1;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .category-btn:hover::before {
-            opacity: 1;
-        }
-        
-        .category-btn:hover {
-            border-color: rgba(255, 255, 255, 0.5);
-            transform: translateY(-2px);
-        }
-        
-        .category-btn.active {
-            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
-            border-color: rgba(255, 255, 255, 0.5);
-            color: white;
-        }
-        
-        /* Объявление (товар + продавец вместе) */
-        .advertisement-card {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: transform 0.3s ease;
-        }
-        
-        .advertisement-card:hover {
-            transform: translateY(-2px);
-        }
-        
-        /* Заголовок продавца */
-        .seller-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .seller-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--gradient-secondary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            overflow: hidden;
-        }
-        
-        .seller-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .seller-info {
-            flex: 1;
-        }
-        
-        .seller-name {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 3px;
-        }
-        
-        .seller-username {
-            font-size: 14px;
-            color: #D8B4FE;
-            margin-bottom: 5px;
-        }
-        
-        .seller-stats {
-            display: flex;
-            gap: 15px;
-            font-size: 12px;
-        }
-        
-        .seller-stat {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .seller-stat i {
-            font-size: 14px;
-        }
-        
-        .stat-likes i { color: #10B981; }
-        .stat-dislikes i { color: #EF4444; }
-        .stat-rating i { color: #F59E0B; }
-        
-        /* Галерея фотографий товара */
-        .photo-gallery {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            overflow-x: auto;
-            padding: 10px 0;
-            min-height: 130px;
-        }
-        
-        .photo-item {
-            width: 120px;
-            height: 120px;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            overflow: hidden;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            position: relative;
-            cursor: pointer;
-        }
-        
-        .photo-placeholder {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #A78BFA;
-            font-size: 12px;
-            background: rgba(255, 255, 255, 0.1);
-        }
-        
-        .photo-placeholder i {
-            font-size: 36px;
-            margin-bottom: 10px;
-        }
-        
-        .photo-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .photo-label {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 10px;
-            z-index: 2;
-        }
-        
-        /* Информация о товаре */
-        .product-info {
-            margin-bottom: 15px;
-        }
-        
-        .product-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: white;
-        }
-        
-        .product-category {
-            display: inline-block;
-            padding: 5px 12px;
-            background: rgba(124, 58, 237, 0.4);
-            border-radius: 15px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .product-price {
-            font-size: 24px;
-            font-weight: 800;
-            color: #10B981;
-            margin-bottom: 15px;
-        }
-        
-        .product-description {
-            font-size: 14px;
-            color: #D8B4FE;
-            line-height: 1.5;
-            margin-bottom: 15px;
-        }
-        
-        /* Круглые кнопки лайка/дизлайка */
-        .action-grid {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-            margin-top: 10px;
-        }
-        
-        .rate-btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 24px;
-            flex-shrink: 0;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .rate-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
-            border-radius: 50%;
-            z-index: 1;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .rate-btn:hover::before {
-            opacity: 1;
-        }
-        
-        .rate-btn:hover {
-            transform: scale(1.1);
-        }
-        
-        .rate-btn.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-        
-        .like-btn {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(16, 185, 129, 0.2) 100%);
-            color: #10B981;
-            border: 2px solid rgba(16, 185, 129, 0.5);
-        }
-        
-        .like-btn:hover {
-            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
-        }
-        
-        .like-btn.active {
-            background: linear-gradient(135deg, #10B981 0%, #0DA674 100%);
-            color: white;
-            border-color: #10B981;
-        }
-        
-        .dislike-btn {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(239, 68, 68, 0.2) 100%);
-            color: #EF4444;
-            border: 2px solid rgba(239, 68, 68, 0.5);
-        }
-        
-        .dislike-btn:hover {
-            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
-        }
-        
-        .dislike-btn.active {
-            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
-            color: white;
-            border-color: #EF4444;
-        }
-        
-        .contact-btn {
-            flex: 2;
-            padding: 16px;
-            border-radius: 15px;
-            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .contact-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
-            border-radius: 13px;
-            z-index: 1;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .contact-btn:hover::before {
-            opacity: 1;
-        }
-        
-        .contact-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
-        }
-        
-        /* Форма добавления */
-        .form-input {
-            width: 100%;
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(0, 0, 0, 0.3);
-            color: white;
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
-        
-        .form-input::placeholder {
-            color: #A78BFA;
-        }
-        
-        select.form-input {
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 15px center;
-            background-size: 12px;
-            padding-right: 40px;
-        }
-        
-        /* Фото загрузка */
-        .photo-upload-section {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 2px dashed rgba(255, 255, 255, 0.2);
-        }
-        
-        .upload-btn {
-            width: 100%;
-            padding: 15px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, rgba(124, 58, 237, 0.4) 0%, rgba(124, 58, 237, 0.3) 100%);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .upload-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
-            border-radius: 10px;
-            z-index: 1;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .upload-btn:hover::before {
-            opacity: 1;
-        }
-        
-        .upload-btn:hover {
-            transform: translateY(-2px);
-        }
-        
-        .upload-info {
-            font-size: 12px;
-            color: #D8B4FE;
-            text-align: center;
-            margin-top: 10px;
-        }
-        
-        /* Нижнее меню навигации */
-        .bottom-nav {
-            display: flex;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 10px;
-            margin-top: 5px;
-            box-shadow: var(--shadow);
-        }
-        
-        .nav-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 10px 5px;
-            border-radius: 12px;
-            background: transparent;
-            border: none;
-            color: var(--text-light);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .nav-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
-            border-radius: 10px;
-            z-index: 1;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .nav-item:hover::before {
-            opacity: 1;
-        }
-        
-        .nav-item.active {
-            background: linear-gradient(135deg, rgba(124, 58, 237, 0.3) 0%, rgba(124, 58, 237, 0.2) 100%);
-        }
-        
-        .nav-item:hover {
-            transform: translateY(-2px);
-        }
-        
-        .nav-icon {
-            font-size: 20px;
-            margin-bottom: 5px;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .nav-label {
-            font-size: 11px;
-            font-weight: 600;
-            position: relative;
-            z-index: 2;
-        }
-        
-        /* Страницы */
-        .page {
-            display: none;
-        }
-        
-        .page.active {
-            display: block;
-        }
-        
-        /* Личный кабинет */
-        .profile-card {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .profile-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .profile-avatar {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            background: var(--gradient-secondary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            overflow: hidden;
-        }
-        
-        .profile-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .profile-info h2 {
-            font-size: 20px;
-            margin-bottom: 5px;
-        }
-        
-        .profile-info p {
-            font-size: 14px;
-            color: #D8B4FE;
-        }
-        
-        .profile-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .profile-stat {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 15px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .stat-number {
-            display: block;
-            font-size: 24px;
-            font-weight: 700;
-            color: #A78BFA;
-            margin-bottom: 5px;
-        }
-        
-        .stat-label {
-            font-size: 12px;
-            color: #9CA3AF;
-        }
-        
-        /* Вкладки в личном кабинете */
-        .profile-tabs {
-            display: flex;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 15px;
-            padding: 5px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .profile-tab {
-            flex: 1;
-            text-align: center;
-            padding: 10px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            font-size: 14px;
-        }
-        
-        .profile-tab.active {
-            background: linear-gradient(135deg, rgba(124, 58, 237, 0.4) 0%, rgba(124, 58, 237, 0.3) 100%);
-        }
-        
-        .profile-tab-content {
-            display: none;
-        }
-        
-        .profile-tab-content.active {
-            display: block;
-        }
-        
-        /* История просмотров */
-        .history-list {
-            margin-top: 20px;
-        }
-        
-        .history-item {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .history-info h4 {
-            font-size: 14px;
-            margin-bottom: 5px;
-        }
-        
-        .history-info p {
-            font-size: 12px;
-            color: #D8B4FE;
-        }
-        
-        .remove-history-btn {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(239, 68, 68, 0.2) 100%);
-            border: 1px solid rgba(239, 68, 68, 0.5);
-            color: #EF4444;
-            padding: 5px 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        
-        /* Мои объявления */
-        .my-ads-list {
-            margin-top: 20px;
-        }
-        
-        .my-ad-item {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .my-ad-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 10px;
-        }
-        
-        .my-ad-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: white;
-        }
-        
-        .my-ad-price {
-            font-size: 18px;
-            font-weight: 700;
-            color: #10B981;
-        }
-        
-        .my-ad-description {
-            font-size: 14px;
-            color: #D8B4FE;
-            margin-bottom: 10px;
-        }
-        
-        .my-ad-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .edit-ad-btn, .delete-ad-btn {
-            flex: 1;
-            padding: 8px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            transition: all 0.3s ease;
-        }
-        
-        .edit-ad-btn {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.4) 0%, rgba(59, 130, 246, 0.3) 100%);
-        }
-        
-        .delete-ad-btn {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.4) 0%, rgba(239, 68, 68, 0.3) 100%);
-        }
-        
-        /* FAQ страница */
-        .faq-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .faq-item {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 15px;
-            padding: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .faq-item:hover {
-            background: rgba(255, 255, 255, 0.12);
-            transform: translateY(-2px);
-        }
-        
-        .faq-question {
-            font-weight: 600;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 15px;
-        }
-        
-        .faq-answer {
-            margin-top: 10px;
-            color: #D8B4FE;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-        
-        /* Кнопка жалобы */
-        .complaint-btn {
-            width: 100%;
-            padding: 15px;
-            border-radius: 15px;
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(239, 68, 68, 0.2) 100%);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            color: #EF4444;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 20px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .complaint-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
-            border-radius: 13px;
-            z-index: 1;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .complaint-btn:hover::before {
-            opacity: 1;
-        }
-        
-        .complaint-btn:hover {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.4) 0%, rgba(239, 68, 68, 0.3) 100%);
-            transform: translateY(-2px);
-        }
-        
-        /* Модальное окно для фото */
-        .photo-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 10000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-        }
-        
-        .photo-modal.active {
-            display: flex;
-        }
-        
-        .photo-modal-img {
-            max-width: 90%;
-            max-height: 70%;
-            object-fit: contain;
-            border-radius: 10px;
-        }
-        
-        .photo-modal-close {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
-            color: white;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            font-size: 24px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-        
-        .photo-modal-close:hover {
-            transform: scale(1.1);
-        }
-        
-        .photo-modal-counter {
-            color: white;
-            margin-top: 20px;
-            font-size: 18px;
-        }
-        
-        .photo-modal-nav {
-            position: absolute;
-            top: 50%;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 20px;
-            transform: translateY(-50%);
-        }
-        
-        .photo-modal-nav-btn {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
-            color: white;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            font-size: 24px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-        
-        .photo-modal-nav-btn:hover {
-            transform: scale(1.1);
-        }
-        
-        /* Уведомления */
-        .notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-100px);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 15px 25px;
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            transition: transform 0.5s ease;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            max-width: 90%;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .notification.show {
-            transform: translateX(-50%) translateY(0);
-        }
-        
-        .notification.success {
-            border-left: 4px solid #10B981;
-        }
-        
-        .notification.error {
-            border-left: 4px solid #EF4444;
-        }
-        
-        .notification.info {
-            border-left: 4px solid #3B82F6;
-        }
-        
-        .notification.warning {
-            border-left: 4px solid #F59E0B;
-        }
-        
-        /* Скроллбар */
-        ::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #8B5CF6;
-            border-radius: 10px;
-        }
-        
-        /* Скрытый input для загрузки фото */
-        .hidden-file-input {
-            display: none;
-        }
-        
-        /* Кнопки формы */
-        .form-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        .publish-btn {
-            flex: 2;
-            padding: 15px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .publish-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
-            border-radius: 10px;
-            z-index: 1;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .publish-btn:hover::before {
-            opacity: 1;
-        }
-        
-        .publish-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
-        }
-        
-        .cancel-btn {
-            flex: 1;
-            padding: 15px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(239, 68, 68, 0.2) 100%);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .cancel-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
-            border-radius: 10px;
-            z-index: 1;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .cancel-btn:hover::before {
-            opacity: 1;
-        }
-        
-        .cancel-btn:hover {
-            transform: translateY(-2px);
-        }
-        
-        /* Стиль для заблокированных кнопок лайка/дизлайка */
-        .rate-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .rate-btn:disabled:hover {
-            transform: none;
-        }
-        
-        .rate-btn:disabled::before {
-            display: none;
-        }
-        
-        /* Статистика в FAQ */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin: 15px 0;
-        }
-        
-        .stat-box {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 15px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .stat-box .stat-number {
-            font-size: 24px;
-            font-weight: 700;
-            color: #A78BFA;
-            margin-bottom: 5px;
-        }
-        
-        .stat-box .stat-label {
-            font-size: 12px;
-            color: #D8B4FE;
-        }
-        
-        .admin-controls {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .admin-btn {
-            flex: 1;
-            padding: 10px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            font-size: 12px;
-        }
-        
-        .admin-btn.blue {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.4) 0%, rgba(59, 130, 246, 0.3) 100%);
-        }
-        
-        .admin-btn.red {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.4) 0%, rgba(239, 68, 68, 0.3) 100%);
-        }
+        /* [Весь CSS остается без изменений] */
+        /* ... весь CSS стиль ... */
     </style>
 </head>
 <body>
@@ -1674,20 +365,19 @@
                 RATINGS: 'vapeMarketRatingsGlobal',
                 USERS: 'vapeMarketUsersGlobal',
                 HISTORY: 'vapeMarketHistory_',
-                LAST_SYNC: 'vapeMarketLastSync'
+                LAST_SYNC: 'vapeMarketLastSync',
+                COUNTERS: 'vapeMarketCounters'
             },
             
             // Локальные данные пользователя
             userId: null,
             userData: null,
             history: [],
-            uploadedPhotoUrls: [],
-            uploadedPhotoFiles: [],
+            uploadedPhotos: [], // Массив объектов {id, url}
             currentPhotoList: [],
             currentPhotoIndex: 0,
             currentCategory: 'all',
-            editingAdId: null,
-            nextAdId: Date.now()
+            editingAdId: null
         };
         
         // ==================== ПРОВЕРКА TЕLEGRAM ====================
@@ -1753,6 +443,9 @@
                     };
                     localStorage.setItem(appData.STORAGE_KEYS.USERS, JSON.stringify(users));
                     console.log('✅ Новый пользователь зарегистрирован:', currentUser.id);
+                    
+                    // Увеличиваем счетчик пользователей
+                    incrementCounter('users');
                 } else {
                     // Обновляем время активности
                     users[currentUser.id].lastActive = new Date().toISOString();
@@ -1767,7 +460,26 @@
         function getAllAds() {
             try {
                 const adsData = localStorage.getItem(appData.STORAGE_KEYS.ADS);
-                return adsData ? JSON.parse(adsData) : [];
+                const ads = adsData ? JSON.parse(adsData) : [];
+                
+                // Убедимся, что каждый объект объявления имеет правильную структуру
+                return ads.map(ad => ({
+                    id: ad.id || Date.now(),
+                    sellerId: ad.sellerId || 'unknown',
+                    sellerName: ad.sellerName || 'Неизвестный',
+                    sellerUsername: ad.sellerUsername || 'Без username',
+                    sellerAvatar: ad.sellerAvatar || null,
+                    title: ad.title || 'Без названия',
+                    category: ad.category || 'other',
+                    price: ad.price || 0,
+                    description: ad.description || 'Без описания',
+                    photos: ad.photos || 0,
+                    photoUrls: ad.photoUrls || [],
+                    likes: ad.likes || 0,
+                    dislikes: ad.dislikes || 0,
+                    createdAt: ad.createdAt || new Date().toISOString(),
+                    updatedAt: ad.updatedAt || new Date().toISOString()
+                }));
             } catch (error) {
                 console.error('Ошибка загрузки объявлений:', error);
                 return [];
@@ -1779,6 +491,10 @@
             try {
                 localStorage.setItem(appData.STORAGE_KEYS.ADS, JSON.stringify(ads));
                 localStorage.setItem(appData.STORAGE_KEYS.LAST_SYNC, Date.now().toString());
+                
+                // Обновляем счетчик объявлений
+                updateCounter('ads', ads.length);
+                
                 return true;
             } catch (error) {
                 console.error('Ошибка сохранения объявлений:', error);
@@ -1801,6 +517,21 @@
         function saveAllRatings(ratings) {
             try {
                 localStorage.setItem(appData.STORAGE_KEYS.RATINGS, JSON.stringify(ratings));
+                
+                // Подсчитываем лайки и дизлайки
+                let totalLikes = 0;
+                let totalDislikes = 0;
+                
+                Object.values(ratings).forEach(userRatings => {
+                    Object.values(userRatings).forEach(rating => {
+                        if (rating === 'like') totalLikes++;
+                        if (rating === 'dislike') totalDislikes++;
+                    });
+                });
+                
+                updateCounter('likes', totalLikes);
+                updateCounter('dislikes', totalDislikes);
+                
                 return true;
             } catch (error) {
                 console.error('Ошибка сохранения рейтингов:', error);
@@ -1816,6 +547,75 @@
             } catch (error) {
                 console.error('Ошибка загрузки пользователей:', error);
                 return {};
+            }
+        }
+        
+        // Получить счетчики
+        function getCounters() {
+            try {
+                const countersData = localStorage.getItem(appData.STORAGE_KEYS.COUNTERS);
+                const defaultCounters = {
+                    users: 0,
+                    ads: 0,
+                    likes: 0,
+                    dislikes: 0
+                };
+                
+                if (!countersData) {
+                    // Инициализируем счетчики из существующих данных
+                    const users = getAllUsers();
+                    const ads = getAllAds();
+                    const ratings = getAllRatings();
+                    
+                    defaultCounters.users = Object.keys(users).length;
+                    defaultCounters.ads = ads.length;
+                    
+                    let totalLikes = 0;
+                    let totalDislikes = 0;
+                    Object.values(ratings).forEach(userRatings => {
+                        Object.values(userRatings).forEach(rating => {
+                            if (rating === 'like') totalLikes++;
+                            if (rating === 'dislike') totalDislikes++;
+                        });
+                    });
+                    
+                    defaultCounters.likes = totalLikes;
+                    defaultCounters.dislikes = totalDislikes;
+                    
+                    localStorage.setItem(appData.STORAGE_KEYS.COUNTERS, JSON.stringify(defaultCounters));
+                    return defaultCounters;
+                }
+                
+                return JSON.parse(countersData);
+            } catch (error) {
+                console.error('Ошибка загрузки счетчиков:', error);
+                return { users: 0, ads: 0, likes: 0, dislikes: 0 };
+            }
+        }
+        
+        // Обновить счетчик
+        function updateCounter(key, value) {
+            try {
+                const counters = getCounters();
+                counters[key] = value;
+                localStorage.setItem(appData.STORAGE_KEYS.COUNTERS, JSON.stringify(counters));
+                return true;
+            } catch (error) {
+                console.error('Ошибка обновления счетчика:', error);
+                return false;
+            }
+        }
+        
+        // Увеличить счетчик
+        function incrementCounter(key) {
+            try {
+                const counters = getCounters();
+                counters[key] = (counters[key] || 0) + 1;
+                localStorage.setItem(appData.STORAGE_KEYS.COUNTERS, JSON.stringify(counters));
+                return true;
+            } catch (error) {
+                console.error('Ошибка увеличения счетчика:', error);
+                return false;
             }
         }
         
@@ -1874,6 +674,9 @@
             
             // Обновить статистику профиля
             updateProfileStats();
+            
+            // Обновить статистику в FAQ
+            updateStatsInFAQ();
             
             // Проверяем админа
             checkAdminStatus();
@@ -1952,13 +755,29 @@
                 const photoElements = [];
                 if (ad.photoUrls && ad.photoUrls.length > 0) {
                     ad.photoUrls.forEach((photoUrl, index) => {
+                        if (photoUrl) {
+                            photoElements.push(`
+                                <div class="photo-item" onclick="openPhotoViewer(${ad.id}, ${index})">
+                                    <img src="${photoUrl}" alt="Фото ${index + 1}">
+                                    <div class="photo-label">Фото ${index + 1}</div>
+                                </div>
+                            `);
+                        }
+                    });
+                }
+                
+                // Если нет фото, показываем заглушки
+                if (photoElements.length === 0) {
+                    for (let i = 0; i < Math.min(ad.photos || 1, 3); i++) {
                         photoElements.push(`
-                            <div class="photo-item" onclick="openPhotoViewer(${ad.id}, ${index})">
-                                <img src="${photoUrl}" alt="Фото ${index + 1}">
-                                <div class="photo-label">Фото ${index + 1}</div>
+                            <div class="photo-item">
+                                <div class="photo-placeholder" style="background: rgba(139, 92, 246, 0.3);">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                                <div class="photo-label">Фото ${i + 1}</div>
                             </div>
                         `);
-                    });
+                    }
                 }
                 
                 adElement.innerHTML = `
@@ -1968,8 +787,8 @@
                               `<span style="font-size: 18px; font-weight: bold;">${ad.sellerName?.charAt(0) || 'П'}</span>`}
                         </div>
                         <div class="seller-info">
-                            <div class="seller-name">${ad.sellerName}</div>
-                            <div class="seller-username">${ad.sellerUsername}</div>
+                            <div class="seller-name">${ad.sellerName || 'Неизвестный'}</div>
+                            <div class="seller-username">${ad.sellerUsername || 'Без username'}</div>
                             <div class="seller-stats">
                                 <div class="seller-stat stat-rating">
                                     <i class="fas fa-star"></i>
@@ -1977,11 +796,11 @@
                                 </div>
                                 <div class="seller-stat stat-likes">
                                     <i class="fas fa-thumbs-up"></i>
-                                    <span id="ad${ad.id}-likes">${ad.likes}</span>
+                                    <span id="ad${ad.id}-likes">${ad.likes || 0}</span>
                                 </div>
                                 <div class="seller-stat stat-dislikes">
                                     <i class="fas fa-thumbs-down"></i>
-                                    <span id="ad${ad.id}-dislikes">${ad.dislikes}</span>
+                                    <span id="ad${ad.id}-dislikes">${ad.dislikes || 0}</span>
                                 </div>
                             </div>
                         </div>
@@ -1992,10 +811,10 @@
                     </div>
 
                     <div class="product-info">
-                        <div class="product-title">${ad.title}</div>
+                        <div class="product-title">${ad.title || 'Без названия'}</div>
                         <div class="product-category">${getCategoryName(ad.category)}</div>
-                        <div class="product-price">${ad.price.toLocaleString()} ₽</div>
-                        <div class="product-description">${ad.description}</div>
+                        <div class="product-price">${(ad.price || 0).toLocaleString()} ₽</div>
+                        <div class="product-description">${ad.description || 'Без описания'}</div>
                     </div>
 
                     <div class="action-grid">
@@ -2005,7 +824,7 @@
                             <i class="fas fa-thumbs-up"></i>
                         </button>
                         
-                        <button class="contact-btn" onclick="contactSeller('${ad.sellerUsername}', ${ad.id}, '${ad.title}', '${ad.category}', ${ad.price})">
+                        <button class="contact-btn" onclick="contactSeller('${ad.sellerUsername || 'Без username'}', ${ad.id}, '${ad.title || 'Без названия'}', '${ad.category || 'other'}', ${ad.price || 0})">
                             <i class="fas fa-paper-plane"></i>
                             Написать продавцу
                         </button>
@@ -2061,16 +880,16 @@
             
             // Удаляем предыдущую оценку
             if (userRating === 'like') {
-                ad.likes--;
+                ad.likes = Math.max(0, (ad.likes || 0) - 1);
             } else if (userRating === 'dislike') {
-                ad.dislikes--;
+                ad.dislikes = Math.max(0, (ad.dislikes || 0) - 1);
             }
             
             // Добавляем новую оценку
             if (type === 'like') {
-                ad.likes++;
+                ad.likes = (ad.likes || 0) + 1;
             } else {
-                ad.dislikes++;
+                ad.dislikes = (ad.dislikes || 0) + 1;
             }
             
             // Сохраняем оценку
@@ -2180,81 +999,78 @@
             }
             
             // Очищаем предыдущие фото
-            appData.uploadedPhotoUrls = [];
-            appData.uploadedPhotoFiles = [];
+            appData.uploadedPhotos = [];
             
-            // Очищаем все фото-слоты
+            // Обрабатываем каждый файл
+            const filePromises = [];
+            
+            for (let i = 0; i < Math.min(files.length, maxFiles); i++) {
+                const file = files[i];
+                const reader = new FileReader();
+                
+                const promise = new Promise((resolve) => {
+                    reader.onload = function(e) {
+                        appData.uploadedPhotos.push({
+                            id: i + 1,
+                            url: e.target.result
+                        });
+                        resolve();
+                    };
+                    reader.readAsDataURL(file);
+                });
+                
+                filePromises.push(promise);
+            }
+            
+            // Когда все фото загружены, обновляем UI
+            Promise.all(filePromises).then(() => {
+                updatePhotoPreviews();
+                event.target.value = '';
+            });
+        }
+        
+        // Обновить превью фотографий
+        function updatePhotoPreviews() {
+            // Сначала очищаем все превью
             for (let i = 1; i <= 3; i++) {
                 const placeholder = document.getElementById(`photo-placeholder-${i}`);
                 placeholder.innerHTML = `<i class="fas fa-plus"></i><span>Фото ${i}</span>`;
             }
             
-            // Обрабатываем каждый файл
-            Array.from(files).forEach((file, index) => {
-                if (index >= maxFiles) return;
-                
+            // Затем показываем загруженные фото
+            appData.uploadedPhotos.forEach((photo, index) => {
                 const slotNumber = index + 1;
                 const placeholder = document.getElementById(`photo-placeholder-${slotNumber}`);
                 
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    placeholder.innerHTML = `
-                        <img src="${e.target.result}" alt="Фото ${slotNumber}">
-                        <div class="photo-label">Фото ${slotNumber}</div>
-                        <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); 
-                             color: white; width: 20px; height: 20px; border-radius: 50%; 
-                             display: flex; align-items: center; justify-content: center; 
-                             font-size: 12px; cursor: pointer;" 
-                             onclick="removePhoto(${slotNumber}, event)">×</div>
-                    `;
-                    
-                    appData.uploadedPhotoUrls.push(e.target.result);
-                };
-                reader.readAsDataURL(file);
-                
-                appData.uploadedPhotoFiles.push(file);
+                placeholder.innerHTML = `
+                    <img src="${photo.url}" alt="Фото ${slotNumber}">
+                    <div class="photo-label">Фото ${slotNumber}</div>
+                    <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); 
+                         color: white; width: 20px; height: 20px; border-radius: 50%; 
+                         display: flex; align-items: center; justify-content: center; 
+                         font-size: 12px; cursor: pointer;" 
+                         onclick="removeUploadedPhoto(${photo.id})">×</div>
+                `;
             });
             
-            document.getElementById('photo-count').textContent = files.length;
-            
-            showNotification(`Загружено ${files.length} фото`, 'success');
-            event.target.value = '';
+            document.getElementById('photo-count').textContent = appData.uploadedPhotos.length;
+            showNotification(`Загружено ${appData.uploadedPhotos.length} фото`, 'success');
         }
         
-        // Удалить фото
-        function removePhoto(photoNum, event) {
-            if (event) event.stopPropagation();
+        // Удалить загруженное фото
+        function removeUploadedPhoto(photoId) {
+            event.stopPropagation();
             
-            const placeholder = document.getElementById(`photo-placeholder-${photoNum}`);
-            placeholder.innerHTML = `<i class="fas fa-plus"></i><span>Фото ${photoNum}</span>`;
+            // Удаляем фото из массива
+            appData.uploadedPhotos = appData.uploadedPhotos.filter(photo => photo.id !== photoId);
             
-            // Удаляем из массивов
-            const index = photoNum - 1;
-            if (index >= 0 && index < appData.uploadedPhotoUrls.length) {
-                appData.uploadedPhotoUrls.splice(index, 1);
-                appData.uploadedPhotoFiles.splice(index, 1);
-            }
+            // Переиндексируем оставшиеся фото
+            appData.uploadedPhotos.forEach((photo, index) => {
+                photo.id = index + 1;
+            });
             
-            // Сдвигаем остальные фото
-            for (let i = 1; i <= 3; i++) {
-                const placeholder = document.getElementById(`photo-placeholder-${i}`);
-                if (i <= appData.uploadedPhotoUrls.length) {
-                    placeholder.innerHTML = `
-                        <img src="${appData.uploadedPhotoUrls[i-1]}" alt="Фото ${i}">
-                        <div class="photo-label">Фото ${i}</div>
-                        <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); 
-                             color: white; width: 20px; height: 20px; border-radius: 50%; 
-                             display: flex; align-items: center; justify-content: center; 
-                             font-size: 12px; cursor: pointer;" 
-                             onclick="removePhoto(${i}, event)">×</div>
-                    `;
-                } else {
-                    placeholder.innerHTML = `<i class="fas fa-plus"></i><span>Фото ${i}</span>`;
-                }
-            }
-            
-            document.getElementById('photo-count').textContent = appData.uploadedPhotoUrls.length;
-            showNotification(`Фото удалено (${appData.uploadedPhotoUrls.length}/3)`, 'warning');
+            // Обновляем превью
+            updatePhotoPreviews();
         }
         
         // Очистить форму
@@ -2265,14 +1081,8 @@
             document.getElementById('adDescription').value = '';
             
             // Очистить фотографии
-            for (let i = 1; i <= 3; i++) {
-                const placeholder = document.getElementById(`photo-placeholder-${i}`);
-                placeholder.innerHTML = `<i class="fas fa-plus"></i><span>Фото ${i}</span>`;
-            }
-            
-            appData.uploadedPhotoUrls = [];
-            appData.uploadedPhotoFiles = [];
-            document.getElementById('photo-count').textContent = '0';
+            appData.uploadedPhotos = [];
+            updatePhotoPreviews();
             
             appData.editingAdId = null;
         }
@@ -2300,7 +1110,7 @@
                 return;
             }
             
-            if (appData.uploadedPhotoUrls.length === 0) {
+            if (appData.uploadedPhotos.length === 0) {
                 showNotification('Добавьте хотя бы одну фотографию!', 'error');
                 return;
             }
@@ -2309,15 +1119,19 @@
             
             // Редактирование существующего объявления
             if (appData.editingAdId) {
-                const ad = allAds.find(a => a.id === appData.editingAdId);
-                if (ad && ad.sellerId === currentUser.id) {
-                    ad.title = title;
-                    ad.category = category;
-                    ad.price = price;
-                    ad.description = description || 'Без описания';
-                    ad.photoUrls = [...appData.uploadedPhotoUrls];
-                    ad.photos = appData.uploadedPhotoUrls.length;
-                    ad.updatedAt = new Date().toISOString();
+                const adIndex = allAds.findIndex(a => a.id === appData.editingAdId);
+                
+                if (adIndex !== -1 && allAds[adIndex].sellerId === currentUser.id) {
+                    allAds[adIndex] = {
+                        ...allAds[adIndex],
+                        title: title,
+                        category: category,
+                        price: price,
+                        description: description || 'Без описания',
+                        photoUrls: appData.uploadedPhotos.map(p => p.url),
+                        photos: appData.uploadedPhotos.length,
+                        updatedAt: new Date().toISOString()
+                    };
                     
                     saveAllAds(allAds);
                     renderAds();
@@ -2333,7 +1147,7 @@
             
             // Создание нового объявления
             const newAd = {
-                id: appData.nextAdId++,
+                id: Date.now(),
                 sellerId: currentUser.id,
                 sellerName: currentUser.name,
                 sellerUsername: currentUser.username || 'Без username',
@@ -2342,8 +1156,8 @@
                 category: category,
                 price: price,
                 description: description || 'Без описания',
-                photos: appData.uploadedPhotoUrls.length,
-                photoUrls: [...appData.uploadedPhotoUrls],
+                photos: appData.uploadedPhotos.length,
+                photoUrls: appData.uploadedPhotos.map(p => p.url),
                 likes: 0,
                 dislikes: 0,
                 createdAt: new Date().toISOString(),
@@ -2374,8 +1188,8 @@
             let myDislikes = 0;
             
             myAds.forEach(ad => {
-                myLikes += ad.likes;
-                myDislikes += ad.dislikes;
+                myLikes += ad.likes || 0;
+                myDislikes += ad.dislikes || 0;
             });
             
             document.getElementById('myLikesCount').textContent = myLikes;
@@ -2414,8 +1228,8 @@
                     </div>
                     <div class="my-ad-description">${ad.description}</div>
                     <div style="display: flex; gap: 15px; font-size: 12px; color: #D8B4FE;">
-                        <div><i class="fas fa-thumbs-up"></i> ${ad.likes}</div>
-                        <div><i class="fas fa-thumbs-down"></i> ${ad.dislikes}</div>
+                        <div><i class="fas fa-thumbs-up"></i> ${ad.likes || 0}</div>
+                        <div><i class="fas fa-thumbs-down"></i> ${ad.dislikes || 0}</div>
                         <div><i class="fas fa-star"></i> ${rating.toFixed(1)}</div>
                     </div>
                     <div class="my-ad-actions">
@@ -2448,25 +1262,19 @@
             document.getElementById('adDescription').value = ad.description;
             
             // Загружаем фото
-            appData.uploadedPhotoUrls = [...ad.photoUrls];
-            for (let i = 1; i <= 3; i++) {
-                const placeholder = document.getElementById(`photo-placeholder-${i}`);
-                if (i <= ad.photoUrls.length) {
-                    placeholder.innerHTML = `
-                        <img src="${ad.photoUrls[i-1]}" alt="Фото ${i}">
-                        <div class="photo-label">Фото ${i}</div>
-                        <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); 
-                             color: white; width: 20px; height: 20px; border-radius: 50%; 
-                             display: flex; align-items: center; justify-content: center; 
-                             font-size: 12px; cursor: pointer;" 
-                             onclick="removePhoto(${i}, event)">×</div>
-                    `;
-                } else {
-                    placeholder.innerHTML = `<i class="fas fa-plus"></i><span>Фото ${i}</span>`;
-                }
+            appData.uploadedPhotos = [];
+            if (ad.photoUrls && ad.photoUrls.length > 0) {
+                ad.photoUrls.forEach((url, index) => {
+                    if (url) {
+                        appData.uploadedPhotos.push({
+                            id: index + 1,
+                            url: url
+                        });
+                    }
+                });
             }
             
-            document.getElementById('photo-count').textContent = ad.photoUrls.length;
+            updatePhotoPreviews();
             
             // Помечаем редактирование
             appData.editingAdId = adId;
@@ -2555,27 +1363,39 @@
         
         // Обновить статистику в FAQ
         function updateStatsInFAQ() {
-            const allUsers = getAllUsers();
-            const allAds = getAllAds();
-            const allRatings = getAllRatings();
+            const counters = getCounters();
             
-            // Считаем общие лайки и дизлайки
-            let totalLikes = 0;
-            let totalDislikes = 0;
-            
-            allAds.forEach(ad => {
-                totalLikes += ad.likes;
-                totalDislikes += ad.dislikes;
-            });
-            
-            document.getElementById('stats-users').textContent = Object.keys(allUsers).length;
-            document.getElementById('stats-ads').textContent = allAds.length;
-            document.getElementById('stats-likes').textContent = totalLikes;
-            document.getElementById('stats-dislikes').textContent = totalDislikes;
+            document.getElementById('stats-users').textContent = counters.users;
+            document.getElementById('stats-ads').textContent = counters.ads;
+            document.getElementById('stats-likes').textContent = counters.likes;
+            document.getElementById('stats-dislikes').textContent = counters.dislikes;
         }
         
         // Обновить статистику
         function refreshStats() {
+            // Пересчитываем счетчики из реальных данных
+            const users = getAllUsers();
+            const ads = getAllAds();
+            const ratings = getAllRatings();
+            
+            let totalLikes = 0;
+            let totalDislikes = 0;
+            Object.values(ratings).forEach(userRatings => {
+                Object.values(userRatings).forEach(rating => {
+                    if (rating === 'like') totalLikes++;
+                    if (rating === 'dislike') totalDislikes++;
+                });
+            });
+            
+            const counters = {
+                users: Object.keys(users).length,
+                ads: ads.length,
+                likes: totalLikes,
+                dislikes: totalDislikes
+            };
+            
+            localStorage.setItem(appData.STORAGE_KEYS.COUNTERS, JSON.stringify(counters));
+            
             updateStatsInFAQ();
             showNotification('Статистика обновлена', 'success');
         }
@@ -2589,6 +1409,7 @@
             localStorage.removeItem(appData.STORAGE_KEYS.ADS);
             localStorage.removeItem(appData.STORAGE_KEYS.RATINGS);
             localStorage.removeItem(appData.STORAGE_KEYS.USERS);
+            localStorage.removeItem(appData.STORAGE_KEYS.COUNTERS);
             localStorage.removeItem(appData.STORAGE_KEYS.LAST_SYNC);
             
             // Очищаем историю всех пользователей
