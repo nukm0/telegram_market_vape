@@ -1529,20 +1529,22 @@
         <div class="notification" id="notification"></div>
     </div>
 
-    <!-- Подключаем Supabase -->
+    <!-- ПОДКЛЮЧАЕМ SUPABASE -->
     <script type="module">
         // ========== SUPABASE КЛИЕНТ ==========
         import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
         
+        // Ваши ключи (уже вставлены)
         const supabaseUrl = 'https://ghvosdpasvkodhgitnij.supabase.co'
         const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdodm9zZHBhc3Zrb2RoZ2l0bmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MDMyNjQsImV4cCI6MjA4MjI3OTI2NH0.SvKy2IUULiDs2Nldrhdhi6k3k0zMTOhMnPqMpTjXRNM'
         
+        // Создаем клиент Supabase
         export const supabase = createClient(supabaseUrl, supabaseAnonKey)
         
         // Делаем доступным глобально
         window.supabase = supabase
         
-        // ========== ПРИЛОЖЕНИЕ ==========
+        // ========== ОСНОВНОЕ ПРИЛОЖЕНИЕ ==========
         
         // Инициализация Telegram Web App
         const tg = window.Telegram?.WebApp;
@@ -1565,9 +1567,9 @@
         // Получить данные пользователя из Telegram
         function getUserDataFromTelegram() {
             if (!tg) {
-                console.warn('Telegram Web App не доступен');
+                console.log('Telegram Web App не доступен. Используем тестовые данные.');
                 return {
-                    id: Date.now(),
+                    id: 123456789,
                     first_name: 'Тестовый',
                     last_name: 'Пользователь',
                     username: 'test_user',
@@ -1577,9 +1579,9 @@
             
             const user = tg.initDataUnsafe?.user;
             if (!user) {
-                console.warn('Данные пользователя не получены из Telegram');
+                console.log('Данные пользователя не получены из Telegram');
                 return {
-                    id: Date.now(),
+                    id: 987654321,
                     first_name: 'Анонимный',
                     username: 'anonymous'
                 };
@@ -1610,12 +1612,17 @@
                 
                 const { data: ads, error } = await query;
                 
-                if (error) throw error;
+                if (error) {
+                    console.error('Ошибка загрузки объявлений:', error);
+                    showNotification('Ошибка загрузки объявлений', 'error');
+                    return [];
+                }
                 
+                console.log('Загружено объявлений:', ads?.length || 0);
                 return ads || [];
             } catch (error) {
-                console.error('Ошибка загрузки объявлений:', error);
-                showNotification('Ошибка загрузки объявлений', 'error');
+                console.error('Исключение при загрузке объявлений:', error);
+                showNotification('Ошибка соединения с базой', 'error');
                 return [];
             } finally {
                 document.getElementById('loading').classList.remove('active');
@@ -1765,36 +1772,31 @@
                 
                 // Обновляем счетчики в объявлении
                 const currentRating = await getUserRating(sellerId, adId);
-                const previousRating = appData.currentUserRatings?.[adId];
-                
                 let likesChange = 0;
                 let dislikesChange = 0;
                 
-                if (previousRating === 'like' && ratingType === 'dislike') {
+                if (currentRating === 'like' && ratingType === 'dislike') {
                     likesChange = -1;
                     dislikesChange = 1;
-                } else if (previousRating === 'dislike' && ratingType === 'like') {
+                } else if (currentRating === 'dislike' && ratingType === 'like') {
                     likesChange = 1;
                     dislikesChange = -1;
-                } else if (!previousRating && ratingType === 'like') {
+                } else if (!currentRating && ratingType === 'like') {
                     likesChange = 1;
-                } else if (!previousRating && ratingType === 'dislike') {
+                } else if (!currentRating && ratingType === 'dislike') {
                     dislikesChange = 1;
                 }
                 
-                if (likesChange !== 0 || dislikesChange !== 0) {
-                    const { error: updateError } = await supabase.rpc('update_ad_ratings', {
-                        ad_id: adId,
-                        likes_change: likesChange,
-                        dislikes_change: dislikesChange
-                    });
-                    
-                    if (updateError) throw updateError;
-                }
+                // Обновляем объявление
+                const { error: updateError } = await supabase
+                    .from('advertisements')
+                    .update({
+                        likes: supabase.raw(`likes + ${likesChange}`),
+                        dislikes: supabase.raw(`dislikes + ${dislikesChange}`)
+                    })
+                    .eq('id', adId);
                 
-                // Сохраняем локально
-                if (!appData.currentUserRatings) appData.currentUserRatings = {};
-                appData.currentUserRatings[adId] = ratingType;
+                if (updateError) throw updateError;
                 
                 showNotification(`Вы поставили ${ratingType === 'like' ? 'лайк' : 'дизлайк'}`, 'success');
                 
@@ -1818,6 +1820,7 @@
                 
                 if (error) throw error;
                 
+                console.log('Объявление создано:', data);
                 return data;
             } catch (error) {
                 console.error('Ошибка создания объявления:', error);
@@ -1969,6 +1972,9 @@
                             <i class="fas fa-box-open" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
                             <h3 style="margin-bottom: 10px;">Нет объявлений</h3>
                             <p>В этой категории пока нет объявлений</p>
+                            <p style="font-size: 12px; margin-top: 10px; color: rgba(255,255,255,0.5);">
+                                Будьте первым - создайте объявление!
+                            </p>
                         </div>
                     `;
                     return;
@@ -2213,9 +2219,13 @@
         // Инициализация приложения
         async function initApp() {
             try {
+                console.log('Инициализация приложения...');
+                
                 // Получаем данные пользователя
                 appData.currentUserData = getUserDataFromTelegram();
                 appData.currentUserId = appData.currentUserData.id;
+                
+                console.log('Пользователь:', appData.currentUserData);
                 
                 // Обновляем профиль
                 updateUserProfile();
@@ -2242,6 +2252,8 @@
                 }
                 
                 showNotification(`Добро пожаловать, ${appData.currentUserData.first_name}!`, 'success');
+                
+                console.log('Приложение инициализировано успешно!');
                 
             } catch (error) {
                 console.error('Ошибка инициализации:', error);
@@ -2442,6 +2454,8 @@
                     likes: 0,
                     dislikes: 0
                 };
+                
+                console.log('Создание объявления:', adData);
                 
                 // Если редактируем существующее объявление
                 if (appData.editingAdId) {
@@ -2658,6 +2672,7 @@
         
         // Вспомогательные функции
         function escapeHtml(text) {
+            if (!text) return '';
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
@@ -2695,6 +2710,7 @@
         
         // Запуск при загрузке
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM загружен, запускаем приложение...');
             initApp();
         });
         
