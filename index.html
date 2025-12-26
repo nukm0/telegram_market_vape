@@ -1530,21 +1530,420 @@
             currentPhotoList: [],
             nextAdId: 1,
             currentCategory: 'all',
-            currentPhotoSlot: null
+            currentPhotoSlot: null,
+            useSupabase: false,
+            editingAdId: null,
+            supabaseClient: null
         };
         
-        // Инициализация пустых тестовых данных
-        function initializeTestData() {
-            // Пустой массив объявлений - будут добавляться пользователями
-            appData.ads = [];
-            
-            // Инициализируем рейтинги
-            appData.userRatings = {};
-            
-            appData.nextAdId = 1;
+        // ========== SUPABASE КОНФИГУРАЦИЯ ==========
+        const SUPABASE_CONFIG = {
+            URL: 'https://ghvosdpasvkodhgitnij.supabase.co',
+            ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdodm9zZHBhc3Zrb2RoZ2l0bmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MDMyNjQsImV4cCI6MjA4MjI3OTI2NH0.SvKy2IUULiDs2Nldrhdhi6k3k0zMTOhMnPqMpTjXRNM'
+        };
+        
+        // ========== ИНИЦИАЛИЗАЦИЯ SUPABASE ==========
+        async function initSupabase() {
+            try {
+                console.log('🔗 Подключение к Supabase...');
+                
+                // Динамический импорт Supabase
+                const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+                
+                // Создаем клиент
+                appData.supabaseClient = createClient(SUPABASE_CONFIG.URL, SUPABASE_CONFIG.ANON_KEY, {
+                    auth: { persistSession: false },
+                    global: { headers: { 
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_CONFIG.ANON_KEY
+                    }}
+                });
+                
+                // Проверяем подключение
+                const { data, error } = await appData.supabaseClient
+                    .from('advertisements')
+                    .select('count')
+                    .limit(1);
+                
+                if (error) {
+                    console.warn('⚠️ Ошибка подключения к Supabase:', error.message);
+                    appData.useSupabase = false;
+                    return false;
+                }
+                
+                appData.useSupabase = true;
+                console.log('✅ Supabase успешно подключен');
+                return true;
+                
+            } catch (error) {
+                console.warn('⚠️ Не удалось подключиться к Supabase:', error.message);
+                console.log('📱 Используем локальное хранилище');
+                appData.useSupabase = false;
+                return false;
+            }
         }
         
-        // Получить данные пользователя из Telegram
+        // ========== БАЗОВЫЕ ФУНКЦИИ SUPABASE ==========
+        
+        // Загрузить объявления
+        async function loadAdsFromDatabase(category = 'all') {
+            if (!appData.useSupabase || !appData.supabaseClient) {
+                return loadAdsLocally(category);
+            }
+            
+            try {
+                let query = appData.supabaseClient
+                    .from('advertisements')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (category !== 'all') {
+                    query = query.eq('category', category);
+                }
+                
+                const { data, error } = await query;
+                
+                if (error) throw error;
+                
+                return (data || []).map(item => ({
+                    id: item.id,
+                    sellerId: item.seller_id,
+                    sellerName: item.seller_name,
+                    sellerUsername: item.seller_username,
+                    sellerAvatar: item.seller_avatar,
+                    title: item.title,
+                    category: item.category,
+                    price: parseFloat(item.price),
+                    description: item.description,
+                    photoUrls: item.photo_urls || [],
+                    photos: item.photo_urls?.length || 0,
+                    likes: item.likes || 0,
+                    dislikes: item.dislikes || 0,
+                    createdAt: item.created_at
+                }));
+                
+            } catch (error) {
+                console.error('❌ Ошибка загрузки объявлений:', error.message);
+                return loadAdsLocally(category);
+            }
+        }
+        
+        // Сохранить объявление
+        async function saveAdToDatabase(ad) {
+            if (!appData.useSupabase || !appData.supabaseClient) {
+                saveAdLocally(ad);
+                return null;
+            }
+            
+            try {
+                const { data, error } = await appData.supabaseClient
+                    .from('advertisements')
+                    .insert([{
+                        seller_id: ad.sellerId,
+                        seller_name: ad.sellerName,
+                        seller_username: ad.sellerUsername,
+                        seller_avatar: ad.sellerAvatar,
+                        title: ad.title,
+                        category: ad.category,
+                        price: ad.price,
+                        description: ad.description,
+                        photo_urls: ad.photoUrls || [],
+                        likes: ad.likes || 0,
+                        dislikes: ad.dislikes || 0
+                    }])
+                    .select()
+                    .single();
+                
+                if (error) throw error;
+                
+                console.log('✅ Объявление сохранено в Supabase, ID:', data.id);
+                return data;
+                
+            } catch (error) {
+                console.error('❌ Ошибка сохранения объявления:', error.message);
+                saveAdLocally(ad);
+                return null;
+            }
+        }
+        
+        // Удалить объявление
+        async function deleteAdFromDatabase(adId) {
+            if (!appData.useSupabase || !appData.supabaseClient) return false;
+            
+            try {
+                const { error } = await appData.supabaseClient
+                    .from('advertisements')
+                    .delete()
+                    .eq('id', adId);
+                
+                if (error) throw error;
+                
+                console.log('✅ Объявление удалено из Supabase, ID:', adId);
+                return true;
+                
+            } catch (error) {
+                console.error('❌ Ошибка удаления объявления:', error.message);
+                return false;
+            }
+        }
+        
+        // Обновить объявление
+        async function updateAdInDatabase(adId, updates) {
+            if (!appData.useSupabase || !appData.supabaseClient) return false;
+            
+            try {
+                const { error } = await appData.supabaseClient
+                    .from('advertisements')
+                    .update(updates)
+                    .eq('id', adId);
+                
+                if (error) throw error;
+                
+                console.log('✅ Объявление обновлено в Supabase, ID:', adId);
+                return true;
+                
+            } catch (error) {
+                console.error('❌ Ошибка обновления объявления:', error.message);
+                return false;
+            }
+        }
+        
+        // Сохранить оценку
+        async function saveRatingToDatabase(sellerId, raterId, ratingType, adId) {
+            if (!appData.useSupabase || !appData.supabaseClient) return;
+            
+            try {
+                const { error } = await appData.supabaseClient
+                    .from('ratings')
+                    .upsert({
+                        seller_id: sellerId,
+                        rater_id: raterId,
+                        rating_type: ratingType,
+                        ad_id: adId
+                    }, {
+                        onConflict: 'seller_id,rater_id,ad_id'
+                    });
+                
+                if (error) throw error;
+                
+                console.log('✅ Оценка сохранена в Supabase');
+                
+            } catch (error) {
+                console.error('❌ Ошибка сохранения оценки:', error.message);
+            }
+        }
+        
+        // Загрузить оценки
+        async function loadRatingsFromDatabase() {
+            if (!appData.useSupabase || !appData.supabaseClient) {
+                return loadRatingsLocally();
+            }
+            
+            try {
+                const { data, error } = await appData.supabaseClient
+                    .from('ratings')
+                    .select('*');
+                
+                if (error) throw error;
+                
+                const ratings = {};
+                (data || []).forEach(rating => {
+                    if (!ratings[rating.seller_id]) {
+                        ratings[rating.seller_id] = {};
+                    }
+                    ratings[rating.seller_id][rating.rater_id] = rating.rating_type;
+                });
+                
+                console.log('✅ Оценки загружены из Supabase');
+                return ratings;
+                
+            } catch (error) {
+                console.error('❌ Ошибка загрузки оценок:', error.message);
+                return loadRatingsLocally();
+            }
+        }
+        
+        // Сохранить историю
+        async function saveHistoryToDatabase(userId, adId) {
+            if (!appData.useSupabase || !appData.supabaseClient) return;
+            
+            try {
+                const { error } = await appData.supabaseClient
+                    .from('history')
+                    .upsert({
+                        user_id: userId,
+                        ad_id: adId
+                    }, {
+                        onConflict: 'user_id,ad_id'
+                    });
+                
+                if (error) throw error;
+                
+            } catch (error) {
+                console.error('❌ Ошибка сохранения истории:', error.message);
+            }
+        }
+        
+        // Загрузить историю
+        async function loadHistoryFromDatabase(userId) {
+            if (!appData.useSupabase || !appData.supabaseClient) {
+                return loadHistoryLocally();
+            }
+            
+            try {
+                const { data, error } = await appData.supabaseClient
+                    .from('history')
+                    .select(`
+                        *,
+                        advertisements!inner (
+                            id,
+                            title,
+                            seller_username,
+                            category
+                        )
+                    `)
+                    .eq('user_id', userId)
+                    .order('viewed_at', { ascending: false })
+                    .limit(20);
+                
+                if (error) throw error;
+                
+                const history = (data || []).map(item => ({
+                    id: item.id,
+                    adId: item.ad_id,
+                    title: item.advertisements?.title || 'Неизвестно',
+                    sellerUsername: item.advertisements?.seller_username || 'Неизвестно',
+                    date: new Date(item.viewed_at).toLocaleDateString('ru-RU'),
+                    category: item.advertisements?.category || 'Неизвестно'
+                }));
+                
+                console.log('✅ История загружена из Supabase');
+                return history;
+                
+            } catch (error) {
+                console.error('❌ Ошибка загрузки истории:', error.message);
+                return loadHistoryLocally();
+            }
+        }
+        
+        // ========== ЛОКАЛЬНОЕ ХРАНИЛИЩЕ ==========
+        
+        function saveAdLocally(ad) {
+            const localAds = JSON.parse(localStorage.getItem('vape_market_ads') || '[]');
+            
+            // Проверяем, нет ли уже такого объявления
+            const existingIndex = localAds.findIndex(item => item.id === ad.id);
+            
+            if (existingIndex !== -1) {
+                // Обновляем существующее
+                localAds[existingIndex] = ad;
+            } else {
+                // Добавляем новое
+                localAds.push(ad);
+            }
+            
+            localStorage.setItem('vape_market_ads', JSON.stringify(localAds));
+            console.log('💾 Объявление сохранено локально');
+        }
+        
+        function loadAdsLocally(category = 'all') {
+            const localAds = JSON.parse(localStorage.getItem('vape_market_ads') || '[]');
+            
+            if (category === 'all') {
+                return localAds;
+            }
+            
+            return localAds.filter(ad => ad.category === category);
+        }
+        
+        function saveRatingsLocally() {
+            localStorage.setItem('vape_market_ratings', JSON.stringify(appData.userRatings));
+            console.log('💾 Оценки сохранены локально');
+        }
+        
+        function loadRatingsLocally() {
+            return JSON.parse(localStorage.getItem('vape_market_ratings') || '{}');
+        }
+        
+        function saveHistoryLocally() {
+            localStorage.setItem('vape_market_history', JSON.stringify(appData.history));
+            console.log('💾 История сохранена локально');
+        }
+        
+        function loadHistoryLocally() {
+            return JSON.parse(localStorage.getItem('vape_market_history') || '[]');
+        }
+        
+        // ========== ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ ==========
+        
+        async function initApp() {
+            console.log('🚀 Инициализация приложения...');
+            
+            // 1. Получаем данные пользователя
+            appData.currentUserData = getUserDataFromTelegram();
+            appData.currentUserId = appData.currentUserData.id;
+            updateUserProfile();
+            
+            // 2. Пытаемся подключиться к Supabase
+            await initSupabase();
+            
+            // 3. Загружаем все данные
+            await loadAllData();
+            
+            // 4. Рендерим объявления
+            renderAds();
+            
+            // 5. Обновляем статистику
+            updateProfileStats();
+            
+            // 6. Настройка Telegram
+            if (tg) {
+                tg.expand();
+                tg.ready();
+                tg.setHeaderColor('#6D28D9');
+                tg.setBackgroundColor('#7C3AED');
+                
+                // Кнопка "Назад"
+                tg.BackButton.show();
+                tg.BackButton.onClick(function() {
+                    tg.close();
+                });
+            }
+            
+            console.log('✅ Приложение инициализировано');
+            console.log(`📱 Режим: ${appData.useSupabase ? 'Supabase' : 'Локальное хранилище'}`);
+            showNotification(`Добро пожаловать, ${appData.currentUserData.first_name}!`, 'success');
+        }
+        
+        async function loadAllData() {
+            console.log('📥 Загрузка данных...');
+            
+            // Загружаем объявления
+            appData.ads = await loadAdsFromDatabase(appData.currentCategory);
+            
+            // Загружаем оценки
+            appData.userRatings = await loadRatingsFromDatabase();
+            
+            // Загружаем историю
+            if (appData.currentUserId) {
+                appData.history = await loadHistoryFromDatabase(appData.currentUserId);
+            } else {
+                appData.history = loadHistoryLocally();
+            }
+            
+            // Устанавливаем следующий ID
+            updateNextAdId();
+            
+            console.log(`📊 Данные загружены. Объявлений: ${appData.ads.length}`);
+        }
+        
+        function updateNextAdId() {
+            const maxId = appData.ads.length > 0 ? Math.max(...appData.ads.map(ad => ad.id || 0)) : 0;
+            appData.nextAdId = maxId + 1;
+        }
+        
+        // ========== ОСНОВНЫЕ ФУНКЦИИ ПРИЛОЖЕНИЯ ==========
+        
         function getUserDataFromTelegram() {
             if (!tg) {
                 console.warn('Telegram Web App не доступен. Используем тестовые данные.');
@@ -1577,7 +1976,6 @@
             };
         }
         
-        // Обновить профиль пользователя в UI
         function updateUserProfile() {
             if (!appData.currentUserData) return;
             
@@ -1603,14 +2001,12 @@
             if (appData.currentUserData.photo_url) {
                 profileAvatar.innerHTML = `<img src="${appData.currentUserData.photo_url}" alt="Аватар">`;
             } else {
-                // Генерируем градиентный аватар на основе имени
                 const name = appData.currentUserData.first_name || 'П';
                 const firstLetter = name.charAt(0).toUpperCase();
-                profileAvatar.innerHTML = `<span>${firstLetter}</span>`;
+                profileAvatar.innerHTML = `<span style="color: white; font-size: 24px; font-weight: bold;">${firstLetter}</span>`;
             }
         }
         
-        // Показать уведомление
         function showNotification(message, type = 'info') {
             const notification = document.getElementById('notification');
             notification.textContent = message;
@@ -1621,7 +2017,6 @@
             }, 3000);
         }
         
-        // Переключение страниц
         function switchPage(page) {
             // Скрыть все страницы
             document.querySelectorAll('.page').forEach(p => {
@@ -1656,7 +2051,6 @@
             }
         }
         
-        // Переключение вкладок в личном кабинете
         function switchProfileTab(tab) {
             // Обновить активную вкладку
             document.querySelectorAll('.profile-tab').forEach(t => {
@@ -1671,7 +2065,6 @@
             document.getElementById(`${tab}-tab`).classList.add('active');
         }
         
-        // Переключение формы добавления
         function toggleAddForm() {
             const form = document.getElementById('addAdForm');
             const btnText = document.getElementById('toggle-btn-text');
@@ -1685,7 +2078,6 @@
             }
         }
         
-        // Скрыть форму добавления
         function hideAddForm() {
             const form = document.getElementById('addAdForm');
             const btnText = document.getElementById('toggle-btn-text');
@@ -1695,8 +2087,7 @@
             clearAddForm();
         }
         
-        // Фильтр по категориям
-        function filterCategory(category) {
+        async function filterCategory(category) {
             appData.currentCategory = category;
             
             // Обновить активную кнопку категории
@@ -1705,11 +2096,13 @@
             });
             event.target.classList.add('active');
             
+            // Загружаем объявления для выбранной категории
+            appData.ads = await loadAdsFromDatabase(category);
+            
             // Обновить отображение объявлений
             renderAds();
         }
         
-        // Рендер объявлений
         function renderAds() {
             const container = document.getElementById('ads-container');
             container.innerHTML = '';
@@ -1735,7 +2128,7 @@
             
             // Рендерим каждое объявление
             filteredAds.forEach(ad => {
-                // Рассчитываем рейтинг продавца по формуле: 0.1 + (likes / (likes + dislikes)) * 4.9
+                // Рассчитываем рейтинг продавца
                 const rating = calculateRating(ad.sellerId);
                 
                 // Проверяем, поставил ли текущий пользователь оценку
@@ -1838,7 +2231,6 @@
             });
         }
         
-        // Рассчитать рейтинг по формуле: 0.1 + (likes / (likes + dislikes)) * 4.9
         function calculateRating(sellerId) {
             if (!appData.userRatings[sellerId]) return 0.1;
             
@@ -1854,7 +2246,6 @@
             return 0.1 + (likes / total) * 4.9;
         }
         
-        // Открыть просмотр фото
         function openPhotoViewer(adId, photoIndex = 0) {
             const ad = appData.ads.find(a => a.id === adId);
             if (!ad || !ad.photoUrls || ad.photoUrls.length === 0) {
@@ -1876,14 +2267,12 @@
             document.body.style.overflow = 'hidden';
         }
         
-        // Закрыть просмотр фото
         function closePhotoModal() {
             const modal = document.getElementById('photoModal');
             modal.classList.remove('active');
             document.body.style.overflow = 'auto';
         }
         
-        // Следующее фото
         function nextPhoto() {
             if (appData.currentPhotoList.length === 0) return;
             
@@ -1893,7 +2282,6 @@
                 `${appData.currentPhotoIndex + 1} / ${appData.currentPhotoList.length}`;
         }
         
-        // Предыдущее фото
         function prevPhoto() {
             if (appData.currentPhotoList.length === 0) return;
             
@@ -1906,8 +2294,7 @@
                 `${appData.currentPhotoIndex + 1} / ${appData.currentPhotoList.length}`;
         }
         
-        // Оценить продавца (с проверкой на собственное объявление)
-        function rateSeller(sellerId, type, adId) {
+        async function rateSeller(sellerId, type, adId) {
             if (!appData.currentUserId) {
                 appData.currentUserId = appData.currentUserData?.id || 'user_' + Date.now();
             }
@@ -1948,6 +2335,12 @@
             }
             appData.userRatings[sellerId][appData.currentUserId] = type;
             
+            // Сохраняем в базу если подключена
+            await saveRatingToDatabase(sellerId, appData.currentUserId, type, adId);
+            
+            // Сохраняем локально
+            saveRatingsLocally();
+            
             // Обновляем UI
             updateAdStats(adId);
             renderAds();
@@ -1963,7 +2356,6 @@
             showNotification(`Вы поставили ${type === 'like' ? 'лайк' : 'дизлайк'}`, 'success');
         }
         
-        // Обновить статистику объявления
         function updateAdStats(adId) {
             const ad = appData.ads.find(a => a.id === adId);
             if (!ad) return;
@@ -1975,8 +2367,7 @@
             if (dislikesEl) dislikesEl.textContent = ad.dislikes;
         }
         
-        // Написать продавцу (без тестовых сообщений)
-        function contactSeller(username, adId, adTitle, category) {
+        async function contactSeller(username, adId, adTitle, category) {
             // Формируем сообщение
             const categoryName = getCategoryName(category);
             const message = `Здравствуйте! Я пишу по вашему объявлению "${adTitle}" в Vape Market. Интересуюсь товаром, можно подробнее?`;
@@ -1992,6 +2383,10 @@
             };
             
             appData.history.unshift(historyItem);
+            
+            // Сохраняем историю
+            await saveHistoryToDatabase(appData.currentUserId, adId);
+            saveHistoryLocally();
             
             // Обновляем историю в профиле если открыта страница
             if (document.getElementById('page-profile').classList.contains('active')) {
@@ -2017,7 +2412,6 @@
             }
         }
         
-        // Обновить историю просмотров
         function updateHistory() {
             const historyList = document.getElementById('historyList');
             historyList.innerHTML = '';
@@ -2043,7 +2437,6 @@
             });
         }
         
-        // Обновить список моих объявлений
         function updateMyAdsList() {
             const myAdsList = document.getElementById('myAdsList');
             
@@ -2091,20 +2484,28 @@
             });
         }
         
-        // Удалить объявление
-        function deleteAd(adId) {
+        async function deleteAd(adId) {
             if (!confirm('Вы уверены, что хотите удалить это объявление?')) {
                 return;
             }
             
+            // Удаляем из базы данных
+            await deleteAdFromDatabase(adId);
+            
+            // Удаляем из локального массива
             appData.ads = appData.ads.filter(ad => ad.id !== adId);
+            
+            // Удаляем из локального хранилища
+            const localAds = JSON.parse(localStorage.getItem('vape_market_ads') || '[]');
+            const updatedLocalAds = localAds.filter(ad => ad.id !== adId);
+            localStorage.setItem('vape_market_ads', JSON.stringify(updatedLocalAds));
+            
             renderAds();
             updateProfileStats();
             updateMyAdsList();
             showNotification('Объявление удалено', 'warning');
         }
         
-        // Редактировать объявление
         function editAd(adId) {
             const ad = appData.ads.find(a => a.id === adId);
             if (!ad) return;
@@ -2115,6 +2516,30 @@
             document.getElementById('adPrice').value = ad.price;
             document.getElementById('adDescription').value = ad.description;
             
+            // Устанавливаем фотографии
+            appData.uploadedPhotoUrls = ad.photoUrls || [];
+            appData.uploadedPhotos = appData.uploadedPhotoUrls.map((_, i) => i + 1);
+            
+            // Обновляем отображение фото
+            for (let i = 1; i <= 3; i++) {
+                const placeholder = document.getElementById(`photo-placeholder-${i}`);
+                if (i <= appData.uploadedPhotoUrls.length) {
+                    placeholder.innerHTML = `
+                        <img src="${appData.uploadedPhotoUrls[i-1]}" alt="Фото ${i}">
+                        <div class="photo-label">Фото ${i}</div>
+                        <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); 
+                             color: white; width: 20px; height: 20px; border-radius: 50%; 
+                             display: flex; align-items: center; justify-content: center; 
+                             font-size: 12px; cursor: pointer;" 
+                             onclick="removePhoto(${i})">×</div>
+                    `;
+                } else {
+                    placeholder.innerHTML = `<i class="fas fa-plus"></i><span>Фото ${i}</span>`;
+                }
+            }
+            
+            document.getElementById('photo-count').textContent = appData.uploadedPhotos.length;
+            
             // Показываем форму
             toggleAddForm();
             
@@ -2124,14 +2549,12 @@
             showNotification('Редактирование объявления', 'info');
         }
         
-        // Удалить из истории
         function removeFromHistory(id) {
             appData.history = appData.history.filter(item => item.id !== id);
             updateHistory();
             showNotification('Удалено из истории', 'warning');
         }
         
-        // Очистить историю
         function clearHistory() {
             if (appData.history.length === 0) {
                 showNotification('История уже пуста', 'info');
@@ -2147,13 +2570,11 @@
             showNotification('История очищена', 'warning');
         }
         
-        // Открыть выбор фото
         function openPhotoPicker(slotNumber) {
             appData.currentPhotoSlot = slotNumber;
             document.getElementById('photoInput').click();
         }
         
-        // Обработка загрузки фото
         function handlePhotoUpload(event) {
             const files = event.target.files;
             const maxFiles = 3;
@@ -2215,7 +2636,6 @@
             event.target.value = '';
         }
         
-        // Удалить фото
         function removePhoto(photoNum) {
             event.stopPropagation();
             
@@ -2237,7 +2657,6 @@
             showNotification(`Фото удалено (${appData.uploadedPhotos.length}/3)`, 'warning');
         }
         
-        // Очистить форму
         function clearAddForm() {
             document.getElementById('adTitle').value = '';
             document.getElementById('adCategory').value = '';
@@ -2259,8 +2678,7 @@
             delete appData.editingAdId;
         }
         
-        // Опубликовать объявление
-        function publishAd() {
+        async function publishAd() {
             const title = document.getElementById('adTitle').value.trim();
             const category = document.getElementById('adCategory').value;
             const price = parseInt(document.getElementById('adPrice').value);
@@ -2298,6 +2716,18 @@
                     ad.photoUrls = [...appData.uploadedPhotoUrls];
                     ad.photos = appData.uploadedPhotos.length;
                     
+                    // Обновляем в базе данных
+                    await updateAdInDatabase(ad.id, {
+                        title: ad.title,
+                        category: ad.category,
+                        price: ad.price,
+                        description: ad.description,
+                        photo_urls: ad.photoUrls
+                    });
+                    
+                    // Сохраняем локально
+                    saveAdLocally(ad);
+                    
                     renderAds();
                     updateProfileStats();
                     updateMyAdsList();
@@ -2326,6 +2756,14 @@
                 dislikes: 0
             };
             
+            // Сохраняем в базу данных
+            const savedAd = await saveAdToDatabase(newAd);
+            
+            // Если сохранение в базе удалось, используем ID из базы
+            if (savedAd && savedAd.id) {
+                newAd.id = savedAd.id;
+            }
+            
             // Добавляем в список объявлений
             appData.ads.unshift(newAd);
             
@@ -2345,7 +2783,6 @@
             showNotification('Объявление успешно опубликовано!', 'success');
         }
         
-        // Обновить статистику профиля
         function updateProfileStats() {
             // Считаем мои объявления
             const myAds = appData.ads.filter(ad => ad.sellerId === appData.currentUserId).length;
@@ -2370,7 +2807,6 @@
             document.getElementById('myRating').textContent = myRating.toFixed(1);
         }
         
-        // Переключение FAQ
         function toggleFaq(id) {
             const answer = document.getElementById(`faq-answer-${id}`);
             const icon = document.getElementById(`faq-icon-${id}`);
@@ -2384,7 +2820,6 @@
             }
         }
         
-        // Подать жалобу
         function submitComplaint() {
             const message = encodeURIComponent('Хочу подать жалобу!');
             const telegramUrl = `https://t.me/nukm0?start=${message}`;
@@ -2402,7 +2837,6 @@
             }
         }
         
-        // Вспомогательные функции
         function getCategoryName(category) {
             const categories = {
                 'liquids': 'Жидкости',
@@ -2414,55 +2848,19 @@
         }
         
         // Инициализация приложения
-        function initApp() {
-            // Получаем данные пользователя из Telegram
-            appData.currentUserData = getUserDataFromTelegram();
-            appData.currentUserId = appData.currentUserData.id;
+        document.addEventListener('DOMContentLoaded', function() {
+            initApp();
             
-            // Обновляем профиль в UI
-            updateUserProfile();
-            
-            if (tg) {
-                tg.expand();
-                tg.ready();
-                
-                // Устанавливаем тему
-                tg.setHeaderColor('#6D28D9');
-                tg.setBackgroundColor('#7C3AED');
-                
-                // Показываем кнопку "Назад"
-                tg.BackButton.show();
-                tg.BackButton.onClick(function() {
-                    tg.close();
-                });
-            }
-            
-            // Инициализация пустых тестовых данных
-            initializeTestData();
-            
-            // Рендерим объявления
-            renderAds();
+            // Закрытие модального окна по клику на фон
+            document.getElementById('photoModal').addEventListener('click', function(event) {
+                if (event.target === this) {
+                    closePhotoModal();
+                }
+            });
             
             // Инициализация FAQ (все ответы скрыты)
             for (let i = 1; i <= 5; i++) {
                 document.getElementById(`faq-answer-${i}`).style.display = 'none';
-            }
-            
-            // Обновляем статистику профиля
-            updateProfileStats();
-            
-            showNotification(`Добро пожаловать, ${appData.currentUserData.first_name}!`, 'success');
-        }
-        
-        // Запуск при загрузке
-        document.addEventListener('DOMContentLoaded', function() {
-            initApp();
-        });
-        
-        // Закрытие модального окна по клику на фон
-        document.getElementById('photoModal').addEventListener('click', function(event) {
-            if (event.target === this) {
-                closePhotoModal();
             }
         });
     </script>
