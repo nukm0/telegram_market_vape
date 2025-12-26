@@ -102,7 +102,7 @@
             margin-bottom: 10px;
         }
         
-        /* Кнопка добавления объявления */
+        /* Кнопка добавления объявления - ВМЕСТЕ С ФОРМОЙ СВЕРХУ */
         .add-ad-section {
             background: rgba(255, 255, 255, 0.08);
             border-radius: 20px;
@@ -1223,6 +1223,156 @@
         .rate-btn:disabled::before {
             display: none;
         }
+        
+        /* Стили для модального окна регистрации */
+        .registration-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .registration-content {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            border-radius: 25px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            border: 2px solid rgba(139, 92, 246, 0.5);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+        }
+        
+        .registration-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .registration-header i {
+            font-size: 48px;
+            color: #8B5CF6;
+            margin-bottom: 15px;
+        }
+        
+        .registration-header h3 {
+            color: white;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .registration-header p {
+            color: #D8B4FE;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .registration-steps {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .step:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .step.active {
+            background: rgba(139, 92, 246, 0.2);
+            border-left: 3px solid #8B5CF6;
+        }
+        
+        .step-number {
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .step-info {
+            flex: 1;
+        }
+        
+        .step-info strong {
+            color: white;
+            font-size: 14px;
+            display: block;
+            margin-bottom: 3px;
+        }
+        
+        .step-info small {
+            color: #A78BFA;
+            font-size: 12px;
+        }
+        
+        .step-info a {
+            color: #8B5CF6;
+            text-decoration: none;
+        }
+        
+        .step-info a:hover {
+            text-decoration: underline;
+        }
+        
+        .registration-form {
+            margin-bottom: 15px;
+        }
+        
+        .registration-form .form-input {
+            margin-bottom: 15px;
+        }
+        
+        .registration-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .registration-buttons .cancel-btn,
+        .registration-buttons .publish-btn {
+            flex: 1;
+        }
+        
+        .registration-note {
+            text-align: center;
+            padding: 10px;
+            background: rgba(245, 158, 11, 0.1);
+            border-radius: 10px;
+            margin-top: 15px;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        
+        .registration-note small {
+            color: #F59E0B;
+            font-size: 12px;
+        }
+        
+        .registration-note i {
+            margin-right: 5px;
+        }
     </style>
 </head>
 <body>
@@ -1239,11 +1389,11 @@
         <main class="main-content" id="main-content">
             <!-- Страница 1: Объявления -->
             <div class="page active" id="page-ads">
-                <!-- Секция добавления объявления -->
+                <!-- Секция добавления объявления СВЕРХУ -->
                 <div class="add-ad-section">
                     <div class="add-ad-header">
                         <div class="add-ad-title">Разместить объявление</div>
-                        <button class="toggle-form-btn" onclick="toggleAddForm()">
+                        <button class="toggle-form-btn" onclick="toggleAddForm()" id="addAdButton">
                             <i class="fas fa-plus-circle"></i>
                             <span id="toggle-btn-text">Добавить</span>
                         </button>
@@ -1456,6 +1606,21 @@
                                 Договаривайтесь об оплате в личном чате.
                             </div>
                         </div>
+                        
+                        <!-- Новый FAQ о регистрации -->
+                        <div class="faq-item" onclick="toggleFaq(6)">
+                            <div class="faq-question">
+                                <span>Как получить Telegram User ID?</span>
+                                <i class="fas fa-chevron-down" id="faq-icon-6"></i>
+                            </div>
+                            <div class="faq-answer" id="faq-answer-6" style="display: none;">
+                                1. Откройте Telegram<br>
+                                2. Найдите бота <strong>@userinfobot</strong><br>
+                                3. Нажмите START<br>
+                                4. Скопируйте цифры напротив <strong>"Id:"</strong><br>
+                                5. Введите их при регистрации в Vape Market
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Кнопка подачи жалобы -->
@@ -1512,7 +1677,234 @@
         <div class="notification" id="notification"></div>
     </div>
 
+    <!-- Модальное окно регистрации -->
+    <div class="registration-modal" id="registrationModal">
+        <div class="registration-content">
+            <div class="registration-header">
+                <i class="fas fa-user-plus"></i>
+                <h3>Регистрация в Vape Market</h3>
+                <p>Для публикации и оценки объявлений нужен Telegram User ID</p>
+            </div>
+            
+            <div class="registration-steps">
+                <div class="step active">
+                    <div class="step-number">1</div>
+                    <div class="step-info">
+                        <strong>Откройте Telegram</strong>
+                        <small>Установите приложение если нет</small>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-info">
+                        <strong>Найдите бота @userinfobot</strong>
+                        <small>Или перейдите по ссылке: <a href="https://t.me/userinfobot" target="_blank">t.me/userinfobot</a></small>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-info">
+                        <strong>Нажмите START</strong>
+                        <small>Бот пришлет ваш User ID</small>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-info">
+                        <strong>Скопируйте ID</strong>
+                        <small>Цифры напротив "Id:"</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="registration-form">
+                <input type="number" 
+                       id="userIdInput" 
+                       placeholder="Ваш Telegram User ID (цифры)" 
+                       class="form-input">
+                <input type="text" 
+                       id="userNameInput" 
+                       placeholder="Как вас называть?" 
+                       class="form-input">
+                
+                <div class="registration-buttons">
+                    <button class="cancel-btn" onclick="skipRegistration()">
+                        <i class="fas fa-eye"></i> Только просмотр
+                    </button>
+                    <button class="publish-btn" onclick="completeRegistration()">
+                        <i class="fas fa-check"></i> Зарегистрироваться
+                    </button>
+                </div>
+                
+                <div class="registration-note">
+                    <small>
+                        <i class="fas fa-info-circle"></i>
+                        Без регистрации вы можете только просматривать объявления
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // ==================== СИСТЕМА РЕГИСТРАЦИИ ====================
+        
+        // Глобальные переменные для регистрации
+        let currentUser = null;
+        let isUserRegistered = false;
+        
+        // Проверка регистрации пользователя
+        function checkUserRegistration() {
+            // 1. Если пользователь из Telegram - берем данные оттуда
+            if (window.Telegram?.WebApp) {
+                const tg = window.Telegram.WebApp;
+                const user = tg.initDataUnsafe?.user;
+                
+                if (user && user.id) {
+                    // Сохраняем данные Telegram пользователя
+                    currentUser = {
+                        id: user.id.toString(),
+                        name: user.first_name || 'Пользователь',
+                        username: user.username ? '@' + user.username : null,
+                        isTelegramUser: true
+                    };
+                    
+                    localStorage.setItem('vapeMarketUserId', currentUser.id);
+                    localStorage.setItem('vapeMarketUserName', currentUser.name);
+                    isUserRegistered = true;
+                    
+                    console.log('Telegram user detected:', currentUser);
+                    initApp(); // Инициализируем приложение
+                    return;
+                }
+            }
+            
+            // 2. Проверяем сохраненный User ID
+            const savedUserId = localStorage.getItem('vapeMarketUserId');
+            if (savedUserId) {
+                currentUser = {
+                    id: savedUserId,
+                    name: localStorage.getItem('vapeMarketUserName') || 'Пользователь',
+                    isTelegramUser: false
+                };
+                isUserRegistered = true;
+                console.log('Saved user found:', currentUser);
+                initApp(); // Инициализируем приложение
+                return;
+            }
+            
+            // 3. Если нет User ID - показываем регистрацию
+            showRegistrationModal();
+        }
+        
+        // Показать модальное окно регистрации
+        function showRegistrationModal() {
+            document.getElementById('registrationModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Скрыть модальное окно регистрации
+        function hideRegistrationModal() {
+            document.getElementById('registrationModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Завершить регистрацию
+        function completeRegistration() {
+            const userId = document.getElementById('userIdInput').value.trim();
+            const userName = document.getElementById('userNameInput').value.trim();
+            
+            if (!userId) {
+                showNotification('Введите Telegram User ID!', 'error');
+                return;
+            }
+            
+            if (!userName) {
+                showNotification('Введите ваше имя!', 'error');
+                return;
+            }
+            
+            // Сохраняем данные
+            currentUser = {
+                id: userId,
+                name: userName,
+                isTelegramUser: false
+            };
+            
+            localStorage.setItem('vapeMarketUserId', userId);
+            localStorage.setItem('vapeMarketUserName', userName);
+            isUserRegistered = true;
+            
+            // Скрываем модальное окно
+            hideRegistrationModal();
+            
+            // Инициализируем приложение
+            initApp();
+            
+            showNotification(`Добро пожаловать, ${userName}!`, 'success');
+        }
+        
+        // Пропустить регистрацию (только просмотр)
+        function skipRegistration() {
+            currentUser = {
+                id: 'guest_' + Date.now(),
+                name: 'Гость',
+                isTelegramUser: false,
+                isGuest: true
+            };
+            
+            isUserRegistered = false;
+            hideRegistrationModal();
+            
+            // Блокируем кнопки добавления
+            document.getElementById('addAdButton').style.display = 'none';
+            
+            // Инициализируем приложение в режиме гостя
+            initApp();
+            
+            showNotification('Вы вошли как гость. Только просмотр объявлений.', 'info');
+        }
+        
+        // Обновить профиль в UI
+        function updateUserProfileUI() {
+            if (!currentUser) return;
+            
+            const profileName = document.getElementById('profileName');
+            if (profileName) {
+                profileName.textContent = currentUser.name;
+            }
+            
+            const profileUsername = document.getElementById('profileUsername');
+            if (profileUsername) {
+                profileUsername.textContent = currentUser.isGuest ? 'Гость (только просмотр)' : 
+                                             currentUser.isTelegramUser ? 'Telegram пользователь' : 'Зарегистрирован';
+            }
+            
+            // Обновляем аватар профиля
+            const profileAvatar = document.getElementById('profileAvatar');
+            if (profileAvatar && currentUser.name) {
+                const firstLetter = currentUser.name.charAt(0).toUpperCase();
+                profileAvatar.innerHTML = `<span style="font-size: 28px; font-weight: bold;">${firstLetter}</span>`;
+            }
+            
+            // Показываем/скрываем кнопки в зависимости от статуса
+            const addBtn = document.getElementById('addAdButton');
+            if (addBtn) {
+                if (currentUser.isGuest) {
+                    addBtn.style.display = 'none';
+                    addBtn.disabled = true;
+                } else {
+                    addBtn.style.display = 'flex';
+                    addBtn.disabled = false;
+                }
+            }
+        }
+        
+        // ==================== ОСНОВНОЕ ПРИЛОЖЕНИЕ ====================
+        
         // Инициализация Telegram Web App
         const tg = window.Telegram?.WebApp;
         
@@ -1530,122 +1922,39 @@
             currentPhotoList: [],
             nextAdId: 1,
             currentCategory: 'all',
-            currentPhotoSlot: null,
-            editingAdId: null
+            currentPhotoSlot: null
         };
         
-        // ========== ЛОКАЛЬНОЕ ХРАНИЛИЩЕ ==========
-        
-        function saveAdLocally(ad) {
-            const localAds = JSON.parse(localStorage.getItem('vape_market_ads') || '[]');
-            const existingIndex = localAds.findIndex(item => item.id === ad.id);
+        // Инициализация пустых тестовых данных
+        function initializeTestData() {
+            // Пустой массив объявлений - будут добавляться пользователями
+            appData.ads = [];
             
-            if (existingIndex !== -1) {
-                localAds[existingIndex] = ad;
-            } else {
-                localAds.push(ad);
-            }
+            // Инициализируем рейтинги
+            appData.userRatings = {};
             
-            localStorage.setItem('vape_market_ads', JSON.stringify(localAds));
-            console.log('💾 Объявление сохранено локально');
+            appData.nextAdId = 1;
         }
         
-        function loadAdsLocally(category = 'all') {
-            const localAds = JSON.parse(localStorage.getItem('vape_market_ads') || '[]');
-            
-            if (category === 'all') {
-                return localAds;
-            }
-            
-            return localAds.filter(ad => ad.category === category);
-        }
-        
-        function saveRatingsLocally() {
-            localStorage.setItem('vape_market_ratings', JSON.stringify(appData.userRatings));
-            console.log('💾 Оценки сохранены локально');
-        }
-        
-        function loadRatingsLocally() {
-            return JSON.parse(localStorage.getItem('vape_market_ratings') || '{}');
-        }
-        
-        function saveHistoryLocally() {
-            localStorage.setItem('vape_market_history', JSON.stringify(appData.history));
-            console.log('💾 История сохранена локально');
-        }
-        
-        function loadHistoryLocally() {
-            return JSON.parse(localStorage.getItem('vape_market_history') || '[]');
-        }
-        
-        // ========== ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ ==========
-        
-        function initApp() {
-            console.log('🚀 Инициализация приложения...');
-            
-            // 1. Получаем данные пользователя
-            appData.currentUserData = getUserDataFromTelegram();
-            appData.currentUserId = appData.currentUserData.id;
-            updateUserProfile();
-            
-            // 2. Загружаем данные из localStorage
-            appData.ads = loadAdsLocally();
-            appData.userRatings = loadRatingsLocally();
-            appData.history = loadHistoryLocally();
-            
-            // 3. Устанавливаем следующий ID
-            updateNextAdId();
-            
-            // 4. Рендерим объявления
-            renderAds();
-            
-            // 5. Обновляем статистику
-            updateProfileStats();
-            
-            // 6. Настройка Telegram
-            if (tg) {
-                tg.expand();
-                tg.ready();
-                tg.setHeaderColor('#6D28D9');
-                tg.setBackgroundColor('#7C3AED');
-                
-                // Кнопка "Назад"
-                tg.BackButton.show();
-                tg.BackButton.onClick(function() {
-                    tg.close();
-                });
-            }
-            
-            console.log('✅ Приложение инициализировано (локальный режим)');
-            showNotification(`Добро пожаловать, ${appData.currentUserData.first_name}!`, 'success');
-        }
-        
-        function updateNextAdId() {
-            const maxId = appData.ads.length > 0 ? Math.max(...appData.ads.map(ad => ad.id || 0)) : 0;
-            appData.nextAdId = maxId + 1;
-        }
-        
-        // ========== ОСНОВНЫЕ ФУНКЦИИ ==========
-        
+        // Получить данные пользователя из Telegram
         function getUserDataFromTelegram() {
             if (!tg) {
-                console.log('📱 Telegram Web App не доступен. Используем тестовые данные.');
+                console.warn('Telegram Web App не доступен. Используем текущего пользователя.');
                 return {
-                    id: 'test_user_' + Date.now(),
-                    first_name: 'Тестовый',
-                    last_name: 'Пользователь',
-                    username: 'test_user',
+                    id: currentUser?.id || 'user_' + Date.now(),
+                    first_name: currentUser?.name || 'Пользователь',
+                    username: currentUser?.username || null,
                     photo_url: null
                 };
             }
             
             const user = tg.initDataUnsafe?.user;
             if (!user) {
-                console.log('📱 Данные пользователя не получены из Telegram');
+                console.warn('Данные пользователя не получены из Telegram');
                 return {
-                    id: 'anon_user_' + Date.now(),
-                    first_name: 'Анонимный',
-                    username: 'anonymous'
+                    id: currentUser?.id || 'anon_user_' + Date.now(),
+                    first_name: currentUser?.name || 'Анонимный',
+                    username: currentUser?.username || null
                 };
             }
             
@@ -1654,10 +1963,12 @@
                 first_name: user.first_name || '',
                 last_name: user.last_name || '',
                 username: user.username || '',
-                photo_url: user.photo_url || null
+                photo_url: user.photo_url || null,
+                language_code: user.language_code || 'ru'
             };
         }
         
+        // Обновить профиль пользователя в UI
         function updateUserProfile() {
             if (!appData.currentUserData) return;
             
@@ -1683,12 +1994,14 @@
             if (appData.currentUserData.photo_url) {
                 profileAvatar.innerHTML = `<img src="${appData.currentUserData.photo_url}" alt="Аватар">`;
             } else {
+                // Генерируем градиентный аватар на основе имени
                 const name = appData.currentUserData.first_name || 'П';
                 const firstLetter = name.charAt(0).toUpperCase();
-                profileAvatar.innerHTML = `<span style="color: white; font-size: 24px; font-weight: bold;">${firstLetter}</span>`;
+                profileAvatar.innerHTML = `<span>${firstLetter}</span>`;
             }
         }
         
+        // Показать уведомление
         function showNotification(message, type = 'info') {
             const notification = document.getElementById('notification');
             notification.textContent = message;
@@ -1699,7 +2012,15 @@
             }, 3000);
         }
         
+        // Переключение страниц
         function switchPage(page) {
+            // Проверяем регистрацию для доступа к профилю
+            if (page === 'profile' && !isUserRegistered && !currentUser?.isGuest) {
+                showRegistrationModal();
+                showNotification('Для доступа к кабинету нужно зарегистрироваться!', 'error');
+                return;
+            }
+            
             // Скрыть все страницы
             document.querySelectorAll('.page').forEach(p => {
                 p.classList.remove('active');
@@ -1733,6 +2054,7 @@
             }
         }
         
+        // Переключение вкладок в личном кабинете
         function switchProfileTab(tab) {
             // Обновить активную вкладку
             document.querySelectorAll('.profile-tab').forEach(t => {
@@ -1740,14 +2062,22 @@
             });
             document.querySelector(`[onclick="switchProfileTab('${tab}')"]`).classList.add('active');
             
-            // Показать содержимое выбранной вкладки
+            // Показать содержимое выбранной вкладка
             document.querySelectorAll('.profile-tab-content').forEach(content => {
                 content.classList.remove('active');
             });
             document.getElementById(`${tab}-tab`).classList.add('active');
         }
         
+        // Переключение формы добавления
         function toggleAddForm() {
+            // Проверяем регистрацию
+            if (!isUserRegistered || currentUser?.isGuest) {
+                showRegistrationModal();
+                showNotification('Для публикации объявлений нужно зарегистрироваться!', 'error');
+                return;
+            }
+            
             const form = document.getElementById('addAdForm');
             const btnText = document.getElementById('toggle-btn-text');
             
@@ -1760,6 +2090,7 @@
             }
         }
         
+        // Скрыть форму добавления
         function hideAddForm() {
             const form = document.getElementById('addAdForm');
             const btnText = document.getElementById('toggle-btn-text');
@@ -1769,6 +2100,7 @@
             clearAddForm();
         }
         
+        // Фильтр по категориям
         function filterCategory(category) {
             appData.currentCategory = category;
             
@@ -1778,15 +2110,11 @@
             });
             event.target.classList.add('active');
             
-            // Фильтруем локальные данные
-            appData.ads = category === 'all' 
-                ? loadAdsLocally() 
-                : loadAdsLocally().filter(ad => ad.category === category);
-            
             // Обновить отображение объявлений
             renderAds();
         }
         
+        // Рендер объявлений
         function renderAds() {
             const container = document.getElementById('ads-container');
             container.innerHTML = '';
@@ -1915,6 +2243,7 @@
             });
         }
         
+        // Рассчитать рейтинг по формуле: 0.1 + (likes / (likes + dislikes)) * 4.9
         function calculateRating(sellerId) {
             if (!appData.userRatings[sellerId]) return 0.1;
             
@@ -1930,6 +2259,7 @@
             return 0.1 + (likes / total) * 4.9;
         }
         
+        // Открыть просмотр фото
         function openPhotoViewer(adId, photoIndex = 0) {
             const ad = appData.ads.find(a => a.id === adId);
             if (!ad || !ad.photoUrls || ad.photoUrls.length === 0) {
@@ -1951,12 +2281,14 @@
             document.body.style.overflow = 'hidden';
         }
         
+        // Закрыть просмотр фото
         function closePhotoModal() {
             const modal = document.getElementById('photoModal');
             modal.classList.remove('active');
             document.body.style.overflow = 'auto';
         }
         
+        // Следующее фото
         function nextPhoto() {
             if (appData.currentPhotoList.length === 0) return;
             
@@ -1966,6 +2298,7 @@
                 `${appData.currentPhotoIndex + 1} / ${appData.currentPhotoList.length}`;
         }
         
+        // Предыдущее фото
         function prevPhoto() {
             if (appData.currentPhotoList.length === 0) return;
             
@@ -1978,7 +2311,15 @@
                 `${appData.currentPhotoIndex + 1} / ${appData.currentPhotoList.length}`;
         }
         
+        // Оценить продавца (с проверкой на собственное объявление)
         function rateSeller(sellerId, type, adId) {
+            // Проверка регистрации
+            if (!isUserRegistered || currentUser?.isGuest) {
+                showRegistrationModal();
+                showNotification('Для оценки объявлений нужно зарегистрироваться!', 'error');
+                return;
+            }
+            
             if (!appData.currentUserId) {
                 appData.currentUserId = appData.currentUserData?.id || 'user_' + Date.now();
             }
@@ -2019,9 +2360,6 @@
             }
             appData.userRatings[sellerId][appData.currentUserId] = type;
             
-            // Сохраняем локально
-            saveRatingsLocally();
-            
             // Обновляем UI
             updateAdStats(adId);
             renderAds();
@@ -2037,6 +2375,7 @@
             showNotification(`Вы поставили ${type === 'like' ? 'лайк' : 'дизлайк'}`, 'success');
         }
         
+        // Обновить статистику объявления
         function updateAdStats(adId) {
             const ad = appData.ads.find(a => a.id === adId);
             if (!ad) return;
@@ -2048,6 +2387,7 @@
             if (dislikesEl) dislikesEl.textContent = ad.dislikes;
         }
         
+        // Написать продавцу (без тестовых сообщений)
         function contactSeller(username, adId, adTitle, category) {
             // Формируем сообщение
             const categoryName = getCategoryName(category);
@@ -2064,9 +2404,6 @@
             };
             
             appData.history.unshift(historyItem);
-            
-            // Сохраняем историю
-            saveHistoryLocally();
             
             // Обновляем историю в профиле если открыта страница
             if (document.getElementById('page-profile').classList.contains('active')) {
@@ -2092,6 +2429,7 @@
             }
         }
         
+        // Обновить историю просмотров
         function updateHistory() {
             const historyList = document.getElementById('historyList');
             historyList.innerHTML = '';
@@ -2117,6 +2455,7 @@
             });
         }
         
+        // Обновить список моих объявлений
         function updateMyAdsList() {
             const myAdsList = document.getElementById('myAdsList');
             
@@ -2164,23 +2503,20 @@
             });
         }
         
+        // Удалить объявление
         function deleteAd(adId) {
             if (!confirm('Вы уверены, что хотите удалить это объявление?')) {
                 return;
             }
             
-            // Удаляем из локального массива
             appData.ads = appData.ads.filter(ad => ad.id !== adId);
-            
-            // Обновляем локальное хранилище
-            localStorage.setItem('vape_market_ads', JSON.stringify(appData.ads));
-            
             renderAds();
             updateProfileStats();
             updateMyAdsList();
             showNotification('Объявление удалено', 'warning');
         }
         
+        // Редактировать объявление
         function editAd(adId) {
             const ad = appData.ads.find(a => a.id === adId);
             if (!ad) return;
@@ -2191,30 +2527,6 @@
             document.getElementById('adPrice').value = ad.price;
             document.getElementById('adDescription').value = ad.description;
             
-            // Устанавливаем фотографии
-            appData.uploadedPhotoUrls = ad.photoUrls || [];
-            appData.uploadedPhotos = appData.uploadedPhotoUrls.map((_, i) => i + 1);
-            
-            // Обновляем отображение фото
-            for (let i = 1; i <= 3; i++) {
-                const placeholder = document.getElementById(`photo-placeholder-${i}`);
-                if (i <= appData.uploadedPhotoUrls.length) {
-                    placeholder.innerHTML = `
-                        <img src="${appData.uploadedPhotoUrls[i-1]}" alt="Фото ${i}">
-                        <div class="photo-label">Фото ${i}</div>
-                        <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); 
-                             color: white; width: 20px; height: 20px; border-radius: 50%; 
-                             display: flex; align-items: center; justify-content: center; 
-                             font-size: 12px; cursor: pointer;" 
-                             onclick="removePhoto(${i})">×</div>
-                    `;
-                } else {
-                    placeholder.innerHTML = `<i class="fas fa-plus"></i><span>Фото ${i}</span>`;
-                }
-            }
-            
-            document.getElementById('photo-count').textContent = appData.uploadedPhotos.length;
-            
             // Показываем форму
             toggleAddForm();
             
@@ -2224,13 +2536,14 @@
             showNotification('Редактирование объявления', 'info');
         }
         
+        // Удалить из истории
         function removeFromHistory(id) {
             appData.history = appData.history.filter(item => item.id !== id);
-            saveHistoryLocally();
             updateHistory();
             showNotification('Удалено из истории', 'warning');
         }
         
+        // Очистить историю
         function clearHistory() {
             if (appData.history.length === 0) {
                 showNotification('История уже пуста', 'info');
@@ -2242,16 +2555,17 @@
             }
             
             appData.history = [];
-            saveHistoryLocally();
             updateHistory();
             showNotification('История очищена', 'warning');
         }
         
+        // Открыть выбор фото
         function openPhotoPicker(slotNumber) {
             appData.currentPhotoSlot = slotNumber;
             document.getElementById('photoInput').click();
         }
         
+        // Обработка загрузки фото
         function handlePhotoUpload(event) {
             const files = event.target.files;
             const maxFiles = 3;
@@ -2313,6 +2627,7 @@
             event.target.value = '';
         }
         
+        // Удалить фото
         function removePhoto(photoNum) {
             event.stopPropagation();
             
@@ -2334,6 +2649,7 @@
             showNotification(`Фото удалено (${appData.uploadedPhotos.length}/3)`, 'warning');
         }
         
+        // Очистить форму
         function clearAddForm() {
             document.getElementById('adTitle').value = '';
             document.getElementById('adCategory').value = '';
@@ -2355,7 +2671,15 @@
             delete appData.editingAdId;
         }
         
+        // Опубликовать объявление
         function publishAd() {
+            // Проверка регистрации
+            if (!isUserRegistered || currentUser?.isGuest) {
+                showRegistrationModal();
+                showNotification('Для публикации объявлений нужно зарегистрироваться!', 'error');
+                return;
+            }
+            
             const title = document.getElementById('adTitle').value.trim();
             const category = document.getElementById('adCategory').value;
             const price = parseInt(document.getElementById('adPrice').value);
@@ -2393,9 +2717,6 @@
                     ad.photoUrls = [...appData.uploadedPhotoUrls];
                     ad.photos = appData.uploadedPhotos.length;
                     
-                    // Сохраняем локально
-                    saveAdLocally(ad);
-                    
                     renderAds();
                     updateProfileStats();
                     updateMyAdsList();
@@ -2427,16 +2748,10 @@
             // Добавляем в список объявлений
             appData.ads.unshift(newAd);
             
-            // Сохраняем локально
-            saveAdLocally(newAd);
-            
             // Инициализируем рейтинги для нового продавца
             if (!appData.userRatings[appData.currentUserId]) {
                 appData.userRatings[appData.currentUserId] = {};
             }
-            
-            // Сохраняем оценки
-            saveRatingsLocally();
             
             // Обновляем статистику профиля
             updateProfileStats();
@@ -2449,6 +2764,7 @@
             showNotification('Объявление успешно опубликовано!', 'success');
         }
         
+        // Обновить статистику профиля
         function updateProfileStats() {
             // Считаем мои объявления
             const myAds = appData.ads.filter(ad => ad.sellerId === appData.currentUserId).length;
@@ -2473,6 +2789,7 @@
             document.getElementById('myRating').textContent = myRating.toFixed(1);
         }
         
+        // Переключение FAQ
         function toggleFaq(id) {
             const answer = document.getElementById(`faq-answer-${id}`);
             const icon = document.getElementById(`faq-icon-${id}`);
@@ -2486,6 +2803,7 @@
             }
         }
         
+        // Подать жалобу
         function submitComplaint() {
             const message = encodeURIComponent('Хочу подать жалобу!');
             const telegramUrl = `https://t.me/nukm0?start=${message}`;
@@ -2503,6 +2821,7 @@
             }
         }
         
+        // Вспомогательные функции
         function getCategoryName(category) {
             const categories = {
                 'liquids': 'Жидкости',
@@ -2514,19 +2833,78 @@
         }
         
         // Инициализация приложения
-        document.addEventListener('DOMContentLoaded', function() {
-            initApp();
+        function initApp() {
+            // Если пользователь гость, обновляем UI и показываем ограничения
+            if (currentUser?.isGuest) {
+                updateUserProfileUI();
+                showNotification('Вы вошли как гость. Только просмотр объявлений.', 'info');
+                renderAds();
+                return;
+            }
             
-            // Закрытие модального окна по клику на фон
-            document.getElementById('photoModal').addEventListener('click', function(event) {
-                if (event.target === this) {
-                    closePhotoModal();
-                }
-            });
+            // Если пользователь не зарегистрирован, не инициализируем приложение
+            if (!isUserRegistered) {
+                return;
+            }
+            
+            // Обновляем профиль в UI
+            updateUserProfileUI();
+            
+            // Получаем данные пользователя из Telegram
+            appData.currentUserData = getUserDataFromTelegram();
+            appData.currentUserId = appData.currentUserData.id;
+            
+            // Обновляем профиль в UI
+            updateUserProfile();
+            
+            if (tg) {
+                tg.expand();
+                tg.ready();
+                
+                // Устанавливаем тему
+                tg.setHeaderColor('#6D28D9');
+                tg.setBackgroundColor('#7C3AED');
+                
+                // Показываем кнопку "Назад"
+                tg.BackButton.show();
+                tg.BackButton.onClick(function() {
+                    tg.close();
+                });
+            }
+            
+            // Инициализация пустых тестовых данных
+            initializeTestData();
+            
+            // Рендерим объявления
+            renderAds();
             
             // Инициализация FAQ (все ответы скрыты)
-            for (let i = 1; i <= 5; i++) {
+            for (let i = 1; i <= 6; i++) {
                 document.getElementById(`faq-answer-${i}`).style.display = 'none';
+            }
+            
+            // Обновляем статистику профиля
+            updateProfileStats();
+            
+            showNotification(`Добро пожаловать, ${appData.currentUserData.first_name}!`, 'success');
+        }
+        
+        // Запуск при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            checkUserRegistration();
+        });
+        
+        // Закрытие модального окна по клику на фон
+        document.getElementById('photoModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closePhotoModal();
+            }
+        });
+        
+        // Закрытие модального окна регистрации по клику на фон
+        document.getElementById('registrationModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                hideRegistrationModal();
             }
         });
     </script>
