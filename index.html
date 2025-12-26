@@ -102,7 +102,7 @@
             margin-bottom: 10px;
         }
         
-        /* Кнопка добавления объявления */
+        /* Кнопка добавления объявления - ВМЕСТЕ С ФОРМОЙ СВЕРХУ */
         .add-ad-section {
             background: rgba(255, 255, 255, 0.08);
             border-radius: 20px;
@@ -1210,29 +1210,18 @@
             transform: translateY(-2px);
         }
         
-        /* Загрузка */
-        .loading {
+        /* Стиль для заблокированных кнопок лайка/дизлайка */
+        .rate-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .rate-btn:disabled:hover {
+            transform: none;
+        }
+        
+        .rate-btn:disabled::before {
             display: none;
-            text-align: center;
-            padding: 30px;
-        }
-        
-        .loading.active {
-            display: block;
-        }
-        
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #8B5CF6;
-            animation: spin 1s ease-in-out infinite;
-            margin: 0 auto 15px;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -1250,7 +1239,7 @@
         <main class="main-content" id="main-content">
             <!-- Страница 1: Объявления -->
             <div class="page active" id="page-ads">
-                <!-- Секция добавления объявления -->
+                <!-- Секция добавления объявления СВЕРХУ -->
                 <div class="add-ad-section">
                     <div class="add-ad-header">
                         <div class="add-ad-title">Разместить объявление</div>
@@ -1333,12 +1322,6 @@
                     <button class="category-btn" onclick="filterCategory('consumables')">Расходники</button>
                 </div>
 
-                <!-- Загрузка -->
-                <div class="loading" id="loading">
-                    <div class="loading-spinner"></div>
-                    <div>Загрузка объявлений...</div>
-                </div>
-
                 <!-- Объявления будут добавляться здесь -->
                 <div id="ads-container"></div>
             </div>
@@ -1394,14 +1377,14 @@
 
                     <!-- Содержимое вкладки "История" -->
                     <div class="profile-tab-content" id="history-tab">
-                        <div class="loading" id="history-loading">
-                            <div class="loading-spinner"></div>
-                            <div>Загрузка истории...</div>
-                        </div>
-                        
                         <div class="history-list" id="historyList">
                             <!-- История будет добавляться здесь -->
                         </div>
+                        
+                        <button class="cancel-btn" onclick="clearHistory()" style="width: 100%; margin-top: 10px;">
+                            <i class="fas fa-trash"></i>
+                            Очистить историю
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1529,47 +1512,44 @@
         <div class="notification" id="notification"></div>
     </div>
 
-    <!-- ПОДКЛЮЧАЕМ SUPABASE -->
-    <script type="module">
-        // ========== SUPABASE КЛИЕНТ ==========
-        import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-        
-        // Ваши ключи (уже вставлены)
-        const supabaseUrl = 'https://ghvosdpasvkodhgitnij.supabase.co'
-        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdodm9zZHBhc3Zrb2RoZ2l0bmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MDMyNjQsImV4cCI6MjA4MjI3OTI2NH0.SvKy2IUULiDs2Nldrhdhi6k3k0zMTOhMnPqMpTjXRNM'
-        
-        // Создаем клиент Supabase
-        export const supabase = createClient(supabaseUrl, supabaseAnonKey)
-        
-        // Делаем доступным глобально
-        window.supabase = supabase
-        
-        // ========== ОСНОВНОЕ ПРИЛОЖЕНИЕ ==========
-        
+    <script>
         // Инициализация Telegram Web App
         const tg = window.Telegram?.WebApp;
         
         // Система данных приложения
         const appData = {
-            currentUserData: null,
             currentUserId: null,
-            currentCategory: 'all',
+            currentUserData: null,
+            ads: [],
+            userRatings: {},
+            history: [],
             uploadedPhotos: [],
             uploadedPhotoFiles: [],
             uploadedPhotoUrls: [],
-            editingAdId: null,
             currentPhotoIndex: 0,
-            currentPhotoList: []
+            currentPhotoList: [],
+            nextAdId: 1,
+            currentCategory: 'all',
+            currentPhotoSlot: null
         };
         
-        // ========== ФУНКЦИИ ДЛЯ РАБОТЫ С БАЗОЙ ==========
+        // Инициализация пустых тестовых данных
+        function initializeTestData() {
+            // Пустой массив объявлений - будут добавляться пользователями
+            appData.ads = [];
+            
+            // Инициализируем рейтинги
+            appData.userRatings = {};
+            
+            appData.nextAdId = 1;
+        }
         
         // Получить данные пользователя из Telegram
         function getUserDataFromTelegram() {
             if (!tg) {
-                console.log('Telegram Web App не доступен. Используем тестовые данные.');
+                console.warn('Telegram Web App не доступен. Используем тестовые данные.');
                 return {
-                    id: 123456789,
+                    id: 'test_user_' + Date.now(),
                     first_name: 'Тестовый',
                     last_name: 'Пользователь',
                     username: 'test_user',
@@ -1579,9 +1559,9 @@
             
             const user = tg.initDataUnsafe?.user;
             if (!user) {
-                console.log('Данные пользователя не получены из Telegram');
+                console.warn('Данные пользователя не получены из Telegram');
                 return {
-                    id: 987654321,
+                    id: 'anon_user_' + Date.now(),
                     first_name: 'Анонимный',
                     username: 'anonymous'
                 };
@@ -1592,325 +1572,43 @@
                 first_name: user.first_name || '',
                 last_name: user.last_name || '',
                 username: user.username || '',
-                photo_url: user.photo_url || null
+                photo_url: user.photo_url || null,
+                language_code: user.language_code || 'ru'
             };
         }
         
-        // Загрузить объявления из базы
-        async function loadAds(category = 'all') {
-            try {
-                document.getElementById('loading').classList.add('active');
-                
-                let query = supabase
-                    .from('advertisements')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-                
-                if (category !== 'all') {
-                    query = query.eq('category', category);
-                }
-                
-                const { data: ads, error } = await query;
-                
-                if (error) {
-                    console.error('Ошибка загрузки объявлений:', error);
-                    showNotification('Ошибка загрузки объявлений', 'error');
-                    return [];
-                }
-                
-                console.log('Загружено объявлений:', ads?.length || 0);
-                return ads || [];
-            } catch (error) {
-                console.error('Исключение при загрузке объявлений:', error);
-                showNotification('Ошибка соединения с базой', 'error');
-                return [];
-            } finally {
-                document.getElementById('loading').classList.remove('active');
-            }
-        }
-        
-        // Загрузить мои объявления
-        async function loadMyAds() {
-            if (!appData.currentUserId) return [];
+        // Обновить профиль пользователя в UI
+        function updateUserProfile() {
+            if (!appData.currentUserData) return;
             
-            try {
-                const { data: ads, error } = await supabase
-                    .from('advertisements')
-                    .select('*')
-                    .eq('seller_id', appData.currentUserId)
-                    .order('created_at', { ascending: false });
-                
-                if (error) throw error;
-                
-                return ads || [];
-            } catch (error) {
-                console.error('Ошибка загрузки моих объявлений:', error);
-                return [];
-            }
-        }
-        
-        // Загрузить историю просмотров
-        async function loadHistory() {
-            if (!appData.currentUserId) return [];
+            const profileName = document.getElementById('profileName');
+            const profileUsername = document.getElementById('profileUsername');
+            const profileAvatar = document.getElementById('profileAvatar');
             
-            try {
-                document.getElementById('history-loading').classList.add('active');
-                
-                const { data: history, error } = await supabase
-                    .from('history')
-                    .select(`
-                        *,
-                        advertisements (
-                            id,
-                            title,
-                            seller_username,
-                            category,
-                            price
-                        )
-                    `)
-                    .eq('user_id', appData.currentUserId)
-                    .order('viewed_at', { ascending: false })
-                    .limit(20);
-                
-                if (error) throw error;
-                
-                return history || [];
-            } catch (error) {
-                console.error('Ошибка загрузки истории:', error);
-                return [];
-            } finally {
-                document.getElementById('history-loading').classList.remove('active');
+            // Имя пользователя
+            let fullName = appData.currentUserData.first_name;
+            if (appData.currentUserData.last_name) {
+                fullName += ' ' + appData.currentUserData.last_name;
             }
-        }
-        
-        // Добавить в историю просмотров
-        async function addToHistory(adId) {
-            if (!appData.currentUserId) return;
+            profileName.textContent = fullName;
             
-            try {
-                await supabase
-                    .from('history')
-                    .upsert({
-                        user_id: appData.currentUserId,
-                        ad_id: adId,
-                        viewed_at: new Date().toISOString()
-                    }, {
-                        onConflict: 'user_id,ad_id'
-                    });
-            } catch (error) {
-                console.error('Ошибка добавления в историю:', error);
-            }
-        }
-        
-        // Получить рейтинг продавца
-        async function getSellerRating(sellerId) {
-            try {
-                const { data: ratings, error } = await supabase
-                    .from('ratings')
-                    .select('rating_type')
-                    .eq('seller_id', sellerId);
-                
-                if (error) throw error;
-                
-                const likes = ratings?.filter(r => r.rating_type === 'like').length || 0;
-                const dislikes = ratings?.filter(r => r.rating_type === 'dislike').length || 0;
-                
-                // Формула: 0.1 + (лайки / (лайки + дизлайки)) * 4.9
-                const total = likes + dislikes;
-                if (total === 0) return 0.1;
-                
-                return 0.1 + (likes / total) * 4.9;
-            } catch (error) {
-                console.error('Ошибка получения рейтинга:', error);
-                return 0.1;
-            }
-        }
-        
-        // Проверить, поставил ли пользователь оценку
-        async function getUserRating(sellerId, adId) {
-            if (!appData.currentUserId) return null;
-            
-            try {
-                const { data: rating, error } = await supabase
-                    .from('ratings')
-                    .select('rating_type')
-                    .eq('seller_id', sellerId)
-                    .eq('rater_id', appData.currentUserId)
-                    .eq('ad_id', adId)
-                    .maybeSingle();
-                
-                if (error) throw error;
-                
-                return rating?.rating_type || null;
-            } catch (error) {
-                console.error('Ошибка проверки оценки:', error);
-                return null;
-            }
-        }
-        
-        // Поставить оценку продавцу
-        async function rateSeller(sellerId, ratingType, adId) {
-            if (!appData.currentUserId || sellerId === appData.currentUserId) {
-                showNotification('Нельзя оценивать себя', 'warning');
-                return;
+            // Username
+            if (appData.currentUserData.username) {
+                profileUsername.textContent = '@' + appData.currentUserData.username;
+            } else {
+                profileUsername.textContent = 'Без username';
             }
             
-            try {
-                // Добавляем оценку
-                const { error: ratingError } = await supabase
-                    .from('ratings')
-                    .upsert({
-                        seller_id: sellerId,
-                        rater_id: appData.currentUserId,
-                        rating_type: ratingType,
-                        ad_id: adId
-                    }, {
-                        onConflict: 'seller_id,rater_id,ad_id'
-                    });
-                
-                if (ratingError) throw ratingError;
-                
-                // Обновляем счетчики в объявлении
-                const currentRating = await getUserRating(sellerId, adId);
-                let likesChange = 0;
-                let dislikesChange = 0;
-                
-                if (currentRating === 'like' && ratingType === 'dislike') {
-                    likesChange = -1;
-                    dislikesChange = 1;
-                } else if (currentRating === 'dislike' && ratingType === 'like') {
-                    likesChange = 1;
-                    dislikesChange = -1;
-                } else if (!currentRating && ratingType === 'like') {
-                    likesChange = 1;
-                } else if (!currentRating && ratingType === 'dislike') {
-                    dislikesChange = 1;
-                }
-                
-                // Обновляем объявление
-                const { error: updateError } = await supabase
-                    .from('advertisements')
-                    .update({
-                        likes: supabase.raw(`likes + ${likesChange}`),
-                        dislikes: supabase.raw(`dislikes + ${dislikesChange}`)
-                    })
-                    .eq('id', adId);
-                
-                if (updateError) throw updateError;
-                
-                showNotification(`Вы поставили ${ratingType === 'like' ? 'лайк' : 'дизлайк'}`, 'success');
-                
-                // Обновляем UI
-                await renderAds();
-                
-            } catch (error) {
-                console.error('Ошибка оценки:', error);
-                showNotification('Ошибка при оценке', 'error');
+            // Аватар
+            if (appData.currentUserData.photo_url) {
+                profileAvatar.innerHTML = `<img src="${appData.currentUserData.photo_url}" alt="Аватар">`;
+            } else {
+                // Генерируем градиентный аватар на основе имени
+                const name = appData.currentUserData.first_name || 'П';
+                const firstLetter = name.charAt(0).toUpperCase();
+                profileAvatar.innerHTML = `<span>${firstLetter}</span>`;
             }
         }
-        
-        // Создать объявление
-        async function createAd(adData) {
-            try {
-                const { data, error } = await supabase
-                    .from('advertisements')
-                    .insert([adData])
-                    .select()
-                    .single();
-                
-                if (error) throw error;
-                
-                console.log('Объявление создано:', data);
-                return data;
-            } catch (error) {
-                console.error('Ошибка создания объявления:', error);
-                throw error;
-            }
-        }
-        
-        // Обновить объявление
-        async function updateAd(adId, adData) {
-            try {
-                const { data, error } = await supabase
-                    .from('advertisements')
-                    .update(adData)
-                    .eq('id', adId)
-                    .eq('seller_id', appData.currentUserId)
-                    .select()
-                    .single();
-                
-                if (error) throw error;
-                
-                return data;
-            } catch (error) {
-                console.error('Ошибка обновления объявления:', error);
-                throw error;
-            }
-        }
-        
-        // Удалить объявление
-        async function deleteAd(adId) {
-            try {
-                const { error } = await supabase
-                    .from('advertisements')
-                    .delete()
-                    .eq('id', adId)
-                    .eq('seller_id', appData.currentUserId);
-                
-                if (error) throw error;
-                
-                return true;
-            } catch (error) {
-                console.error('Ошибка удаления объявления:', error);
-                throw error;
-            }
-        }
-        
-        // Получить статистику профиля
-        async function getProfileStats() {
-            if (!appData.currentUserId) return { adsCount: 0, likes: 0, dislikes: 0, rating: 0.1 };
-            
-            try {
-                // Количество объявлений
-                const { count: adsCount, error: adsError } = await supabase
-                    .from('advertisements')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('seller_id', appData.currentUserId);
-                
-                if (adsError) throw adsError;
-                
-                // Лайки и дизлайки
-                const { data: ads, error: adsListError } = await supabase
-                    .from('advertisements')
-                    .select('likes, dislikes')
-                    .eq('seller_id', appData.currentUserId);
-                
-                if (adsListError) throw adsListError;
-                
-                let totalLikes = 0;
-                let totalDislikes = 0;
-                
-                ads?.forEach(ad => {
-                    totalLikes += ad.likes || 0;
-                    totalDislikes += ad.dislikes || 0;
-                });
-                
-                // Рейтинг
-                const rating = await getSellerRating(appData.currentUserId);
-                
-                return {
-                    adsCount: adsCount || 0,
-                    likes: totalLikes,
-                    dislikes: totalDislikes,
-                    rating: rating
-                };
-            } catch (error) {
-                console.error('Ошибка получения статистики:', error);
-                return { adsCount: 0, likes: 0, dislikes: 0, rating: 0.1 };
-            }
-        }
-        
-        // ========== UI ФУНКЦИИ ==========
         
         // Показать уведомление
         function showNotification(message, type = 'info') {
@@ -1924,7 +1622,7 @@
         }
         
         // Переключение страниц
-        async function switchPage(page) {
+        function switchPage(page) {
             // Скрыть все страницы
             document.querySelectorAll('.page').forEach(p => {
                 p.classList.remove('active');
@@ -1952,340 +1650,25 @@
             
             // Обновить данные если открыли кабинет
             if (page === 'profile') {
-                await updateProfilePage();
+                updateProfileStats();
+                updateMyAdsList();
+                updateHistory();
             }
         }
         
-        // Рендер объявлений
-        async function renderAds() {
-            const container = document.getElementById('ads-container');
-            
-            try {
-                document.getElementById('loading').classList.add('active');
-                container.innerHTML = '';
-                
-                const ads = await loadAds(appData.currentCategory);
-                
-                if (ads.length === 0) {
-                    container.innerHTML = `
-                        <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
-                            <i class="fas fa-box-open" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
-                            <h3 style="margin-bottom: 10px;">Нет объявлений</h3>
-                            <p>В этой категории пока нет объявлений</p>
-                            <p style="font-size: 12px; margin-top: 10px; color: rgba(255,255,255,0.5);">
-                                Будьте первым - создайте объявление!
-                            </p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                // Рендерим каждое объявление
-                for (const ad of ads) {
-                    // Получаем рейтинг продавца
-                    const rating = await getSellerRating(ad.seller_id);
-                    
-                    // Проверяем, поставил ли текущий пользователь оценку
-                    const userRating = await getUserRating(ad.seller_id, ad.id);
-                    
-                    // Проверяем, является ли объявление пользователя собственным
-                    const isOwnAd = ad.seller_id === appData.currentUserId;
-                    
-                    const adElement = document.createElement('div');
-                    adElement.className = 'advertisement-card';
-                    adElement.id = `ad-${ad.id}`;
-                    
-                    // Генерируем фото
-                    const photoElements = [];
-                    
-                    if (ad.photo_urls && ad.photo_urls.length > 0) {
-                        ad.photo_urls.forEach((photoUrl, index) => {
-                            photoElements.push(`
-                                <div class="photo-item" onclick="openPhotoViewer(${ad.id}, ${index})">
-                                    <img src="${photoUrl}" alt="Фото ${index + 1}" onerror="this.src='https://via.placeholder.com/300x300/6f42c1/FFFFFF?text=Фото'">
-                                    <div class="photo-label">Фото ${index + 1}</div>
-                                </div>
-                            `);
-                        });
-                    } else {
-                        // Если фото нет, показываем заглушки
-                        for (let i = 0; i < 3; i++) {
-                            photoElements.push(`
-                                <div class="photo-item" onclick="openPhotoViewer(${ad.id}, ${i})">
-                                    <div class="photo-placeholder" style="background: #6f42c1;">
-                                        <i class="fas fa-image"></i>
-                                    </div>
-                                    <div class="photo-label">Фото ${i + 1}</div>
-                                </div>
-                            `);
-                        }
-                    }
-                    
-                    adElement.innerHTML = `
-                        <div class="seller-header">
-                            <div class="seller-avatar">
-                                ${ad.seller_avatar ? `<img src="${ad.seller_avatar}" alt="Аватар" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-user\\'></i>'">` : `<i class="fas fa-user"></i>`}
-                            </div>
-                            <div class="seller-info">
-                                <div class="seller-name">${escapeHtml(ad.seller_name)}</div>
-                                <div class="seller-username">${escapeHtml(ad.seller_username || 'Без username')}</div>
-                                <div class="seller-stats">
-                                    <div class="seller-stat stat-rating">
-                                        <i class="fas fa-star"></i>
-                                        <span>${rating.toFixed(1)}</span>
-                                    </div>
-                                    <div class="seller-stat stat-likes">
-                                        <i class="fas fa-thumbs-up"></i>
-                                        <span>${ad.likes || 0}</span>
-                                    </div>
-                                    <div class="seller-stat stat-dislikes">
-                                        <i class="fas fa-thumbs-down"></i>
-                                        <span>${ad.dislikes || 0}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="photo-gallery">
-                            ${photoElements.join('')}
-                        </div>
-
-                        <div class="product-info">
-                            <div class="product-title">${escapeHtml(ad.title)}</div>
-                            <div class="product-category">${getCategoryName(ad.category)}</div>
-                            <div class="product-price">${ad.price.toLocaleString()} ₽</div>
-                            <div class="product-description">${escapeHtml(ad.description || 'Без описания')}</div>
-                        </div>
-
-                        <div class="action-grid">
-                            <button class="rate-btn like-btn ${userRating === 'like' ? 'active' : ''} ${isOwnAd ? 'disabled' : ''}" 
-                                    onclick="rateSeller(${ad.seller_id}, 'like', ${ad.id})"
-                                    ${isOwnAd ? 'disabled' : ''}>
-                                <i class="fas fa-thumbs-up"></i>
-                            </button>
-                            
-                            <button class="contact-btn" onclick="contactSeller(${ad.id})">
-                                <i class="fas fa-paper-plane"></i>
-                                Написать продавцу
-                            </button>
-                            
-                            <button class="rate-btn dislike-btn ${userRating === 'dislike' ? 'active' : ''} ${isOwnAd ? 'disabled' : ''}" 
-                                    onclick="rateSeller(${ad.seller_id}, 'dislike', ${ad.id})"
-                                    ${isOwnAd ? 'disabled' : ''}>
-                                <i class="fas fa-thumbs-down"></i>
-                            </button>
-                        </div>
-                    `;
-                    
-                    container.appendChild(adElement);
-                }
-            } catch (error) {
-                console.error('Ошибка рендера объявлений:', error);
-                showNotification('Ошибка загрузки объявлений', 'error');
-            } finally {
-                document.getElementById('loading').classList.remove('active');
-            }
-        }
-        
-        // Обновить страницу профиля
-        async function updateProfilePage() {
-            if (!appData.currentUserId) return;
-            
-            // Обновляем профиль
-            updateUserProfile();
-            
-            // Загружаем статистику
-            const stats = await getProfileStats();
-            
-            document.getElementById('myAdsCount').textContent = stats.adsCount;
-            document.getElementById('myLikesCount').textContent = stats.likes;
-            document.getElementById('myDislikesCount').textContent = stats.dislikes;
-            document.getElementById('myRating').textContent = stats.rating.toFixed(1);
-            
-            // Загружаем мои объявления
-            await updateMyAdsList();
-            
-            // Загружаем историю
-            await updateHistoryList();
-        }
-        
-        // Обновить список моих объявлений
-        async function updateMyAdsList() {
-            const myAdsList = document.getElementById('myAdsList');
-            myAdsList.innerHTML = '';
-            
-            const ads = await loadMyAds();
-            
-            if (ads.length === 0) {
-                myAdsList.innerHTML = '<div style="text-align: center; color: #D8B4FE; padding: 20px;">У вас пока нет объявлений</div>';
-                return;
-            }
-            
-            for (const ad of ads) {
-                const rating = await getSellerRating(ad.seller_id);
-                
-                const adElement = document.createElement('div');
-                adElement.className = 'my-ad-item';
-                
-                adElement.innerHTML = `
-                    <div class="my-ad-header">
-                        <div class="my-ad-title">${escapeHtml(ad.title)}</div>
-                        <div class="my-ad-price">${ad.price.toLocaleString()} ₽</div>
-                    </div>
-                    <div class="product-category" style="display: inline-block; margin-bottom: 10px;">
-                        ${getCategoryName(ad.category)}
-                    </div>
-                    <div class="my-ad-description">${escapeHtml(ad.description || 'Без описания')}</div>
-                    <div style="display: flex; gap: 15px; font-size: 12px; color: #D8B4FE;">
-                        <div><i class="fas fa-thumbs-up"></i> ${ad.likes || 0}</div>
-                        <div><i class="fas fa-thumbs-down"></i> ${ad.dislikes || 0}</div>
-                        <div><i class="fas fa-star"></i> ${rating.toFixed(1)}</div>
-                    </div>
-                    <div class="my-ad-actions">
-                        <button class="edit-ad-btn" onclick="editAd(${ad.id})">
-                            <i class="fas fa-edit"></i> Редактировать
-                        </button>
-                        <button class="delete-ad-btn" onclick="deleteAdConfirm(${ad.id})">
-                            <i class="fas fa-trash"></i> Удалить
-                        </button>
-                    </div>
-                `;
-                myAdsList.appendChild(adElement);
-            }
-        }
-        
-        // Обновить историю
-        async function updateHistoryList() {
-            const historyList = document.getElementById('historyList');
-            historyList.innerHTML = '';
-            
-            const history = await loadHistory();
-            
-            if (history.length === 0) {
-                historyList.innerHTML = '<div style="text-align: center; color: #D8B4FE; padding: 20px;">История пуста</div>';
-                return;
-            }
-            
-            history.forEach(item => {
-                const historyItem = document.createElement('div');
-                historyItem.className = 'history-item';
-                
-                if (!item.advertisements) return;
-                
-                historyItem.innerHTML = `
-                    <div class="history-info">
-                        <h4>${escapeHtml(item.advertisements.title)}</h4>
-                        <p>${escapeHtml(item.advertisements.seller_username || 'Продавец')} • ${getCategoryName(item.advertisements.category)} • ${new Date(item.viewed_at).toLocaleDateString('ru-RU')}</p>
-                    </div>
-                `;
-                historyList.appendChild(historyItem);
-            });
-        }
-        
-        // Обновить профиль пользователя в UI
-        function updateUserProfile() {
-            if (!appData.currentUserData) return;
-            
-            const profileName = document.getElementById('profileName');
-            const profileUsername = document.getElementById('profileUsername');
-            const profileAvatar = document.getElementById('profileAvatar');
-            
-            // Имя пользователя
-            let fullName = appData.currentUserData.first_name;
-            if (appData.currentUserData.last_name) {
-                fullName += ' ' + appData.currentUserData.last_name;
-            }
-            profileName.textContent = escapeHtml(fullName);
-            
-            // Username
-            if (appData.currentUserData.username) {
-                profileUsername.textContent = '@' + escapeHtml(appData.currentUserData.username);
-            } else {
-                profileUsername.textContent = 'Без username';
-            }
-            
-            // Аватар
-            if (appData.currentUserData.photo_url) {
-                profileAvatar.innerHTML = `<img src="${appData.currentUserData.photo_url}" alt="Аватар" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-user\\'></i>'">`;
-            } else {
-                const name = appData.currentUserData.first_name || 'П';
-                const firstLetter = name.charAt(0).toUpperCase();
-                profileAvatar.innerHTML = `<span>${firstLetter}</span>`;
-            }
-        }
-        
-        // ========== ОСНОВНЫЕ ФУНКЦИИ ==========
-        
-        // Инициализация приложения
-        async function initApp() {
-            try {
-                console.log('Инициализация приложения...');
-                
-                // Получаем данные пользователя
-                appData.currentUserData = getUserDataFromTelegram();
-                appData.currentUserId = appData.currentUserData.id;
-                
-                console.log('Пользователь:', appData.currentUserData);
-                
-                // Обновляем профиль
-                updateUserProfile();
-                
-                // Настраиваем Telegram Web App
-                if (tg) {
-                    tg.expand();
-                    tg.ready();
-                    tg.setHeaderColor('#6D28D9');
-                    tg.setBackgroundColor('#7C3AED');
-                    
-                    tg.BackButton.show();
-                    tg.BackButton.onClick(function() {
-                        tg.close();
-                    });
-                }
-                
-                // Загружаем объявления
-                await renderAds();
-                
-                // Инициализация FAQ
-                for (let i = 1; i <= 5; i++) {
-                    document.getElementById(`faq-answer-${i}`).style.display = 'none';
-                }
-                
-                showNotification(`Добро пожаловать, ${appData.currentUserData.first_name}!`, 'success');
-                
-                console.log('Приложение инициализировано успешно!');
-                
-            } catch (error) {
-                console.error('Ошибка инициализации:', error);
-                showNotification('Ошибка загрузки приложения', 'error');
-            }
-        }
-        
-        // ========== ГЛОБАЛЬНЫЕ ФУНКЦИИ ==========
-        
-        // Переключение вкладок в профиле
+        // Переключение вкладок в личном кабинете
         function switchProfileTab(tab) {
+            // Обновить активную вкладку
             document.querySelectorAll('.profile-tab').forEach(t => {
                 t.classList.remove('active');
             });
             document.querySelector(`[onclick="switchProfileTab('${tab}')"]`).classList.add('active');
             
+            // Показать содержимое выбранной вкладки
             document.querySelectorAll('.profile-tab-content').forEach(content => {
                 content.classList.remove('active');
             });
             document.getElementById(`${tab}-tab`).classList.add('active');
-        }
-        
-        // Фильтр по категориям
-        async function filterCategory(category) {
-            appData.currentCategory = category;
-            
-            document.querySelectorAll('.category-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            await renderAds();
         }
         
         // Переключение формы добавления
@@ -2312,297 +1695,182 @@
             clearAddForm();
         }
         
-        // Очистить форму
-        function clearAddForm() {
-            document.getElementById('adTitle').value = '';
-            document.getElementById('adCategory').value = '';
-            document.getElementById('adPrice').value = '';
-            document.getElementById('adDescription').value = '';
+        // Фильтр по категориям
+        function filterCategory(category) {
+            appData.currentCategory = category;
             
-            for (let i = 1; i <= 3; i++) {
-                const placeholder = document.getElementById(`photo-placeholder-${i}`);
-                placeholder.innerHTML = `<i class="fas fa-plus"></i><span>Фото ${i}</span>`;
-                placeholder.style.display = 'flex';
-            }
-            
-            appData.uploadedPhotos = [];
-            appData.uploadedPhotoFiles = [];
-            appData.uploadedPhotoUrls = [];
-            document.getElementById('photo-count').textContent = '0';
-            
-            appData.editingAdId = null;
-        }
-        
-        // Открыть выбор фото
-        function openPhotoPicker(slotNumber) {
-            appData.currentPhotoSlot = slotNumber;
-            document.getElementById('photoInput').click();
-        }
-        
-        // Обработка загрузки фото
-        function handlePhotoUpload(event) {
-            const files = event.target.files;
-            const maxFiles = 3;
-            
-            if (files.length > maxFiles) {
-                showNotification(`Можно загрузить только ${maxFiles} фото!`, 'error');
-                return;
-            }
-            
-            // Очищаем предыдущие фото
-            appData.uploadedPhotos = [];
-            appData.uploadedPhotoFiles = [];
-            appData.uploadedPhotoUrls = [];
-            
-            // Очищаем все фото-слоты
-            for (let i = 1; i <= 3; i++) {
-                const placeholder = document.getElementById(`photo-placeholder-${i}`);
-                placeholder.innerHTML = `<i class="fas fa-plus"></i><span>Фото ${i}</span>`;
-                placeholder.style.display = 'flex';
-            }
-            
-            // Обрабатываем каждый файл
-            Array.from(files).forEach((file, index) => {
-                if (index >= maxFiles) return;
-                
-                const slotNumber = index + 1;
-                const placeholder = document.getElementById(`photo-placeholder-${slotNumber}`);
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    placeholder.innerHTML = `
-                        <img src="${e.target.result}" alt="Фото ${slotNumber}">
-                        <div class="photo-label">Фото ${slotNumber}</div>
-                        <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); 
-                             color: white; width: 20px; height: 20px; border-radius: 50%; 
-                             display: flex; align-items: center; justify-content: center; 
-                             font-size: 12px; cursor: pointer;" 
-                             onclick="removePhoto(${slotNumber})">×</div>
-                    `;
-                    
-                    appData.uploadedPhotoUrls.push(e.target.result);
-                };
-                reader.readAsDataURL(file);
-                
-                appData.uploadedPhotos.push(slotNumber);
-                appData.uploadedPhotoFiles.push(file);
+            // Обновить активную кнопку категории
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
             });
+            event.target.classList.add('active');
             
-            document.getElementById('photo-count').textContent = files.length;
-            showNotification(`Загружено ${files.length} фото`, 'success');
-            event.target.value = '';
+            // Обновить отображение объявлений
+            renderAds();
         }
         
-        // Удалить фото
-        function removePhoto(photoNum) {
-            event.stopPropagation();
+        // Рендер объявлений
+        function renderAds() {
+            const container = document.getElementById('ads-container');
+            container.innerHTML = '';
             
-            const placeholder = document.getElementById(`photo-placeholder-${photoNum}`);
-            placeholder.innerHTML = `<i class="fas fa-plus"></i><span>Фото ${photoNum}</span>`;
-            placeholder.style.display = 'flex';
+            // Фильтруем объявления по категории
+            const filteredAds = appData.currentCategory === 'all' 
+                ? appData.ads 
+                : appData.ads.filter(ad => ad.category === appData.currentCategory);
             
-            const index = appData.uploadedPhotos.indexOf(photoNum);
-            if (index !== -1) {
-                appData.uploadedPhotos.splice(index, 1);
-                appData.uploadedPhotoFiles.splice(index, 1);
-                appData.uploadedPhotoUrls.splice(index, 1);
-            }
-            
-            document.getElementById('photo-count').textContent = appData.uploadedPhotos.length;
-            showNotification(`Фото удалено (${appData.uploadedPhotos.length}/3)`, 'warning');
-        }
-        
-        // Опубликовать объявление
-        async function publishAd() {
-            const title = document.getElementById('adTitle').value.trim();
-            const category = document.getElementById('adCategory').value;
-            const price = parseFloat(document.getElementById('adPrice').value);
-            const description = document.getElementById('adDescription').value.trim();
-            
-            // Валидация
-            if (!title) {
-                showNotification('Введите название товара!', 'error');
+            if (filteredAds.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
+                        <i class="fas fa-box-open" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
+                        <h3 style="margin-bottom: 10px;">Нет объявлений</h3>
+                        <p>В этой категории пока нет объявлений</p>
+                        <p style="font-size: 12px; margin-top: 10px; color: rgba(255,255,255,0.5);">
+                            Будьте первым - создайте объявление!
+                        </p>
+                    </div>
+                `;
                 return;
             }
             
-            if (!category) {
-                showNotification('Выберите категорию!', 'error');
-                return;
-            }
-            
-            if (!price || isNaN(price) || price <= 0) {
-                showNotification('Введите корректную цену!', 'error');
-                return;
-            }
-            
-            if (appData.uploadedPhotos.length === 0) {
-                showNotification('Добавьте хотя бы одну фотографию!', 'error');
-                return;
-            }
-            
-            try {
-                const adData = {
-                    seller_id: appData.currentUserId,
-                    seller_name: appData.currentUserData.first_name + (appData.currentUserData.last_name ? ' ' + appData.currentUserData.last_name : ''),
-                    seller_username: appData.currentUserData.username ? '@' + appData.currentUserData.username : null,
-                    seller_avatar: appData.currentUserData.photo_url,
-                    title: title,
-                    category: category,
-                    price: price,
-                    description: description || null,
-                    photo_urls: appData.uploadedPhotoUrls,
-                    likes: 0,
-                    dislikes: 0
-                };
+            // Рендерим каждое объявление
+            filteredAds.forEach(ad => {
+                // Рассчитываем рейтинг продавца по формуле: 0.1 + (likes / (likes + dislikes)) * 4.9
+                const rating = calculateRating(ad.sellerId);
                 
-                console.log('Создание объявления:', adData);
+                // Проверяем, поставил ли текущий пользователь оценку
+                const userRating = appData.currentUserId 
+                    ? appData.userRatings[ad.sellerId]?.[appData.currentUserId]
+                    : null;
                 
-                // Если редактируем существующее объявление
-                if (appData.editingAdId) {
-                    await updateAd(appData.editingAdId, adData);
-                    showNotification('Объявление обновлено!', 'success');
+                // Проверяем, является ли объявление пользователя собственным
+                const isOwnAd = ad.sellerId === appData.currentUserId;
+                
+                const adElement = document.createElement('div');
+                adElement.className = 'advertisement-card';
+                adElement.id = `ad-${ad.id}`;
+                adElement.dataset.category = ad.category;
+                
+                // Генерируем фото
+                const photoElements = [];
+                
+                if (ad.photoUrls && ad.photoUrls.length > 0) {
+                    ad.photoUrls.forEach((photoUrl, index) => {
+                        photoElements.push(`
+                            <div class="photo-item" onclick="openPhotoViewer(${ad.id}, ${index})">
+                                <img src="${photoUrl}" alt="Фото ${index + 1}">
+                                <div class="photo-label">Фото ${index + 1}</div>
+                            </div>
+                        `);
+                    });
                 } else {
-                    await createAd(adData);
-                    showNotification('Объявление успешно опубликовано!', 'success');
-                }
-                
-                // Обновляем UI
-                hideAddForm();
-                await renderAds();
-                await updateProfilePage();
-                
-            } catch (error) {
-                console.error('Ошибка публикации:', error);
-                showNotification('Ошибка при публикации объявления', 'error');
-            }
-        }
-        
-        // Редактировать объявление
-        async function editAd(adId) {
-            try {
-                const { data: ad, error } = await supabase
-                    .from('advertisements')
-                    .select('*')
-                    .eq('id', adId)
-                    .eq('seller_id', appData.currentUserId)
-                    .single();
-                
-                if (error) throw error;
-                
-                // Заполняем форму
-                document.getElementById('adTitle').value = ad.title;
-                document.getElementById('adCategory').value = ad.category;
-                document.getElementById('adPrice').value = ad.price;
-                document.getElementById('adDescription').value = ad.description || '';
-                
-                // Загружаем фото
-                appData.uploadedPhotoUrls = ad.photo_urls || [];
-                appData.uploadedPhotos = [];
-                
-                for (let i = 0; i < Math.min(appData.uploadedPhotoUrls.length, 3); i++) {
-                    const slotNumber = i + 1;
-                    const placeholder = document.getElementById(`photo-placeholder-${slotNumber}`);
-                    placeholder.innerHTML = `
-                        <img src="${appData.uploadedPhotoUrls[i]}" alt="Фото ${slotNumber}">
-                        <div class="photo-label">Фото ${slotNumber}</div>
-                        <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); 
-                             color: white; width: 20px; height: 20px; border-radius: 50%; 
-                             display: flex; align-items: center; justify-content: center; 
-                             font-size: 12px; cursor: pointer;" 
-                             onclick="removePhoto(${slotNumber})">×</div>
-                    `;
-                    
-                    appData.uploadedPhotos.push(slotNumber);
-                }
-                
-                document.getElementById('photo-count').textContent = appData.uploadedPhotos.length;
-                
-                // Показываем форму
-                appData.editingAdId = adId;
-                toggleAddForm();
-                
-                showNotification('Редактирование объявления', 'info');
-                
-            } catch (error) {
-                console.error('Ошибка загрузки объявления:', error);
-                showNotification('Ошибка загрузки объявления', 'error');
-            }
-        }
-        
-        // Подтверждение удаления объявления
-        async function deleteAdConfirm(adId) {
-            if (!confirm('Вы уверены, что хотите удалить это объявление?')) {
-                return;
-            }
-            
-            try {
-                await deleteAd(adId);
-                showNotification('Объявление удалено', 'success');
-                await renderAds();
-                await updateProfilePage();
-            } catch (error) {
-                console.error('Ошибка удаления:', error);
-                showNotification('Ошибка при удалении объявления', 'error');
-            }
-        }
-        
-        // Написать продавцу
-        async function contactSeller(adId) {
-            try {
-                const { data: ad, error } = await supabase
-                    .from('advertisements')
-                    .select('*')
-                    .eq('id', adId)
-                    .single();
-                
-                if (error) throw error;
-                
-                // Добавляем в историю просмотров
-                await addToHistory(adId);
-                
-                // Формируем сообщение
-                const message = `Здравствуйте! Я пишу по вашему объявлению "${ad.title}" (${getCategoryName(ad.category)}) в Vape Market. Интересуюсь товаром, можно подробнее?`;
-                
-                // Открываем чат в Telegram
-                if (tg) {
-                    try {
-                        const cleanUsername = (ad.seller_username || '').replace('@', '');
-                        const encodedMessage = encodeURIComponent(message);
-                        const telegramUrl = `https://t.me/${cleanUsername}?text=${encodedMessage}`;
-                        
-                        tg.openTelegramLink(telegramUrl);
-                        showNotification(`Открывается чат с продавцом`, 'success');
-                    } catch (error) {
-                        tg.showAlert(`Для связи с продавцом напишите ${ad.seller_username || 'продавцу'} в Telegram`);
+                    // Если фото нет, показываем заглушки
+                    for (let i = 0; i < ad.photos; i++) {
+                        const color = i % 2 === 0 ? '#8B5CF6' : '#7C3AED';
+                        photoElements.push(`
+                            <div class="photo-item" onclick="openPhotoViewer(${ad.id}, ${i})">
+                                <div class="photo-placeholder" style="background: ${color};">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                                <div class="photo-label">Фото ${i + 1}</div>
+                            </div>
+                        `);
                     }
-                } else {
-                    alert(`Сообщение для продавца:\n\n${message}`);
-                    showNotification(`Сообщение для продавца отправлено`, 'info');
                 }
                 
-            } catch (error) {
-                console.error('Ошибка при контакте с продавцом:', error);
-                showNotification('Ошибка при отправке сообщения', 'error');
-            }
+                adElement.innerHTML = `
+                    <div class="seller-header">
+                        <div class="seller-avatar">
+                            ${ad.sellerAvatar ? `<img src="${ad.sellerAvatar}" alt="Аватар">` : `<i class="fas fa-user"></i>`}
+                        </div>
+                        <div class="seller-info">
+                            <div class="seller-name">${ad.sellerName}</div>
+                            <div class="seller-username">${ad.sellerUsername}</div>
+                            <div class="seller-stats">
+                                <div class="seller-stat stat-rating">
+                                    <i class="fas fa-star"></i>
+                                    <span>${rating.toFixed(1)}</span>
+                                </div>
+                                <div class="seller-stat stat-likes">
+                                    <i class="fas fa-thumbs-up"></i>
+                                    <span id="ad${ad.id}-likes">${ad.likes}</span>
+                                </div>
+                                <div class="seller-stat stat-dislikes">
+                                    <i class="fas fa-thumbs-down"></i>
+                                    <span id="ad${ad.id}-dislikes">${ad.dislikes}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="photo-gallery">
+                        ${photoElements.join('')}
+                    </div>
+
+                    <div class="product-info">
+                        <div class="product-title">${ad.title}</div>
+                        <div class="product-category">${getCategoryName(ad.category)}</div>
+                        <div class="product-price">${ad.price.toLocaleString()} ₽</div>
+                        <div class="product-description">${ad.description}</div>
+                    </div>
+
+                    <div class="action-grid">
+                        <button class="rate-btn like-btn ${userRating === 'like' ? 'active' : ''} ${isOwnAd ? 'disabled' : ''}" 
+                                onclick="rateSeller('${ad.sellerId}', 'like', ${ad.id})"
+                                ${isOwnAd ? 'disabled' : ''}>
+                            <i class="fas fa-thumbs-up"></i>
+                        </button>
+                        
+                        <button class="contact-btn" onclick="contactSeller('${ad.sellerUsername}', ${ad.id}, '${ad.title}', '${ad.category}')">
+                            <i class="fas fa-paper-plane"></i>
+                            Написать продавцу
+                        </button>
+                        
+                        <button class="rate-btn dislike-btn ${userRating === 'dislike' ? 'active' : ''} ${isOwnAd ? 'disabled' : ''}" 
+                                onclick="rateSeller('${ad.sellerId}', 'dislike', ${ad.id})"
+                                ${isOwnAd ? 'disabled' : ''}>
+                            <i class="fas fa-thumbs-down"></i>
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(adElement);
+            });
+        }
+        
+        // Рассчитать рейтинг по формуле: 0.1 + (likes / (likes + dislikes)) * 4.9
+        function calculateRating(sellerId) {
+            if (!appData.userRatings[sellerId]) return 0.1;
+            
+            const ratings = Object.values(appData.userRatings[sellerId]);
+            if (ratings.length === 0) return 0.1;
+            
+            const likes = ratings.filter(r => r === 'like').length;
+            const dislikes = ratings.filter(r => r === 'dislike').length;
+            const total = likes + dislikes;
+            
+            // Формула: 0.1 + (лайки / (лайки + дизлайки)) * 4.9
+            if (total === 0) return 0.1;
+            return 0.1 + (likes / total) * 4.9;
         }
         
         // Открыть просмотр фото
         function openPhotoViewer(adId, photoIndex = 0) {
-            const adElement = document.querySelector(`#ad-${adId}`);
-            if (!adElement) return;
+            const ad = appData.ads.find(a => a.id === adId);
+            if (!ad || !ad.photoUrls || ad.photoUrls.length === 0) {
+                showNotification('Фотографии не найдены', 'error');
+                return;
+            }
             
-            const photoItems = adElement.querySelectorAll('.photo-item img');
-            if (photoItems.length === 0) return;
-            
-            appData.currentPhotoList = Array.from(photoItems).map(img => img.src);
-            appData.currentPhotoIndex = Math.min(photoIndex, appData.currentPhotoList.length - 1);
+            appData.currentPhotoList = ad.photoUrls;
+            appData.currentPhotoIndex = photoIndex;
             
             const modal = document.getElementById('photoModal');
             const modalImg = document.getElementById('modalPhoto');
             const counter = document.getElementById('photoCounter');
             
-            modalImg.src = appData.currentPhotoList[appData.currentPhotoIndex];
-            counter.textContent = `${appData.currentPhotoIndex + 1} / ${appData.currentPhotoList.length}`;
+            modalImg.src = ad.photoUrls[photoIndex];
+            counter.textContent = `${photoIndex + 1} / ${ad.photoUrls.length}`;
             
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -2638,6 +1906,470 @@
                 `${appData.currentPhotoIndex + 1} / ${appData.currentPhotoList.length}`;
         }
         
+        // Оценить продавца (с проверкой на собственное объявление)
+        function rateSeller(sellerId, type, adId) {
+            if (!appData.currentUserId) {
+                appData.currentUserId = appData.currentUserData?.id || 'user_' + Date.now();
+            }
+            
+            const ad = appData.ads.find(a => a.id === adId);
+            if (!ad) return;
+            
+            // Проверяем, не является ли объявление собственным
+            if (ad.sellerId === appData.currentUserId) {
+                showNotification('Нельзя оценивать собственное объявление', 'warning');
+                return;
+            }
+            
+            const userRating = appData.userRatings[sellerId]?.[appData.currentUserId];
+            
+            if (userRating === type) {
+                showNotification('Вы уже поставили эту оценку', 'warning');
+                return;
+            }
+            
+            // Удаляем предыдущую оценку если была
+            if (userRating === 'like') {
+                ad.likes--;
+            } else if (userRating === 'dislike') {
+                ad.dislikes--;
+            }
+            
+            // Добавляем новую оценку
+            if (type === 'like') {
+                ad.likes++;
+            } else {
+                ad.dislikes++;
+            }
+            
+            // Сохраняем оценку
+            if (!appData.userRatings[sellerId]) {
+                appData.userRatings[sellerId] = {};
+            }
+            appData.userRatings[sellerId][appData.currentUserId] = type;
+            
+            // Обновляем UI
+            updateAdStats(adId);
+            renderAds();
+            updateProfileStats();
+            
+            // Анимация кнопки
+            const btn = event.currentTarget;
+            btn.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                btn.style.transform = 'scale(1)';
+            }, 300);
+            
+            showNotification(`Вы поставили ${type === 'like' ? 'лайк' : 'дизлайк'}`, 'success');
+        }
+        
+        // Обновить статистику объявления
+        function updateAdStats(adId) {
+            const ad = appData.ads.find(a => a.id === adId);
+            if (!ad) return;
+            
+            const likesEl = document.getElementById(`ad${adId}-likes`);
+            const dislikesEl = document.getElementById(`ad${adId}-dislikes`);
+            
+            if (likesEl) likesEl.textContent = ad.likes;
+            if (dislikesEl) dislikesEl.textContent = ad.dislikes;
+        }
+        
+        // Написать продавцу (без тестовых сообщений)
+        function contactSeller(username, adId, adTitle, category) {
+            // Формируем сообщение
+            const categoryName = getCategoryName(category);
+            const message = `Здравствуйте! Я пишу по вашему объявлению "${adTitle}" в Vape Market. Интересуюсь товаром, можно подробнее?`;
+            
+            // Добавляем в историю
+            const historyItem = {
+                id: Date.now(),
+                adId: adId,
+                title: adTitle,
+                sellerUsername: username,
+                date: new Date().toLocaleDateString('ru-RU'),
+                category: categoryName
+            };
+            
+            appData.history.unshift(historyItem);
+            
+            // Обновляем историю в профиле если открыта страница
+            if (document.getElementById('page-profile').classList.contains('active')) {
+                updateHistory();
+            }
+            
+            // Открываем чат в Telegram с готовым сообщением
+            if (tg) {
+                try {
+                    const cleanUsername = username.replace('@', '');
+                    const encodedMessage = encodeURIComponent(message);
+                    const telegramUrl = `https://t.me/${cleanUsername}?text=${encodedMessage}`;
+                    
+                    tg.openTelegramLink(telegramUrl);
+                    showNotification(`Открывается чат с ${username}`, 'success');
+                } catch (error) {
+                    tg.showAlert(`Для связи с продавцом напишите ${username} в Telegram`);
+                }
+            } else {
+                // Для теста в браузере
+                alert(`Сообщение для ${username}:\n\n${message}`);
+                showNotification(`Сообщение для ${username} отправлено`, 'info');
+            }
+        }
+        
+        // Обновить историю просмотров
+        function updateHistory() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            
+            if (appData.history.length === 0) {
+                historyList.innerHTML = '<div style="text-align: center; color: #D8B4FE; padding: 20px;">История пуста</div>';
+                return;
+            }
+            
+            appData.history.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <div class="history-info">
+                        <h4>${item.title}</h4>
+                        <p>${item.sellerUsername} • ${item.category} • ${item.date}</p>
+                    </div>
+                    <button class="remove-history-btn" onclick="removeFromHistory(${item.id})">
+                        Удалить
+                    </button>
+                `;
+                historyList.appendChild(historyItem);
+            });
+        }
+        
+        // Обновить список моих объявлений
+        function updateMyAdsList() {
+            const myAdsList = document.getElementById('myAdsList');
+            
+            // Фильтруем объявления текущего пользователя
+            const myAds = appData.ads.filter(ad => ad.sellerId === appData.currentUserId);
+            
+            if (myAds.length === 0) {
+                myAdsList.innerHTML = '<div style="text-align: center; color: #D8B4FE; padding: 20px;">У вас пока нет объявлений</div>';
+                return;
+            }
+            
+            myAdsList.innerHTML = '';
+            
+            myAds.forEach(ad => {
+                // Рассчитываем рейтинг
+                const rating = calculateRating(appData.currentUserId);
+                
+                const adElement = document.createElement('div');
+                adElement.className = 'my-ad-item';
+                
+                adElement.innerHTML = `
+                    <div class="my-ad-header">
+                        <div class="my-ad-title">${ad.title}</div>
+                        <div class="my-ad-price">${ad.price.toLocaleString()} ₽</div>
+                    </div>
+                    <div class="product-category" style="display: inline-block; margin-bottom: 10px;">
+                        ${getCategoryName(ad.category)}
+                    </div>
+                    <div class="my-ad-description">${ad.description}</div>
+                    <div style="display: flex; gap: 15px; font-size: 12px; color: #D8B4FE;">
+                        <div><i class="fas fa-thumbs-up"></i> ${ad.likes}</div>
+                        <div><i class="fas fa-thumbs-down"></i> ${ad.dislikes}</div>
+                        <div><i class="fas fa-star"></i> ${rating.toFixed(1)}</div>
+                    </div>
+                    <div class="my-ad-actions">
+                        <button class="edit-ad-btn" onclick="editAd(${ad.id})">
+                            <i class="fas fa-edit"></i> Редактировать
+                        </button>
+                        <button class="delete-ad-btn" onclick="deleteAd(${ad.id})">
+                            <i class="fas fa-trash"></i> Удалить
+                        </button>
+                    </div>
+                `;
+                myAdsList.appendChild(adElement);
+            });
+        }
+        
+        // Удалить объявление
+        function deleteAd(adId) {
+            if (!confirm('Вы уверены, что хотите удалить это объявление?')) {
+                return;
+            }
+            
+            appData.ads = appData.ads.filter(ad => ad.id !== adId);
+            renderAds();
+            updateProfileStats();
+            updateMyAdsList();
+            showNotification('Объявление удалено', 'warning');
+        }
+        
+        // Редактировать объявление
+        function editAd(adId) {
+            const ad = appData.ads.find(a => a.id === adId);
+            if (!ad) return;
+            
+            // Заполняем форму данными объявления
+            document.getElementById('adTitle').value = ad.title;
+            document.getElementById('adCategory').value = ad.category;
+            document.getElementById('adPrice').value = ad.price;
+            document.getElementById('adDescription').value = ad.description;
+            
+            // Показываем форму
+            toggleAddForm();
+            
+            // Помечаем, что редактируем
+            appData.editingAdId = adId;
+            
+            showNotification('Редактирование объявления', 'info');
+        }
+        
+        // Удалить из истории
+        function removeFromHistory(id) {
+            appData.history = appData.history.filter(item => item.id !== id);
+            updateHistory();
+            showNotification('Удалено из истории', 'warning');
+        }
+        
+        // Очистить историю
+        function clearHistory() {
+            if (appData.history.length === 0) {
+                showNotification('История уже пуста', 'info');
+                return;
+            }
+            
+            if (!confirm('Вы уверены, что хотите очистить всю историю?')) {
+                return;
+            }
+            
+            appData.history = [];
+            updateHistory();
+            showNotification('История очищена', 'warning');
+        }
+        
+        // Открыть выбор фото
+        function openPhotoPicker(slotNumber) {
+            appData.currentPhotoSlot = slotNumber;
+            document.getElementById('photoInput').click();
+        }
+        
+        // Обработка загрузки фото
+        function handlePhotoUpload(event) {
+            const files = event.target.files;
+            const maxFiles = 3;
+            
+            // Проверяем количество файлов
+            if (files.length > maxFiles) {
+                showNotification(`Можно загрузить только ${maxFiles} фото!`, 'error');
+                return;
+            }
+            
+            // Очищаем предыдущие фото
+            appData.uploadedPhotos = [];
+            appData.uploadedPhotoFiles = [];
+            appData.uploadedPhotoUrls = [];
+            
+            // Очищаем все фото-слоты
+            for (let i = 1; i <= 3; i++) {
+                const placeholder = document.getElementById(`photo-placeholder-${i}`);
+                placeholder.innerHTML = `<i class="fas fa-plus"></i><span>Фото ${i}</span>`;
+                placeholder.style.display = 'flex';
+            }
+            
+            // Обрабатываем каждый файл
+            Array.from(files).forEach((file, index) => {
+                if (index >= maxFiles) return;
+                
+                const slotNumber = index + 1;
+                const placeholder = document.getElementById(`photo-placeholder-${slotNumber}`);
+                
+                // Создаем URL для предпросмотра
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    placeholder.innerHTML = `
+                        <img src="${e.target.result}" alt="Фото ${slotNumber}">
+                        <div class="photo-label">Фото ${slotNumber}</div>
+                        <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); 
+                             color: white; width: 20px; height: 20px; border-radius: 50%; 
+                             display: flex; align-items: center; justify-content: center; 
+                             font-size: 12px; cursor: pointer;" 
+                             onclick="removePhoto(${slotNumber})">×</div>
+                    `;
+                    
+                    // Сохраняем URL для отображения
+                    appData.uploadedPhotoUrls.push(e.target.result);
+                };
+                reader.readAsDataURL(file);
+                
+                // Сохраняем информацию о фото
+                appData.uploadedPhotos.push(slotNumber);
+                appData.uploadedPhotoFiles.push(file);
+            });
+            
+            // Обновляем счетчик
+            document.getElementById('photo-count').textContent = files.length;
+            
+            showNotification(`Загружено ${files.length} фото`, 'success');
+            
+            // Сбрасываем input
+            event.target.value = '';
+        }
+        
+        // Удалить фото
+        function removePhoto(photoNum) {
+            event.stopPropagation();
+            
+            const placeholder = document.getElementById(`photo-placeholder-${photoNum}`);
+            placeholder.innerHTML = `<i class="fas fa-plus"></i><span>Фото ${photoNum}</span>`;
+            placeholder.style.display = 'flex';
+            
+            // Удаляем из массивов
+            const index = appData.uploadedPhotos.indexOf(photoNum);
+            if (index !== -1) {
+                appData.uploadedPhotos.splice(index, 1);
+                appData.uploadedPhotoFiles.splice(index, 1);
+                appData.uploadedPhotoUrls.splice(index, 1);
+            }
+            
+            // Обновляем счетчик
+            document.getElementById('photo-count').textContent = appData.uploadedPhotos.length;
+            
+            showNotification(`Фото удалено (${appData.uploadedPhotos.length}/3)`, 'warning');
+        }
+        
+        // Очистить форму
+        function clearAddForm() {
+            document.getElementById('adTitle').value = '';
+            document.getElementById('adCategory').value = '';
+            document.getElementById('adPrice').value = '';
+            document.getElementById('adDescription').value = '';
+            
+            // Очистить фотографии
+            for (let i = 1; i <= 3; i++) {
+                const placeholder = document.getElementById(`photo-placeholder-${i}`);
+                placeholder.innerHTML = `<i class="fas fa-plus"></i><span>Фото ${i}</span>`;
+                placeholder.style.display = 'flex';
+            }
+            
+            appData.uploadedPhotos = [];
+            appData.uploadedPhotoFiles = [];
+            appData.uploadedPhotoUrls = [];
+            document.getElementById('photo-count').textContent = '0';
+            
+            delete appData.editingAdId;
+        }
+        
+        // Опубликовать объявление
+        function publishAd() {
+            const title = document.getElementById('adTitle').value.trim();
+            const category = document.getElementById('adCategory').value;
+            const price = parseInt(document.getElementById('adPrice').value);
+            const description = document.getElementById('adDescription').value.trim();
+            
+            // Валидация
+            if (!title) {
+                showNotification('Введите название товара!', 'error');
+                return;
+            }
+            
+            if (!category) {
+                showNotification('Выберите категорию!', 'error');
+                return;
+            }
+            
+            if (!price || isNaN(price) || price <= 0) {
+                showNotification('Введите корректную цену!', 'error');
+                return;
+            }
+            
+            if (appData.uploadedPhotos.length === 0) {
+                showNotification('Добавьте хотя бы одну фотографию!', 'error');
+                return;
+            }
+            
+            // Если редактируем существующее объявление
+            if (appData.editingAdId) {
+                const ad = appData.ads.find(a => a.id === appData.editingAdId);
+                if (ad) {
+                    ad.title = title;
+                    ad.category = category;
+                    ad.price = price;
+                    ad.description = description || 'Без описания';
+                    ad.photoUrls = [...appData.uploadedPhotoUrls];
+                    ad.photos = appData.uploadedPhotos.length;
+                    
+                    renderAds();
+                    updateProfileStats();
+                    updateMyAdsList();
+                    hideAddForm();
+                    
+                    delete appData.editingAdId;
+                    showNotification('Объявление обновлено!', 'success');
+                }
+                return;
+            }
+            
+            // Создаем новое объявление
+            const newAd = {
+                id: appData.nextAdId++,
+                sellerId: appData.currentUserId,
+                sellerName: appData.currentUserData.first_name + (appData.currentUserData.last_name ? ' ' + appData.currentUserData.last_name : ''),
+                sellerUsername: appData.currentUserData.username ? '@' + appData.currentUserData.username : 'Без username',
+                sellerAvatar: appData.currentUserData.photo_url || null,
+                title: title,
+                category: category,
+                price: price,
+                description: description || 'Без описания',
+                photos: appData.uploadedPhotos.length,
+                photoUrls: [...appData.uploadedPhotoUrls],
+                likes: 0,
+                dislikes: 0
+            };
+            
+            // Добавляем в список объявлений
+            appData.ads.unshift(newAd);
+            
+            // Инициализируем рейтинги для нового продавца
+            if (!appData.userRatings[appData.currentUserId]) {
+                appData.userRatings[appData.currentUserId] = {};
+            }
+            
+            // Обновляем статистику профиля
+            updateProfileStats();
+            updateMyAdsList();
+            
+            // Обновляем отображение
+            renderAds();
+            hideAddForm();
+            
+            showNotification('Объявление успешно опубликовано!', 'success');
+        }
+        
+        // Обновить статистику профиля
+        function updateProfileStats() {
+            // Считаем мои объявления
+            const myAds = appData.ads.filter(ad => ad.sellerId === appData.currentUserId).length;
+            document.getElementById('myAdsCount').textContent = myAds;
+            
+            // Считаем мои лайки и дизлайки
+            let myLikes = 0;
+            let myDislikes = 0;
+            
+            appData.ads.forEach(ad => {
+                if (ad.sellerId === appData.currentUserId) {
+                    myLikes += ad.likes;
+                    myDislikes += ad.dislikes;
+                }
+            });
+            
+            document.getElementById('myLikesCount').textContent = myLikes;
+            document.getElementById('myDislikesCount').textContent = myDislikes;
+            
+            // Рассчитываем мой рейтинг по формуле
+            const myRating = calculateRating(appData.currentUserId);
+            document.getElementById('myRating').textContent = myRating.toFixed(1);
+        }
+        
         // Переключение FAQ
         function toggleFaq(id) {
             const answer = document.getElementById(`faq-answer-${id}`);
@@ -2654,7 +2386,7 @@
         
         // Подать жалобу
         function submitComplaint() {
-            const message = encodeURIComponent('Хочу подать жалобу в Vape Market!');
+            const message = encodeURIComponent('Хочу подать жалобу!');
             const telegramUrl = `https://t.me/nukm0?start=${message}`;
             
             if (tg) {
@@ -2662,22 +2394,15 @@
                     tg.openTelegramLink(telegramUrl);
                     showNotification('Открывается чат для подачи жалобы', 'info');
                 } catch (error) {
-                    tg.showAlert(`Для подачи жалобы напишите @nukm0 в Telegram`);
+                    tg.showAlert(`Для подачи жалобы напишите @nukm0 в Telegram с текстом: "Хочу подать жалобу!"`);
                 }
             } else {
-                alert('Для подачи жалобы напишите @nukm0 в Telegram');
+                alert('Для подачи жалобы напишите @nukm0 в Telegram с текстом: "Хочу подать жалобу!"');
                 showNotification('Напишите @nukm0 в Telegram', 'info');
             }
         }
         
         // Вспомогательные функции
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-        
         function getCategoryName(category) {
             const categories = {
                 'liquids': 'Жидкости',
@@ -2688,29 +2413,49 @@
             return categories[category] || category;
         }
         
-        // Экспортируем глобальные функции
-        window.switchPage = switchPage;
-        window.switchProfileTab = switchProfileTab;
-        window.filterCategory = filterCategory;
-        window.toggleAddForm = toggleAddForm;
-        window.openPhotoPicker = openPhotoPicker;
-        window.handlePhotoUpload = handlePhotoUpload;
-        window.removePhoto = removePhoto;
-        window.publishAd = publishAd;
-        window.editAd = editAd;
-        window.deleteAdConfirm = deleteAdConfirm;
-        window.contactSeller = contactSeller;
-        window.rateSeller = rateSeller;
-        window.openPhotoViewer = openPhotoViewer;
-        window.closePhotoModal = closePhotoModal;
-        window.nextPhoto = nextPhoto;
-        window.prevPhoto = prevPhoto;
-        window.toggleFaq = toggleFaq;
-        window.submitComplaint = submitComplaint;
+        // Инициализация приложения
+        function initApp() {
+            // Получаем данные пользователя из Telegram
+            appData.currentUserData = getUserDataFromTelegram();
+            appData.currentUserId = appData.currentUserData.id;
+            
+            // Обновляем профиль в UI
+            updateUserProfile();
+            
+            if (tg) {
+                tg.expand();
+                tg.ready();
+                
+                // Устанавливаем тему
+                tg.setHeaderColor('#6D28D9');
+                tg.setBackgroundColor('#7C3AED');
+                
+                // Показываем кнопку "Назад"
+                tg.BackButton.show();
+                tg.BackButton.onClick(function() {
+                    tg.close();
+                });
+            }
+            
+            // Инициализация пустых тестовых данных
+            initializeTestData();
+            
+            // Рендерим объявления
+            renderAds();
+            
+            // Инициализация FAQ (все ответы скрыты)
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`faq-answer-${i}`).style.display = 'none';
+            }
+            
+            // Обновляем статистику профиля
+            updateProfileStats();
+            
+            showNotification(`Добро пожаловать, ${appData.currentUserData.first_name}!`, 'success');
+        }
         
         // Запуск при загрузке
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM загружен, запускаем приложение...');
             initApp();
         });
         
