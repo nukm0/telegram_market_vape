@@ -2536,17 +2536,18 @@ const storage = firebase.storage(); // ДОБАВЬТЕ ЭТУ СТРОКУ
                 const photoElements = [];
                 
                 if (ad.photoUrls && ad.photoUrls.length > 0) {
-                    ad.photoUrls.forEach((photoUrl, index) => {
-                        if (photoUrl) {
-                            photoElements.push(`
-                                <div class="photo-item" onclick="openPhotoViewer('${ad.id}', ${index})">
-                                    <img src="${photoUrl}" alt="Фото ${index + 1}">
-                                    <div class="photo-label">Фото ${index + 1}</div>
-                                </div>
-                            `);
-                        }
-                    });
-                }
+    ad.photoUrls.forEach((photoUrl, index) => {
+        if (photoUrl && photoUrl.startsWith('http')) {
+            photoElements.push(`
+                <div class="photo-item" onclick="openPhotoViewer('${ad.id}', ${index})">
+                    <img src="${photoUrl}" alt="Фото ${index + 1}" 
+                         onerror="this.src='https://via.placeholder.com/120x120/8B5CF6/FFFFFF?text=Vape'">
+                    <div class="photo-label">Фото ${index + 1}</div>
+                </div>
+            `);
+        }
+    });
+}
                 
                 // Если нет фото, показываем заглушки
                 if (photoElements.length === 0) {
