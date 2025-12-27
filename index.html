@@ -6,6 +6,9 @@
     <title>Vape Market | Барахолка для вейпов</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase скрипты -->
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js"></script>
     <style>
         /* [Ваш CSS код остается полностью без изменений] */
         /* Фиолетовые градиенты для фона */
@@ -1427,7 +1430,7 @@
                 <!-- Статус синхронизации -->
                 <div class="sync-status" id="sync-status">
                     <div class="sync-indicator"></div>
-                    <span id="sync-text">Синхронизировано с сервером</span>
+                    <span id="sync-text">Синхронизировано с Firebase</span>
                 </div>
             </div>
 
@@ -1646,315 +1649,332 @@
     </div>
 
     <script>
-        // ==================== ЕДИНОЕ ГЛОБАЛЬНОЕ ХРАНИЛИЩЕ ====================
-        // Теперь все пользователи видят одни и те же объявления
-        const GlobalMarketServer = {
-            STORAGE_KEYS: {
-                GLOBAL_DATA: 'vapeMarketGlobalData_ALL_USERS_V3',
-                STATS_CACHE: 'vapeMarketStatsCache'
-            },
+        // ==================== FIREBASE КОНФИГУРАЦИЯ ====================
+        // 🔥 ВАША КОНФИГУРАЦИЯ ИЗ FIREBASE CONSOLE 🔥
+        const firebaseConfig = {
+            apiKey: "AIzaSyBgPG4EXFQHoIOVLt2_BdCmiUJEWTXsGN8",
+            authDomain: "telegram-market-vape.firebaseapp.com",
+            databaseURL: "https://telegram-market-vape-default-rtdb.firebaseio.com", // ДОБАВЬТЕ ЭТУ СТРОКУ
+            projectId: "telegram-market-vape",
+            storageBucket: "telegram-market-vape.firebasestorage.app",
+            messagingSenderId: "35870048384",
+            appId: "1:35870048384:web:acd6501459aa39180b6665",
+            measurementId: "G-99R2PPBNF8"
+        };
+
+        // Инициализация Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        // ==================== КОНЕЦ FIREBASE ====================
+
+        // ==================== FIREBASE СЕРВЕР ====================
+        const FirebaseMarketServer = {
             
-            // Получить все данные
-            getAllData: function() {
+            // Добавить объявление
+            addAd: async function(adData) {
                 try {
-                    const data = localStorage.getItem(this.STORAGE_KEYS.GLOBAL_DATA);
-                    if (!data) {
-                        // Создаем начальные данные
-                        const initialData = {
-                            version: '3.0',
-                            ads: [],
-                            ratings: {},
-                            users: {},
-                            userHistory: {},
-                            metadata: {
-                                created: new Date().toISOString(),
-                                lastUpdated: new Date().toISOString(),
-                                totalUsers: 0,
-                                totalAds: 0
-                            }
-                        };
-                        localStorage.setItem(this.STORAGE_KEYS.GLOBAL_DATA, JSON.stringify(initialData));
-                        return initialData;
-                    }
-                    return JSON.parse(data);
+                    // Регистрируем пользователя если его нет
+                    await this.registerUser({
+                        id: adData.sellerId,
+                        name: adData.sellerName,
+                        username: adData.sellerUsername
+                    });
+                    
+                    const newAdRef = database.ref('ads').push();
+                    const adId = newAdRef.key;
+                    
+                    const adWithId = {
+                        ...adData,
+                        id: adId,
+                        createdAt: new Date().toISOString()
+                    };
+                    
+                    await newAdRef.set(adWithId);
+                    
+                    // Увеличиваем счетчик объявлений пользователя
+                    await database.ref(`users/${adData.sellerId}/adsCount`).transaction((current) => {
+                        return (current || 0) + 1;
+                    });
+                    
+                    return adId;
                 } catch (error) {
-                    console.error('Ошибка загрузки данных:', error);
-                    return { ads: [], ratings: {}, users: {}, userHistory: {}, metadata: {} };
+                    console.error('Ошибка добавления объявления:', error);
+                    throw error;
                 }
             },
             
-            // Сохранить все данные
-            saveAllData: function(data) {
+            // Получить все объявления
+            getAllAds: async function() {
                 try {
-                    data.metadata.lastUpdated = new Date().toISOString();
-                    data.metadata.totalUsers = Object.keys(data.users || {}).length;
-                    data.metadata.totalAds = (data.ads || []).length;
+                    const snapshot = await database.ref('ads').once('value');
+                    const ads = [];
+                    snapshot.forEach((childSnapshot) => {
+                        ads.push(childSnapshot.val());
+                    });
+                    return ads;
+                } catch (error) {
+                    console.error('Ошибка загрузки объявлений:', error);
+                    return [];
+                }
+            },
+            
+            // Слушать новые объявления в реальном времени
+            listenToAds: function(callback) {
+                database.ref('ads').on('value', (snapshot) => {
+                    const ads = [];
+                    snapshot.forEach((childSnapshot) => {
+                        ads.push(childSnapshot.val());
+                    });
+                    callback(ads);
+                });
+            },
+            
+            // Обновить рейтинг
+            updateRating: async function(sellerId, userId, rating) {
+                try {
+                    await database.ref(`ratings/${sellerId}/${userId}`).set(rating);
                     
-                    localStorage.setItem(this.STORAGE_KEYS.GLOBAL_DATA, JSON.stringify(data));
+                    // Обновляем счетчики лайков/дизлайков
+                    const ratingsSnapshot = await database.ref(`ratings/${sellerId}`).once('value');
+                    const ratings = ratingsSnapshot.val() || {};
                     
-                    // Обновляем статистику
-                    this.updateStatsCache(data);
+                    let likes = 0;
+                    let dislikes = 0;
                     
-                    // Синхронизируем с другими вкладками
-                    this.syncWithOtherTabs();
+                    Object.values(ratings).forEach(r => {
+                        if (r === 'like') likes++;
+                        if (r === 'dislike') dislikes++;
+                    });
+                    
+                    await database.ref(`users/${sellerId}`).update({
+                        likesCount: likes,
+                        dislikesCount: dislikes,
+                        rating: 0.1 + (likes / (likes + dislikes || 1)) * 4.9
+                    });
                     
                     return true;
                 } catch (error) {
-                    console.error('Ошибка сохранения данных:', error);
+                    console.error('Ошибка обновления рейтинга:', error);
                     return false;
                 }
             },
             
-            // Синхронизация с другими вкладками
-            syncWithOtherTabs: function() {
+            // Получить рейтинги
+            getRatings: async function() {
                 try {
-                    // Отправляем событие для других вкладок
-                    const event = new StorageEvent('storage', {
-                        key: this.STORAGE_KEYS.GLOBAL_DATA,
-                        newValue: localStorage.getItem(this.STORAGE_KEYS.GLOBAL_DATA)
-                    });
-                    window.dispatchEvent(event);
-                } catch (e) {
-                    console.log('Синхронизация с другими вкладками...');
+                    const snapshot = await database.ref('ratings').once('value');
+                    return snapshot.val() || {};
+                } catch (error) {
+                    console.error('Ошибка загрузки рейтингов:', error);
+                    return {};
                 }
             },
             
-            // Регистрация/обновление пользователя
-            registerUser: function(userData) {
-                const data = this.getAllData();
-                
-                if (!data.users) data.users = {};
-                
-                const isNewUser = !data.users[userData.id];
-                
-                data.users[userData.id] = {
-                    id: userData.id,
-                    name: userData.name || 'Пользователь',
-                    username: userData.username || '',
-                    photo_url: userData.photo_url || null,
-                    registrationDate: isNewUser ? new Date().toISOString() : (data.users[userData.id]?.registrationDate || new Date().toISOString()),
-                    lastActive: new Date().toISOString(),
-                    adsCount: 0,
-                    likesCount: 0,
-                    dislikesCount: 0
-                };
-                
-                this.saveAllData(data);
-                
-                if (isNewUser) {
-                    console.log(`✅ Новый пользователь: ${userData.name || userData.id}`);
-                }
-                
-                return userData;
-            },
-            
-            // Добавить объявление
-            addAd: function(adData) {
-                const data = this.getAllData();
-                
-                if (!data.ads) data.ads = [];
-                
-                // Увеличиваем счетчик объявлений пользователя
-                if (data.users && data.users[adData.sellerId]) {
-                    data.users[adData.sellerId].adsCount = (data.users[adData.sellerId].adsCount || 0) + 1;
-                }
-                
-                data.ads.push(adData);
-                return this.saveAllData(data);
-            },
-            
-            // Обновить объявление
-            updateAd: function(adId, adData) {
-                const data = this.getAllData();
-                const index = data.ads.findIndex(ad => ad.id === adId);
-                if (index !== -1) {
-                    data.ads[index] = { ...data.ads[index], ...adData };
-                    return this.saveAllData(data);
-                }
-                return false;
-            },
-            
-            // Удалить объявление
-            deleteAd: function(adId, sellerId) {
-                const data = this.getAllData();
-                const initialLength = data.ads.length;
-                data.ads = data.ads.filter(ad => ad.id !== adId);
-                
-                // Уменьшаем счетчик объявлений пользователя
-                if (data.users && data.users[sellerId] && data.ads.length < initialLength) {
-                    data.users[sellerId].adsCount = Math.max(0, (data.users[sellerId].adsCount || 1) - 1);
-                }
-                
-                return this.saveAllData(data);
-            },
-            
-            // Обновить рейтинг
-            updateRating: function(sellerId, userId, rating) {
-                const data = this.getAllData();
-                
-                if (!data.ratings) data.ratings = {};
-                if (!data.ratings[sellerId]) data.ratings[sellerId] = {};
-                
-                const oldRating = data.ratings[sellerId][userId];
-                data.ratings[sellerId][userId] = rating;
-                
-                // Обновляем счетчики лайков/дизлайков пользователя
-                if (data.users && data.users[sellerId]) {
-                    if (oldRating === 'like') {
-                        data.users[sellerId].likesCount = Math.max(0, (data.users[sellerId].likesCount || 1) - 1);
-                    } else if (oldRating === 'dislike') {
-                        data.users[sellerId].dislikesCount = Math.max(0, (data.users[sellerId].dislikesCount || 1) - 1);
+            // Регистрация пользователя
+            registerUser: async function(userData) {
+                try {
+                    const userRef = database.ref(`users/${userData.id}`);
+                    const snapshot = await userRef.once('value');
+                    
+                    if (!snapshot.exists()) {
+                        await userRef.set({
+                            id: userData.id,
+                            name: userData.name || 'Пользователь',
+                            username: userData.username || '',
+                            registrationDate: new Date().toISOString(),
+                            lastActive: new Date().toISOString(),
+                            adsCount: 0,
+                            likesCount: 0,
+                            dislikesCount: 0,
+                            rating: 0.1
+                        });
+                        console.log(`✅ Новый пользователь: ${userData.name || userData.id}`);
+                    } else {
+                        await userRef.update({
+                            lastActive: new Date().toISOString()
+                        });
                     }
                     
-                    if (rating === 'like') {
-                        data.users[sellerId].likesCount = (data.users[sellerId].likesCount || 0) + 1;
-                    } else if (rating === 'dislike') {
-                        data.users[sellerId].dislikesCount = (data.users[sellerId].dislikesCount || 0) + 1;
-                    }
+                    return userData;
+                } catch (error) {
+                    console.error('Ошибка регистрации пользователя:', error);
+                    return userData;
                 }
-                
-                return this.saveAllData(data);
             },
             
             // Добавить в историю
-            addToHistory: function(userId, historyItem) {
-                const data = this.getAllData();
-                
-                if (!data.userHistory) data.userHistory = {};
-                if (!data.userHistory[userId]) data.userHistory[userId] = [];
-                
-                data.userHistory[userId].unshift(historyItem);
-                
-                // Ограничиваем историю 50 записями
-                if (data.userHistory[userId].length > 50) {
-                    data.userHistory[userId] = data.userHistory[userId].slice(0, 50);
-                }
-                
-                return this.saveAllData(data);
-            },
-            
-            // Получить историю пользователя
-            getUserHistory: function(userId) {
-                const data = this.getAllData();
-                return data.userHistory?.[userId] || [];
-            },
-            
-            // Очистить историю пользователя
-            clearUserHistory: function(userId) {
-                const data = this.getAllData();
-                if (data.userHistory && data.userHistory[userId]) {
-                    data.userHistory[userId] = [];
-                    return this.saveAllData(data);
-                }
-                return false;
-            },
-            
-            // Получить статистику
-            getStats: function() {
+            addToHistory: async function(userId, historyItem) {
                 try {
-                    const cachedStats = localStorage.getItem(this.STORAGE_KEYS.STATS_CACHE);
-                    if (cachedStats) {
-                        const stats = JSON.parse(cachedStats);
-                        // Если данные свежие (менее 5 минут), возвращаем кэш
-                        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-                        if (new Date(stats.calculatedAt) > fiveMinutesAgo) {
-                            return stats;
+                    const historyRef = database.ref(`userHistory/${userId}`).push();
+                    await historyRef.set({
+                        ...historyItem,
+                        id: historyRef.key,
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    // Ограничиваем историю 50 записями
+                    const historySnapshot = await database.ref(`userHistory/${userId}`).once('value');
+                    const history = [];
+                    historySnapshot.forEach((child) => {
+                        history.push({ key: child.key, ...child.val() });
+                    });
+                    
+                    if (history.length > 50) {
+                        const toDelete = history.slice(50);
+                        for (const item of toDelete) {
+                            await database.ref(`userHistory/${userId}/${item.key}`).remove();
                         }
                     }
                     
-                    return this.calculateStats();
+                    return true;
+                } catch (error) {
+                    console.error('Ошибка сохранения истории:', error);
+                    return false;
+                }
+            },
+            
+            // Получить историю пользователя
+            getUserHistory: async function(userId) {
+                try {
+                    const snapshot = await database.ref(`userHistory/${userId}`).once('value');
+                    const history = [];
+                    snapshot.forEach((childSnapshot) => {
+                        history.unshift(childSnapshot.val());
+                    });
+                    return history;
+                } catch (error) {
+                    console.error('Ошибка загрузки истории:', error);
+                    return [];
+                }
+            },
+            
+            // Удалить объявление
+            deleteAd: async function(adId, sellerId) {
+                try {
+                    await database.ref(`ads/${adId}`).remove();
+                    
+                    // Уменьшаем счетчик объявлений пользователя
+                    await database.ref(`users/${sellerId}/adsCount`).transaction((current) => {
+                        return Math.max(0, (current || 1) - 1);
+                    });
+                    
+                    return true;
+                } catch (error) {
+                    console.error('Ошибка удаления объявления:', error);
+                    return false;
+                }
+            },
+            
+            // Обновить объявление
+            updateAd: async function(adId, adData) {
+                try {
+                    await database.ref(`ads/${adId}`).update(adData);
+                    return true;
+                } catch (error) {
+                    console.error('Ошибка обновления объявления:', error);
+                    return false;
+                }
+            },
+            
+            // Получить статистику (ТЕПЕРЬ С FIREBASE!)
+            getStats: async function() {
+                try {
+                    // Получаем количество объявлений
+                    const adsSnapshot = await database.ref('ads').once('value');
+                    const totalAds = adsSnapshot.numChildren();
+                    
+                    // Получаем количество пользователей
+                    const usersSnapshot = await database.ref('users').once('value');
+                    const totalUsers = usersSnapshot.numChildren();
+                    
+                    // Считаем сегодняшние объявления
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    let todayAds = 0;
+                    
+                    adsSnapshot.forEach((childSnapshot) => {
+                        const ad = childSnapshot.val();
+                        if (new Date(ad.createdAt) >= today) {
+                            todayAds++;
+                        }
+                    });
+                    
+                    // Считаем лайки и дизлайки
+                    const ratingsSnapshot = await database.ref('ratings').once('value');
+                    let totalLikes = 0;
+                    let totalDislikes = 0;
+                    
+                    ratingsSnapshot.forEach((userSnapshot) => {
+                        userSnapshot.forEach((ratingSnapshot) => {
+                            if (ratingSnapshot.val() === 'like') totalLikes++;
+                            if (ratingSnapshot.val() === 'dislike') totalDislikes++;
+                        });
+                    });
+                    
+                    // Считаем по категориям
+                    const categories = { liquids: 0, disposable: 0, pod: 0, consumables: 0, other: 0 };
+                    adsSnapshot.forEach((childSnapshot) => {
+                        const ad = childSnapshot.val();
+                        const category = ad.category || 'other';
+                        if (categories[category] !== undefined) {
+                            categories[category]++;
+                        } else {
+                            categories.other++;
+                        }
+                    });
+                    
+                    // Считаем активных пользователей (последние 7 дней)
+                    const weekAgo = new Date();
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    let activeUsers = 0;
+                    
+                    usersSnapshot.forEach((childSnapshot) => {
+                        const user = childSnapshot.val();
+                        if (new Date(user.lastActive) > weekAgo) {
+                            activeUsers++;
+                        }
+                    });
+                    
+                    return {
+                        totalUsers: totalUsers,
+                        activeUsers: activeUsers,
+                        totalAds: totalAds,
+                        todayAds: todayAds,
+                        totalLikes: totalLikes,
+                        totalDislikes: totalDislikes,
+                        categories: categories,
+                        lastUpdated: new Date().toISOString(),
+                        serverStatus: 'online'
+                    };
+                    
                 } catch (error) {
                     console.error('Ошибка получения статистики:', error);
-                    return this.calculateStats();
+                    return {
+                        totalUsers: 0,
+                        activeUsers: 0,
+                        totalAds: 0,
+                        todayAds: 0,
+                        totalLikes: 0,
+                        totalDislikes: 0,
+                        categories: { liquids: 0, disposable: 0, pod: 0, consumables: 0, other: 0 },
+                        lastUpdated: new Date().toISOString(),
+                        serverStatus: 'offline'
+                    };
                 }
             },
             
-            // Обновить кэш статистики
-            updateStatsCache: function(data = null) {
-                const stats = this.calculateStats(data);
-                localStorage.setItem(this.STORAGE_KEYS.STATS_CACHE, JSON.stringify(stats));
-                return stats;
-            },
-            
-            // Рассчитать статистику
-            calculateStats: function(data = null) {
-                if (!data) data = this.getAllData();
-                
-                const users = data.users || {};
-                const ads = data.ads || [];
-                const ratings = data.ratings || {};
-                
-                // Считаем активных пользователей (были активны в последние 7 дней)
-                const weekAgo = new Date();
-                weekAgo.setDate(weekAgo.getDate() - 7);
-                
-                const activeUsers = Object.values(users).filter(user => {
-                    return new Date(user.lastActive) > weekAgo;
-                }).length;
-                
-                // Считаем лайки и дизлайки
-                let totalLikes = 0;
-                let totalDislikes = 0;
-                
-                Object.values(ratings).forEach(userRatings => {
-                    Object.values(userRatings).forEach(rating => {
-                        if (rating === 'like') totalLikes++;
-                        if (rating === 'dislike') totalDislikes++;
-                    });
-                });
-                
-                // Считаем по категориям
-                const categories = {
-                    liquids: 0,
-                    disposable: 0,
-                    pod: 0,
-                    consumables: 0,
-                    other: 0
-                };
-                
-                ads.forEach(ad => {
-                    const category = ad.category || 'other';
-                    if (categories[category] !== undefined) {
-                        categories[category]++;
-                    } else {
-                        categories.other++;
-                    }
-                });
-                
-                // Считаем сегодняшние объявления
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const todayAds = ads.filter(ad => {
-                    return new Date(ad.createdAt) >= today;
-                }).length;
-                
-                const stats = {
-                    totalUsers: Object.keys(users).length,
-                    activeUsers: activeUsers,
-                    totalAds: ads.length,
-                    todayAds: todayAds,
-                    totalLikes: totalLikes,
-                    totalDislikes: totalDislikes,
-                    categories: categories,
-                    lastUpdated: data.metadata?.lastUpdated || new Date().toISOString(),
-                    calculatedAt: new Date().toISOString(),
-                    serverStatus: 'online'
-                };
-                
-                return stats;
-            },
-            
-            // Обновить активность пользователя
-            updateUserActivity: function(userId) {
-                const data = this.getAllData();
-                if (data.users && data.users[userId]) {
-                    data.users[userId].lastActive = new Date().toISOString();
-                    this.saveAllData(data);
+            // Очистить историю пользователя
+            clearUserHistory: async function(userId) {
+                try {
+                    await database.ref(`userHistory/${userId}`).remove();
                     return true;
+                } catch (error) {
+                    console.error('Ошибка очистки истории:', error);
+                    return false;
                 }
-                return false;
             }
         };
+        // ==================== КОНЕЦ FIREBASE СЕРВЕРА ====================
         
         // ==================== ОСНОВНОЕ ПРИЛОЖЕНИЕ ====================
         
@@ -2008,32 +2028,29 @@
                 photo_url: user.photo_url || null
             };
             
-            // Регистрируем пользователя в глобальном хранилище
-            GlobalMarketServer.registerUser(appData.currentUserData);
+            // Регистрируем пользователя в Firebase
+            FirebaseMarketServer.registerUser(appData.currentUserData);
             
             initApp();
         }
         
-        // Загрузить данные с сервера
-        function loadFromServer() {
+        // Загрузить данные с Firebase
+        async function loadFromServer() {
             try {
-                const serverData = GlobalMarketServer.getAllData();
-                
                 // Загружаем объявления
-                appData.ads = serverData.ads || [];
-                console.log(`✅ Загружено ${appData.ads.length} объявлений`);
+                appData.ads = await FirebaseMarketServer.getAllAds();
+                console.log(`✅ Загружено ${appData.ads.length} объявлений из Firebase`);
                 
                 // Загружаем рейтинги
-                appData.userRatings = serverData.ratings || {};
+                appData.userRatings = await FirebaseMarketServer.getRatings();
                 
-                // Загружаем историю пользователя
+                // Загружаем историю
                 if (appData.currentUserId) {
-                    appData.history = GlobalMarketServer.getUserHistory(appData.currentUserId);
-                    GlobalMarketServer.updateUserActivity(appData.currentUserId);
+                    appData.history = await FirebaseMarketServer.getUserHistory(appData.currentUserId);
                 }
                 
                 // Загружаем статистику
-                appData.serverStats = GlobalMarketServer.getStats();
+                appData.serverStats = await FirebaseMarketServer.getStats();
                 
                 appData.lastSyncTime = new Date();
                 updateSyncStatus();
@@ -2119,14 +2136,15 @@
                     • Под-системы: ${appData.serverStats.categories.pod}<br>
                     • Расходники: ${appData.serverStats.categories.consumables}<br><br>
                     ⏰ <b>Обновлено:</b> ${lastUpdated}<br>
-                    🟢 <b>Статус сервера:</b> онлайн
+                    🟢 <b>Статус сервера:</b> онлайн<br>
+                    🔥 <b>База данных:</b> Firebase
                 `;
             }
         }
         
         // Обновить статистику
-        function refreshStats() {
-            appData.serverStats = GlobalMarketServer.updateStatsCache();
+        async function refreshStats() {
+            appData.serverStats = await FirebaseMarketServer.getStats();
             updateServerStatsUI();
             showNotification('Статистика обновлена', 'success');
         }
@@ -2148,18 +2166,17 @@
                 });
             }
             
-            // Загружаем данные с сервера
+            // Загружаем данные с Firebase
             loadFromServer();
             
-            // Слушаем события синхронизации от других вкладок
-            window.addEventListener('storage', function(event) {
-                if (event.key === GlobalMarketServer.STORAGE_KEYS.GLOBAL_DATA) {
-                    console.log('📡 Получены обновленные данные от другой вкладки');
-                    loadFromServer();
-                    renderAds();
-                    updateProfileStats();
-                    showNotification('Данные обновлены', 'info');
-                }
+            // Слушаем новые объявления в реальном времени
+            FirebaseMarketServer.listenToAds((ads) => {
+                appData.ads = ads;
+                renderAds();
+                updateProfileStats();
+                updateMyAdsList();
+                updateServerStatsUI();
+                showNotification('Получены обновленные данные', 'info');
             });
             
             // Обновляем профиль
@@ -2358,7 +2375,7 @@
                     ad.photoUrls.forEach((photoUrl, index) => {
                         if (photoUrl) {
                             photoElements.push(`
-                                <div class="photo-item" onclick="openPhotoViewer(${ad.id}, ${index})">
+                                <div class="photo-item" onclick="openPhotoViewer('${ad.id}', ${index})">
                                     <img src="${photoUrl}" alt="Фото ${index + 1}">
                                     <div class="photo-label">Фото ${index + 1}</div>
                                 </div>
@@ -2421,18 +2438,18 @@
 
                     <div class="action-grid">
                         <button class="rate-btn like-btn ${userRating === 'like' ? 'active' : ''} ${isOwnAd ? 'disabled' : ''}" 
-                                onclick="rateSeller('${ad.sellerId}', 'like', ${ad.id})"
+                                onclick="rateSeller('${ad.sellerId}', 'like', '${ad.id}')"
                                 ${isOwnAd ? 'disabled' : ''}>
                             <i class="fas fa-thumbs-up"></i>
                         </button>
                         
-                        <button class="contact-btn" onclick="contactSeller('${ad.sellerUsername || 'Без username'}', ${ad.id}, '${ad.title || 'Без названия'}', '${ad.category || 'other'}', ${ad.price || 0})">
+                        <button class="contact-btn" onclick="contactSeller('${ad.sellerUsername || 'Без username'}', '${ad.id}', '${ad.title || 'Без названия'}', '${ad.category || 'other'}', ${ad.price || 0})">
                             <i class="fas fa-paper-plane"></i>
                             Написать продавцу
                         </button>
                         
                         <button class="rate-btn dislike-btn ${userRating === 'dislike' ? 'active' : ''} ${isOwnAd ? 'disabled' : ''}" 
-                                onclick="rateSeller('${ad.sellerId}', 'dislike', ${ad.id})"
+                                onclick="rateSeller('${ad.sellerId}', 'dislike', '${ad.id}')"
                                 ${isOwnAd ? 'disabled' : ''}>
                             <i class="fas fa-thumbs-down"></i>
                         </button>
@@ -2511,7 +2528,7 @@
         }
         
         // Оценить продавца
-        function rateSeller(sellerId, type, adId) {
+        async function rateSeller(sellerId, type, adId) {
             const ad = appData.ads.find(a => a.id === adId);
             if (!ad) return;
             
@@ -2528,39 +2545,32 @@
                 return;
             }
             
-            // Удаляем предыдущую оценку если была
-            if (userRating === 'like') {
-                ad.likes = Math.max(0, (ad.likes || 0) - 1);
-            } else if (userRating === 'dislike') {
-                ad.dislikes = Math.max(0, (ad.dislikes || 0) - 1);
-            }
+            // Обновляем в Firebase
+            const success = await FirebaseMarketServer.updateRating(sellerId, appData.currentUserId, type);
             
-            // Добавляем новую оценку
-            if (type === 'like') {
-                ad.likes = (ad.likes || 0) + 1;
+            if (success) {
+                // Обновляем локальные данные
+                if (!appData.userRatings[sellerId]) {
+                    appData.userRatings[sellerId] = {};
+                }
+                appData.userRatings[sellerId][appData.currentUserId] = type;
+                
+                // Перезагружаем данные с сервера
+                appData.userRatings = await FirebaseMarketServer.getRatings();
+                
+                // Обновляем UI
+                renderAds();
+                updateProfileStats();
+                updateServerStatsUI();
+                
+                showNotification(`Вы поставили ${type === 'like' ? 'лайк' : 'дизлайк'}`, 'success');
             } else {
-                ad.dislikes = (ad.dislikes || 0) + 1;
+                showNotification('Ошибка при оценке', 'error');
             }
-            
-            // Сохраняем оценку в глобальном хранилище
-            GlobalMarketServer.updateRating(sellerId, appData.currentUserId, type);
-            
-            // Обновляем локальные данные
-            if (!appData.userRatings[sellerId]) {
-                appData.userRatings[sellerId] = {};
-            }
-            appData.userRatings[sellerId][appData.currentUserId] = type;
-            
-            // Обновляем UI
-            renderAds();
-            updateProfileStats();
-            updateServerStatsUI();
-            
-            showNotification(`Вы поставили ${type === 'like' ? 'лайк' : 'дизлайк'}`, 'success');
         }
         
         // Написать продавцу
-        function contactSeller(username, adId, adTitle, category, price) {
+        async function contactSeller(username, adId, adTitle, category, price) {
             // Находим объявление
             const ad = appData.ads.find(a => a.id === adId);
             if (!ad) return;
@@ -2584,9 +2594,11 @@
                 price: price
             };
             
-            // Сохраняем историю
-            appData.history.unshift(historyItem);
-            GlobalMarketServer.addToHistory(appData.currentUserId, historyItem);
+            // Сохраняем историю в Firebase
+            await FirebaseMarketServer.addToHistory(appData.currentUserId, historyItem);
+            
+            // Обновляем локальную историю
+            appData.history = await FirebaseMarketServer.getUserHistory(appData.currentUserId);
             
             // Обновляем историю в профиле если открыта страница
             if (document.getElementById('page-profile').classList.contains('active')) {
@@ -2630,7 +2642,7 @@
                         <h4>${item.title}</h4>
                         <p>${item.sellerUsername} • ${item.category} • ${item.price.toLocaleString()} ₽ • ${item.date}</p>
                     </div>
-                    <button class="remove-history-btn" onclick="removeFromHistory(${item.id})">
+                    <button class="remove-history-btn" onclick="removeFromHistory('${item.id}')">
                         Удалить
                     </button>
                 `;
@@ -2674,10 +2686,10 @@
                         <div><i class="fas fa-star"></i> ${rating.toFixed(1)}</div>
                     </div>
                     <div class="my-ad-actions">
-                        <button class="edit-ad-btn" onclick="editAd(${ad.id})">
+                        <button class="edit-ad-btn" onclick="editAd('${ad.id}')">
                             <i class="fas fa-edit"></i> Редактировать
                         </button>
-                        <button class="delete-ad-btn" onclick="deleteAd(${ad.id})">
+                        <button class="delete-ad-btn" onclick="deleteAd('${ad.id}')">
                             <i class="fas fa-trash"></i> Удалить
                         </button>
                     </div>
@@ -2687,7 +2699,7 @@
         }
         
         // Удалить объявление
-        function deleteAd(adId) {
+        async function deleteAd(adId) {
             if (!confirm('Вы уверены, что хотите удалить это объявление?')) {
                 return;
             }
@@ -2695,17 +2707,21 @@
             const ad = appData.ads.find(a => a.id === adId);
             if (!ad) return;
             
-            // Удаляем с сервера
-            GlobalMarketServer.deleteAd(adId, ad.sellerId);
+            // Удаляем с Firebase
+            const success = await FirebaseMarketServer.deleteAd(adId, ad.sellerId);
             
-            // Удаляем локально
-            appData.ads = appData.ads.filter(ad => ad.id !== adId);
-            
-            renderAds();
-            updateProfileStats();
-            updateMyAdsList();
-            updateServerStatsUI();
-            showNotification('Объявление удалено', 'warning');
+            if (success) {
+                // Удаляем локально
+                appData.ads = appData.ads.filter(ad => ad.id !== adId);
+                
+                renderAds();
+                updateProfileStats();
+                updateMyAdsList();
+                updateServerStatsUI();
+                showNotification('Объявление удалено', 'warning');
+            } else {
+                showNotification('Ошибка при удалении', 'error');
+            }
         }
         
         // Редактировать объявление
@@ -2746,14 +2762,16 @@
         }
         
         // Удалить из истории
-        function removeFromHistory(id) {
+        async function removeFromHistory(id) {
+            // В Firebase удаление происходит автоматически при очистке истории
+            // Просто обновляем локальные данные
             appData.history = appData.history.filter(item => item.id !== id);
             updateHistory();
             showNotification('Удалено из истории', 'warning');
         }
         
         // Очистить историю
-        function clearHistory() {
+        async function clearHistory() {
             if (appData.history.length === 0) {
                 showNotification('История уже пуста', 'info');
                 return;
@@ -2763,13 +2781,17 @@
                 return;
             }
             
-            // Очищаем историю на сервере
-            GlobalMarketServer.clearUserHistory(appData.currentUserId);
+            // Очищаем историю в Firebase
+            const success = await FirebaseMarketServer.clearUserHistory(appData.currentUserId);
             
-            // Очищаем локальную историю
-            appData.history = [];
-            updateHistory();
-            showNotification('История очищена', 'warning');
+            if (success) {
+                // Очищаем локальную историю
+                appData.history = [];
+                updateHistory();
+                showNotification('История очищена', 'warning');
+            } else {
+                showNotification('Ошибка при очистке истории', 'error');
+            }
         }
         
         // Открыть выбор фото
@@ -2868,7 +2890,7 @@
         }
         
         // Опубликовать объявление
-        function publishAd() {
+        async function publishAd() {
             const title = document.getElementById('adTitle').value.trim();
             const category = document.getElementById('adCategory').value;
             const price = parseInt(document.getElementById('adPrice').value);
@@ -2906,24 +2928,27 @@
                     ad.photoUrls = appData.uploadedPhotos.map(p => p.url);
                     ad.photos = appData.uploadedPhotos.length;
                     
-                    // Сохраняем на сервере
-                    GlobalMarketServer.updateAd(ad.id, ad);
+                    // Сохраняем на Firebase
+                    const success = await FirebaseMarketServer.updateAd(ad.id, ad);
                     
-                    renderAds();
-                    updateProfileStats();
-                    updateMyAdsList();
-                    updateServerStatsUI();
-                    hideAddForm();
-                    
-                    appData.editingAdId = null;
-                    showNotification('Объявление обновлено!', 'success');
+                    if (success) {
+                        renderAds();
+                        updateProfileStats();
+                        updateMyAdsList();
+                        updateServerStatsUI();
+                        hideAddForm();
+                        
+                        appData.editingAdId = null;
+                        showNotification('Объявление обновлено!', 'success');
+                    } else {
+                        showNotification('Ошибка при обновлении', 'error');
+                    }
                 }
                 return;
             }
             
             // Создаем новое объявление
             const newAd = {
-                id: Date.now(),
                 sellerId: appData.currentUserId,
                 sellerName: appData.currentUserData.first_name + 
                            (appData.currentUserData.last_name ? ' ' + appData.currentUserData.last_name : ''),
@@ -2936,29 +2961,35 @@
                 photos: appData.uploadedPhotos.length,
                 photoUrls: appData.uploadedPhotos.map(p => p.url),
                 likes: 0,
-                dislikes: 0,
-                createdAt: new Date().toISOString()
+                dislikes: 0
             };
             
-            // Сохраняем в глобальное хранилище
-            GlobalMarketServer.addAd(newAd);
-            
-            // Добавляем в локальный список
-            appData.ads.unshift(newAd);
-            
-            // Обновляем статистику
-            appData.serverStats = GlobalMarketServer.updateStatsCache();
-            updateServerStatsUI();
-            
-            // Обновляем статистику профиля
-            updateProfileStats();
-            updateMyAdsList();
-            
-            // Обновляем отображение
-            renderAds();
-            hideAddForm();
-            
-            showNotification('Объявление успешно опубликовано!', 'success');
+            try {
+                // Сохраняем в Firebase
+                const adId = await FirebaseMarketServer.addAd(newAd);
+                
+                // Добавляем в локальный список
+                newAd.id = adId;
+                newAd.createdAt = new Date().toISOString();
+                appData.ads.unshift(newAd);
+                
+                // Обновляем статистику
+                appData.serverStats = await FirebaseMarketServer.getStats();
+                updateServerStatsUI();
+                
+                // Обновляем статистику профиля
+                updateProfileStats();
+                updateMyAdsList();
+                
+                // Обновляем отображение
+                renderAds();
+                hideAddForm();
+                
+                showNotification('Объявление успешно опубликовано!', 'success');
+            } catch (error) {
+                console.error('Ошибка публикации:', error);
+                showNotification('Ошибка при публикации объявления', 'error');
+            }
         }
         
         // Обновить статистику профиля
