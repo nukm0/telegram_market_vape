@@ -3315,16 +3315,14 @@
         }
         
         // Запуск при загрузке
-        document.addEventListener('DOMContentLoaded', function() {
-            checkTelegramAndInit();
-        });
-        
-        // Закрытие модального окна по клику на фон
-        document.getElementById('photoModal').addEventListener('click', function(event) {
-            if (event.target === this) {
-                closePhotoModal();
-            }
-        });
-    </script>
+          document.getElementById('photoModal').addEventListener('click', function(event) {
+        if (event.target === this) {
+            closePhotoModal();
+        }
+    });
+    
+});
+    
+</script>
 </body>
 </html>
