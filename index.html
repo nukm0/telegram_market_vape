@@ -2034,7 +2034,18 @@
     };
     
     function checkTelegramAndInit() {
-    console.log('🔍 Начинаем инициализацию...');
+    const tg = window.Telegram?.WebApp;
+    
+    if (tg) {
+        // Добавьте логирование версии
+        console.log('Версия Telegram WebApp:', tg.version);
+        
+        // Показываем предупреждение для старых версий
+        if (parseFloat(tg.version) < 6.1) {
+            setTimeout(() => {
+                showNotification('Для полного функционала обновите Telegram', 'info');
+            }, 1000);
+        }
     
     // Пробуем получить Telegram Web App
     const tg = window.Telegram?.WebApp;
