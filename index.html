@@ -7,8 +7,8 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Firebase скрипты -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         /* [Ваш CSS код остается полностью без изменений] */
         /* Фиолетовые градиенты для фона */
@@ -1648,701 +1648,692 @@
         <div class="notification" id="notification"></div>
     </div>
 
-<script>
-    // ==================== FIREBASE КОНФИГУРАЦИЯ ====================
-    // 🔥 ИСПРАВЛЕННАЯ КОНФИГУРАЦИЯ 🔥
-    const firebaseConfig = {
-        apiKey: "AIzaSyBgPG4EXFQHoIOVLt2_BdCmiUJEWTXsGN8",
-        authDomain: "telegram-market-vape.firebaseapp.com",
-        databaseURL: "https://telegram-market-vape-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "telegram-market-vape",
-        storageBucket: "telegram-market-vape.appspot.com", // ИСПРАВЛЕНО
-        messagingSenderId: "35870048384",
-        appId: "1:35870048384:web:acd6501459aa39180b6665",
-        measurementId: "G-99R2PPBNF8"
-    };
+    <script>
+        // ==================== FIREBASE КОНФИГУРАЦИЯ ====================
+        const firebaseConfig = {
+            apiKey: "AIzaSyBgPG4EXFQHoIOVLt2_BdCmiUJEWTXsGN8",
+            authDomain: "telegram-market-vape.firebaseapp.com",
+            databaseURL: "https://telegram-market-vape-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "telegram-market-vape",
+            storageBucket: "telegram-market-vape.appspot.com",
+            messagingSenderId: "35870048384",
+            appId: "1:35870048384:web:acd6501459aa39180b6665",
+            measurementId: "G-99R2PPBNF8"
+        };
 
-    // Инициализация Firebase
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-    // ==================== КОНЕЦ FIREBASE ====================
+        // Инициализация Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        // ==================== КОНЕЦ FIREBASE ====================
 
-    // ==================== FIREBASE СЕРВЕР (ПОЛНОСТЬЮ ИСПРАВЛЕННЫЙ) ====================
-    const FirebaseMarketServer = {
-        
-        // Добавить объявление
-        addAd: async function(adData) {
-            try {
-                console.log('🔄 Добавляю объявление в Firebase...');
-                
-                // Регистрируем пользователя
-                await this.registerUser({
-                    id: adData.sellerId,
-                    name: adData.sellerName,
-                    username: adData.sellerUsername
-                });
-                
-                // Подготавливаем данные
-                const adToSave = {
-                    sellerId: adData.sellerId,
-                    sellerName: adData.sellerName,
-                    sellerUsername: adData.sellerUsername,
-                    sellerAvatar: adData.sellerAvatar || null,
-                    title: adData.title,
-                    category: adData.category,
-                    price: Number(adData.price),
-                    description: adData.description || '',
-                    photoUrls: adData.photoUrls || [],
-                    photos: adData.photoUrls?.length || 0,
-                    likes: 0,
-                    dislikes: 0,
-                    createdAt: firebase.database.ServerValue.TIMESTAMP,
-                    updatedAt: firebase.database.ServerValue.TIMESTAMP
-                };
-                
-                // Добавляем в базу
-                const newAdRef = database.ref('ads').push();
-                const adId = newAdRef.key;
-                
-                await newAdRef.set(adToSave);
-                
-                // Обновляем счетчик пользователя
-                await database.ref(`users/${adData.sellerId}/adsCount`).transaction((current) => {
-                    return (current || 0) + 1;
-                });
-                
-                console.log('✅ Объявление добавлено, ID:', adId);
-                return adId;
-                
-            } catch (error) {
-                console.error('❌ Ошибка добавления:', error);
-                throw error;
-            }
-        },
-        
-        // Получить все объявления
-        getAllAds: async function() {
-            try {
-                const snapshot = await database.ref('ads').once('value');
-                const ads = [];
-                
-                snapshot.forEach((childSnapshot) => {
-                    const ad = childSnapshot.val();
-                    ad.id = childSnapshot.key; // ВАЖНО!
-                    ads.push(ad);
-                });
-                
-                // Сортируем по дате (новые сначала)
-                ads.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-                
-                return ads;
-            } catch (error) {
-                console.error('❌ Ошибка загрузки объявлений:', error);
-                return [];
-            }
-        },
-        
-        // Слушать новые объявления в реальном времени
-        listenToAds: function(callback) {
-            database.ref('ads').on('value', (snapshot) => {
-                const ads = [];
-                snapshot.forEach((childSnapshot) => {
-                    const ad = childSnapshot.val();
-                    ad.id = childSnapshot.key;
-                    ads.push(ad);
-                });
-                
-                // Сортируем
-                ads.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-                callback(ads);
-            });
-        },
-        
-        // Получить рейтинги
-        getRatings: async function() {
-            try {
-                const snapshot = await database.ref('ratings').once('value');
-                return snapshot.val() || {};
-            } catch (error) {
-                console.error('❌ Ошибка загрузки рейтингов:', error);
-                return {};
-            }
-        },
-        
-        // Обновить рейтинг
-        updateRating: async function(sellerId, userId, rating) {
-            try {
-                // Сохраняем оценку
-                await database.ref(`ratings/${sellerId}/${userId}`).set(rating);
-                
-                // Получаем все оценки
-                const ratingsSnapshot = await database.ref(`ratings/${sellerId}`).once('value');
-                const ratings = ratingsSnapshot.val() || {};
-                
-                // Считаем лайки/дизлайки
-                let likes = 0, dislikes = 0;
-                Object.values(ratings).forEach(r => {
-                    if (r === 'like') likes++;
-                    if (r === 'dislike') dislikes++;
-                });
-                
-                // Рассчитываем рейтинг
-                const total = likes + dislikes;
-                const calculatedRating = total > 0 ? 0.1 + (likes / total) * 4.9 : 0.1;
-                
-                // Обновляем пользователя
-                await database.ref(`users/${sellerId}`).update({
-                    likesCount: likes,
-                    dislikesCount: dislikes,
-                    rating: calculatedRating,
-                    lastActive: firebase.database.ServerValue.TIMESTAMP
-                });
-                
-                return true;
-            } catch (error) {
-                console.error('❌ Ошибка обновления рейтинга:', error);
-                return false;
-            }
-        },
-        
-        // Регистрация пользователя
-        registerUser: async function(userData) {
-            try {
-                const userRef = database.ref(`users/${userData.id}`);
-                const snapshot = await userRef.once('value');
-                
-                if (!snapshot.exists()) {
-                    await userRef.set({
-                        id: userData.id,
-                        name: userData.name || 'Пользователь',
-                        username: userData.username || '',
-                        registrationDate: firebase.database.ServerValue.TIMESTAMP,
-                        lastActive: firebase.database.ServerValue.TIMESTAMP,
-                        adsCount: 0,
-                        likesCount: 0,
-                        dislikesCount: 0,
-                        rating: 0.1
+        // ==================== FIREBASE СЕРВЕР ====================
+        const FirebaseMarketServer = {
+            // Добавить объявление
+            addAd: async function(adData) {
+                try {
+                    console.log('🔄 Добавляю объявление в Firebase...');
+                    
+                    // Регистрируем пользователя
+                    await this.registerUser({
+                        id: adData.sellerId,
+                        name: adData.sellerName,
+                        username: adData.sellerUsername
                     });
-                    console.log('✅ Новый пользователь зарегистрирован');
-                } else {
-                    await userRef.update({
+                    
+                    // Подготавливаем данные с фото
+                    const adToSave = {
+                        sellerId: adData.sellerId,
+                        sellerName: adData.sellerName,
+                        sellerUsername: adData.sellerUsername,
+                        sellerAvatar: adData.sellerAvatar || null,
+                        title: adData.title,
+                        category: adData.category,
+                        price: Number(adData.price),
+                        description: adData.description || '',
+                        photoUrls: adData.photoUrls || [], // Теперь правильно сохраняем фото
+                        photos: adData.photoUrls?.length || 0,
+                        likes: 0,
+                        dislikes: 0,
+                        createdAt: firebase.database.ServerValue.TIMESTAMP,
+                        updatedAt: firebase.database.ServerValue.TIMESTAMP
+                    };
+                    
+                    // Добавляем в базу
+                    const newAdRef = database.ref('ads').push();
+                    const adId = newAdRef.key;
+                    
+                    await newAdRef.set(adToSave);
+                    
+                    // Обновляем счетчик пользователя
+                    await database.ref(`users/${adData.sellerId}/adsCount`).transaction((current) => {
+                        return (current || 0) + 1;
+                    });
+                    
+                    console.log('✅ Объявление добавлено, ID:', adId);
+                    return adId;
+                    
+                } catch (error) {
+                    console.error('❌ Ошибка добавления:', error);
+                    throw error;
+                }
+            },
+            
+            // Получить все объявления
+            getAllAds: async function() {
+                try {
+                    const snapshot = await database.ref('ads').once('value');
+                    const ads = [];
+                    
+                    snapshot.forEach((childSnapshot) => {
+                        const ad = childSnapshot.val();
+                        ad.id = childSnapshot.key;
+                        // Восстанавливаем photoUrls если они есть
+                        if (!ad.photoUrls && ad.photos > 0) {
+                            ad.photoUrls = [];
+                            for (let i = 0; i < ad.photos; i++) {
+                                ad.photoUrls.push(null); // Заглушки
+                            }
+                        }
+                        ads.push(ad);
+                    });
+                    
+                    // Сортируем по дате (новые сначала)
+                    ads.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                    
+                    return ads;
+                } catch (error) {
+                    console.error('❌ Ошибка загрузки объявлений:', error);
+                    return [];
+                }
+            },
+            
+            // Слушать новые объявления в реальном времени
+            listenToAds: function(callback) {
+                database.ref('ads').on('value', (snapshot) => {
+                    const ads = [];
+                    snapshot.forEach((childSnapshot) => {
+                        const ad = childSnapshot.val();
+                        ad.id = childSnapshot.key;
+                        // Восстанавливаем photoUrls если они есть
+                        if (!ad.photoUrls && ad.photos > 0) {
+                            ad.photoUrls = [];
+                            for (let i = 0; i < ad.photos; i++) {
+                                ad.photoUrls.push(null);
+                            }
+                        }
+                        ads.push(ad);
+                    });
+                    
+                    // Сортируем
+                    ads.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                    callback(ads);
+                });
+            },
+            
+            // Получить рейтинги
+            getRatings: async function() {
+                try {
+                    const snapshot = await database.ref('ratings').once('value');
+                    return snapshot.val() || {};
+                } catch (error) {
+                    console.error('❌ Ошибка загрузки рейтингов:', error);
+                    return {};
+                }
+            },
+            
+            // Обновить рейтинг
+            updateRating: async function(sellerId, userId, rating) {
+                try {
+                    // Сохраняем оценку
+                    await database.ref(`ratings/${sellerId}/${userId}`).set(rating);
+                    
+                    // Получаем все оценки
+                    const ratingsSnapshot = await database.ref(`ratings/${sellerId}`).once('value');
+                    const ratings = ratingsSnapshot.val() || {};
+                    
+                    // Считаем лайки/дизлайки
+                    let likes = 0, dislikes = 0;
+                    Object.values(ratings).forEach(r => {
+                        if (r === 'like') likes++;
+                        if (r === 'dislike') dislikes++;
+                    });
+                    
+                    // Рассчитываем рейтинг
+                    const total = likes + dislikes;
+                    const calculatedRating = total > 0 ? 0.1 + (likes / total) * 4.9 : 0.1;
+                    
+                    // Обновляем пользователя
+                    await database.ref(`users/${sellerId}`).update({
+                        likesCount: likes,
+                        dislikesCount: dislikes,
+                        rating: calculatedRating,
                         lastActive: firebase.database.ServerValue.TIMESTAMP
                     });
+                    
+                    return true;
+                } catch (error) {
+                    console.error('❌ Ошибка обновления рейтинга:', error);
+                    return false;
                 }
-                
-                return true;
-            } catch (error) {
-                console.error('❌ Ошибка регистрации:', error);
-                return false;
-            }
-        },
-        
-        // Добавить в историю
-        addToHistory: async function(userId, historyItem) {
-            try {
-                const historyRef = database.ref(`userHistory/${userId}`).push();
-                await historyRef.set({
-                    ...historyItem,
-                    id: historyRef.key,
-                    timestamp: new Date().toISOString()
-                });
-                
-                // Ограничиваем историю 50 записями
-                const historySnapshot = await database.ref(`userHistory/${userId}`).once('value');
-                const history = [];
-                historySnapshot.forEach((child) => {
-                    history.push({ key: child.key, ...child.val() });
-                });
-                
-                if (history.length > 50) {
-                    const toDelete = history.slice(50);
-                    for (const item of toDelete) {
-                        await database.ref(`userHistory/${userId}/${item.key}`).remove();
-                    }
-                }
-                
-                return true;
-            } catch (error) {
-                console.error('❌ Ошибка сохранения истории:', error);
-                return false;
-            }
-        },
-        
-        // Получить историю пользователя
-        getUserHistory: async function(userId) {
-            try {
-                const snapshot = await database.ref(`userHistory/${userId}`).once('value');
-                const history = [];
-                snapshot.forEach((childSnapshot) => {
-                    history.unshift(childSnapshot.val());
-                });
-                return history;
-            } catch (error) {
-                console.error('❌ Ошибка загрузки истории:', error);
-                return [];
-            }
-        },
-        
-        // Удалить объявление
-        deleteAd: async function(adId, sellerId) {
-            try {
-                await database.ref(`ads/${adId}`).remove();
-                
-                // Уменьшаем счетчик объявлений пользователя
-                await database.ref(`users/${sellerId}/adsCount`).transaction((current) => {
-                    return Math.max(0, (current || 1) - 1);
-                });
-                
-                return true;
-            } catch (error) {
-                console.error('❌ Ошибка удаления объявления:', error);
-                return false;
-            }
-        },
-        
-        // Обновить объявление
-        updateAd: async function(adId, adData) {
-            try {
-                await database.ref(`ads/${adId}`).update(adData);
-                return true;
-            } catch (error) {
-                console.error('❌ Ошибка обновления объявления:', error);
-                return false;
-            }
-        },
-        
-        // Получить статистику
-        getStats: async function() {
-            try {
-                // Получаем количество объявлений
-                const adsSnapshot = await database.ref('ads').once('value');
-                const totalAds = adsSnapshot.numChildren();
-                
-                // Получаем количество пользователей
-                const usersSnapshot = await database.ref('users').once('value');
-                const totalUsers = usersSnapshot.numChildren();
-                
-                // Считаем сегодняшние объявления
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                let todayAds = 0;
-                
-                adsSnapshot.forEach((childSnapshot) => {
-                    const ad = childSnapshot.val();
-                    if (ad.createdAt && new Date(ad.createdAt) >= today) {
-                        todayAds++;
-                    }
-                });
-                
-                // Считаем лайки и дизлайки
-                const ratingsSnapshot = await database.ref('ratings').once('value');
-                let totalLikes = 0;
-                let totalDislikes = 0;
-                
-                ratingsSnapshot.forEach((userSnapshot) => {
-                    userSnapshot.forEach((ratingSnapshot) => {
-                        if (ratingSnapshot.val() === 'like') totalLikes++;
-                        if (ratingSnapshot.val() === 'dislike') totalDislikes++;
-                    });
-                });
-                
-                // Считаем по категориям
-                const categories = { liquids: 0, disposable: 0, pod: 0, consumables: 0, other: 0 };
-                adsSnapshot.forEach((childSnapshot) => {
-                    const ad = childSnapshot.val();
-                    const category = ad.category || 'other';
-                    if (categories[category] !== undefined) {
-                        categories[category]++;
-                    } else {
-                        categories.other++;
-                    }
-                });
-                
-                // Считаем активных пользователей (последние 7 дней)
-                const weekAgo = new Date();
-                weekAgo.setDate(weekAgo.getDate() - 7);
-                let activeUsers = 0;
-                
-                usersSnapshot.forEach((childSnapshot) => {
-                    const user = childSnapshot.val();
-                    if (user.lastActive && new Date(user.lastActive) > weekAgo) {
-                        activeUsers++;
-                    }
-                });
-                
-                return {
-                    totalUsers: totalUsers,
-                    activeUsers: activeUsers,
-                    totalAds: totalAds,
-                    todayAds: todayAds,
-                    totalLikes: totalLikes,
-                    totalDislikes: totalDislikes,
-                    categories: categories,
-                    lastUpdated: new Date().toISOString(),
-                    serverStatus: 'online'
-                };
-                
-            } catch (error) {
-                console.error('❌ Ошибка получения статистики:', error);
-                return {
-                    totalUsers: 0,
-                    activeUsers: 0,
-                    totalAds: 0,
-                    todayAds: 0,
-                    totalLikes: 0,
-                    totalDislikes: 0,
-                    categories: { liquids: 0, disposable: 0, pod: 0, consumables: 0, other: 0 },
-                    lastUpdated: new Date().toISOString(),
-                    serverStatus: 'offline'
-                };
-            }
-        },
-        
-        // Очистить историю пользователя
-        clearUserHistory: async function(userId) {
-            try {
-                await database.ref(`userHistory/${userId}`).remove();
-                return true;
-            } catch (error) {
-                console.error('❌ Ошибка очистки истории:', error);
-                return false;
-            }
-        }
-    };
-    // ==================== КОНЕЦ FIREBASE СЕРВЕРА ====================
-    
-    // ==================== ОСНОВНОЕ ПРИЛОЖЕНИЕ ====================
-    
-    // Инициализация Telegram Web App
-    const tg = window.Telegram?.WebApp;
-    
-    // Система данных приложения
-    const appData = {
-        currentUserId: null,
-        currentUserData: null,
-        ads: [],
-        userRatings: {},
-        history: [],
-        uploadedPhotos: [],
-        currentPhotoIndex: 0,
-        currentPhotoList: [],
-        currentCategory: 'all',
-        editingAdId: null,
-        serverStats: null,
-        lastSyncTime: null,
-        isDataLoaded: false // Флаг загрузки данных
-    };
-    
-    function checkTelegramAndInit() {
-    console.log('🔍 Начинаем инициализацию...');
-    
-    // Пробуем получить Telegram Web App
-    const tg = window.Telegram?.WebApp;
-    
-    if (tg) {
-        console.log('✅ Telegram Web App обнаружен');
-        
-        // Расширяем на весь экран
-        tg.expand();
-        tg.ready();
-        
-        // Показываем кнопку "Назад"
-        tg.BackButton.show();
-        tg.BackButton.onClick(function() {
-            tg.close();
-        });
-        
-        // Получаем данные пользователя
-        const user = tg.initDataUnsafe?.user;
-        console.log('Данные пользователя из Telegram:', user);
-        
-        if (user && user.id) {
-            console.log('✅ Пользователь Telegram получен');
-            appData.currentUserId = user.id.toString();
-            appData.currentUserData = {
-                id: user.id,
-                first_name: user.first_name || 'Пользователь',
-                last_name: user.last_name || '',
-                username: user.username || '',
-                photo_url: user.photo_url || null
-            };
+            },
             
-            // Регистрируем в Firebase и запускаем приложение
-            FirebaseMarketServer.registerUser(appData.currentUserData)
-                .then(success => {
-                    console.log('Регистрация в Firebase:', success ? '✅ Успешно' : '❌ Ошибка');
-                    initApp();
-                })
-                .catch(error => {
-                    console.error('Ошибка регистрации в Firebase:', error);
-                    initApp(); // Все равно запускаем приложение
-                });
-        } else {
-            console.warn('⚠️ Нет данных пользователя в Telegram');
-            // Создаем тестового пользователя для этого случая
-            createTestUser();
-        }
-    } else {
-        console.warn('⚠️ Telegram Web App не найден (открыто в браузере)');
-        // Создаем тестового пользователя
-        createTestUser();
-    }
-    
-    // Функция создания тестового пользователя
-    function createTestUser() {
-        appData.currentUserId = 'test_user_' + Date.now();
-        appData.currentUserData = {
-            id: appData.currentUserId,
-            first_name: 'Тестовый',
-            username: 'testuser_' + Math.floor(Math.random() * 1000),
-            photo_url: null
+            // Регистрация пользователя
+            registerUser: async function(userData) {
+                try {
+                    const userRef = database.ref(`users/${userData.id}`);
+                    const snapshot = await userRef.once('value');
+                    
+                    if (!snapshot.exists()) {
+                        await userRef.set({
+                            id: userData.id,
+                            name: userData.name || 'Пользователь',
+                            username: userData.username || '',
+                            registrationDate: firebase.database.ServerValue.TIMESTAMP,
+                            lastActive: firebase.database.ServerValue.TIMESTAMP,
+                            adsCount: 0,
+                            likesCount: 0,
+                            dislikesCount: 0,
+                            rating: 0.1
+                        });
+                        console.log('✅ Новый пользователь зарегистрирован');
+                    } else {
+                        await userRef.update({
+                            lastActive: firebase.database.ServerValue.TIMESTAMP
+                        });
+                    }
+                    
+                    return true;
+                } catch (error) {
+                    console.error('❌ Ошибка регистрации:', error);
+                    return false;
+                }
+            },
+            
+            // Добавить в историю
+            addToHistory: async function(userId, historyItem) {
+                try {
+                    const historyRef = database.ref(`userHistory/${userId}`).push();
+                    await historyRef.set({
+                        ...historyItem,
+                        id: historyRef.key,
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    // Ограничиваем историю 50 записями
+                    const historySnapshot = await database.ref(`userHistory/${userId}`).once('value');
+                    const history = [];
+                    historySnapshot.forEach((child) => {
+                        history.push({ key: child.key, ...child.val() });
+                    });
+                    
+                    if (history.length > 50) {
+                        const toDelete = history.slice(50);
+                        for (const item of toDelete) {
+                            await database.ref(`userHistory/${userId}/${item.key}`).remove();
+                        }
+                    }
+                    
+                    return true;
+                } catch (error) {
+                    console.error('❌ Ошибка сохранения истории:', error);
+                    return false;
+                }
+            },
+            
+            // Получить историю пользователя
+            getUserHistory: async function(userId) {
+                try {
+                    const snapshot = await database.ref(`userHistory/${userId}`).once('value');
+                    const history = [];
+                    snapshot.forEach((childSnapshot) => {
+                        history.unshift(childSnapshot.val());
+                    });
+                    return history;
+                } catch (error) {
+                    console.error('❌ Ошибка загрузки истории:', error);
+                    return [];
+                }
+            },
+            
+            // Удалить объявление
+            deleteAd: async function(adId, sellerId) {
+                try {
+                    await database.ref(`ads/${adId}`).remove();
+                    
+                    // Уменьшаем счетчик объявлений пользователя
+                    await database.ref(`users/${sellerId}/adsCount`).transaction((current) => {
+                        return Math.max(0, (current || 1) - 1);
+                    });
+                    
+                    return true;
+                } catch (error) {
+                    console.error('❌ Ошибка удаления объявления:', error);
+                    return false;
+                }
+            },
+            
+            // Обновить объявление
+            updateAd: async function(adId, adData) {
+                try {
+                    await database.ref(`ads/${adId}`).update(adData);
+                    return true;
+                } catch (error) {
+                    console.error('❌ Ошибка обновления объявления:', error);
+                    return false;
+                }
+            },
+            
+            // Получить статистику
+            getStats: async function() {
+                try {
+                    // Получаем количество объявлений
+                    const adsSnapshot = await database.ref('ads').once('value');
+                    const totalAds = adsSnapshot.numChildren();
+                    
+                    // Получаем количество пользователей
+                    const usersSnapshot = await database.ref('users').once('value');
+                    const totalUsers = usersSnapshot.numChildren();
+                    
+                    // Считаем сегодняшние объявления
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    let todayAds = 0;
+                    
+                    adsSnapshot.forEach((childSnapshot) => {
+                        const ad = childSnapshot.val();
+                        if (ad.createdAt && new Date(ad.createdAt) >= today) {
+                            todayAds++;
+                        }
+                    });
+                    
+                    // Считаем лайки и дизлайки
+                    const ratingsSnapshot = await database.ref('ratings').once('value');
+                    let totalLikes = 0;
+                    let totalDislikes = 0;
+                    
+                    ratingsSnapshot.forEach((userSnapshot) => {
+                        userSnapshot.forEach((ratingSnapshot) => {
+                            if (ratingSnapshot.val() === 'like') totalLikes++;
+                            if (ratingSnapshot.val() === 'dislike') totalDislikes++;
+                        });
+                    });
+                    
+                    // Считаем по категориям
+                    const categories = { liquids: 0, disposable: 0, pod: 0, consumables: 0, other: 0 };
+                    adsSnapshot.forEach((childSnapshot) => {
+                        const ad = childSnapshot.val();
+                        const category = ad.category || 'other';
+                        if (categories[category] !== undefined) {
+                            categories[category]++;
+                        } else {
+                            categories.other++;
+                        }
+                    });
+                    
+                    // Считаем активных пользователей (последние 7 дней)
+                    const weekAgo = new Date();
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    let activeUsers = 0;
+                    
+                    usersSnapshot.forEach((childSnapshot) => {
+                        const user = childSnapshot.val();
+                        if (user.lastActive && new Date(user.lastActive) > weekAgo) {
+                            activeUsers++;
+                        }
+                    });
+                    
+                    return {
+                        totalUsers: totalUsers,
+                        activeUsers: activeUsers,
+                        totalAds: totalAds,
+                        todayAds: todayAds,
+                        totalLikes: totalLikes,
+                        totalDislikes: totalDislikes,
+                        categories: categories,
+                        lastUpdated: new Date().toISOString(),
+                        serverStatus: 'online'
+                    };
+                    
+                } catch (error) {
+                    console.error('❌ Ошибка получения статистики:', error);
+                    return {
+                        totalUsers: 0,
+                        activeUsers: 0,
+                        totalAds: 0,
+                        todayAds: 0,
+                        totalLikes: 0,
+                        totalDislikes: 0,
+                        categories: { liquids: 0, disposable: 0, pod: 0, consumables: 0, other: 0 },
+                        lastUpdated: new Date().toISOString(),
+                        serverStatus: 'offline'
+                    };
+                }
+            },
+            
+            // Очистить историю пользователя
+            clearUserHistory: async function(userId) {
+                try {
+                    await database.ref(`userHistory/${userId}`).remove();
+                    return true;
+                } catch (error) {
+                    console.error('❌ Ошибка очистки истории:', error);
+                    return false;
+                }
+            }
+        };
+        // ==================== КОНЕЦ FIREBASE СЕРВЕРА ====================
+        
+        // ==================== ОСНОВНОЕ ПРИЛОЖЕНИЕ ====================
+        
+        // Инициализация Telegram Web App
+        const tg = window.Telegram?.WebApp;
+        
+        // Система данных приложения
+        const appData = {
+            currentUserId: null,
+            currentUserData: null,
+            ads: [],
+            userRatings: {},
+            history: [],
+            uploadedPhotos: [],
+            currentPhotoIndex: 0,
+            currentPhotoList: [],
+            currentCategory: 'all',
+            editingAdId: null,
+            serverStats: null,
+            lastSyncTime: null,
+            isDataLoaded: false
         };
         
-        console.log('🔄 Создан тестовый пользователь:', appData.currentUserData);
-        
-        FirebaseMarketServer.registerUser(appData.currentUserData)
-            .then(success => {
-                console.log('Регистрация тестового пользователя:', success ? '✅ Успешно' : '❌ Ошибка');
-                initApp();
-            })
-            .catch(error => {
-                console.error('Ошибка регистрации тестового пользователя:', error);
-                initApp(); // Все равно запускаем
-            });
-    }
-}
-    
-    // Загрузить данные с Firebase
-    async function loadFromServer() {
-        try {
-            console.log('🔄 Загрузка данных с Firebase...');
+        function checkTelegramAndInit() {
+            console.log('🔍 Начинаем инициализацию...');
             
-            // Загружаем объявления
-            appData.ads = await FirebaseMarketServer.getAllAds();
-            console.log(`✅ Загружено ${appData.ads.length} объявлений из Firebase`);
+            // Пробуем получить Telegram Web App
+            const tg = window.Telegram?.WebApp;
             
-            // Загружаем рейтинги
-            appData.userRatings = await FirebaseMarketServer.getRatings();
-            
-            // Загружаем историю
-            if (appData.currentUserId) {
-                appData.history = await FirebaseMarketServer.getUserHistory(appData.currentUserId);
-            }
-            
-            // Загружаем статистику
-            appData.serverStats = await FirebaseMarketServer.getStats();
-            
-            appData.lastSyncTime = new Date();
-            appData.isDataLoaded = true; // Устанавливаем флаг загрузки
-            
-            updateSyncStatus();
-            
-            // Обновляем UI после загрузки данных
-            updateUIAfterDataLoad();
-            
-            showNotification(`Данные загружены (${appData.ads.length} объявлений)`, 'success');
-            
-        } catch (error) {
-            console.error('❌ Ошибка загрузки данных:', error);
-            showNotification('Ошибка загрузки данных', 'warning');
-            
-            // Все равно обновляем UI с базовыми данными
-            appData.isDataLoaded = true;
-            appData.ads = [];
-            updateUIAfterDataLoad();
-        }
-    }
-    
-    // Обновить UI после загрузки данных
-    function updateUIAfterDataLoad() {
-        if (!appData.isDataLoaded) return;
-        
-        // Обновляем профиль
-        updateUserProfile();
-        
-        // Обновляем статистику профиля
-        updateProfileStats();
-        
-        // Обновляем объявления
-        renderAds();
-        
-        // Обновляем мои объявления (если открыта страница профиля)
-        if (document.getElementById('page-profile').classList.contains('active')) {
-            updateMyAdsList();
-            updateHistory();
-        }
-        
-        // Обновляем статистику сервера (если открыта FAQ страница)
-        if (document.getElementById('page-faq').classList.contains('active')) {
-            updateServerStatsUI();
-        }
-    }
-    
-    // Обновить статус синхронизации
-    function updateSyncStatus() {
-        const syncText = document.getElementById('sync-text');
-        const serverSyncText = document.getElementById('server-sync-text');
-        
-        if (appData.lastSyncTime) {
-            const now = new Date();
-            const diff = Math.floor((now - appData.lastSyncTime) / 1000);
-            
-            let text;
-            if (diff < 60) {
-                text = 'Только что';
-            } else if (diff < 3600) {
-                text = `${Math.floor(diff / 60)} мин. назад`;
+            if (tg) {
+                console.log('✅ Telegram Web App обнаружен');
+                
+                // Расширяем на весь экран
+                tg.expand();
+                tg.ready();
+                
+                // Показываем кнопку "Назад"
+                tg.BackButton.show();
+                tg.BackButton.onClick(function() {
+                    tg.close();
+                });
+                
+                // Получаем данные пользователя
+                const user = tg.initDataUnsafe?.user;
+                console.log('Данные пользователя из Telegram:', user);
+                
+                if (user && user.id) {
+                    console.log('✅ Пользователь Telegram получен');
+                    appData.currentUserId = user.id.toString();
+                    appData.currentUserData = {
+                        id: user.id,
+                        first_name: user.first_name || 'Пользователь',
+                        last_name: user.last_name || '',
+                        username: user.username || '',
+                        photo_url: user.photo_url || null
+                    };
+                    
+                    // Регистрируем в Firebase и запускаем приложение
+                    FirebaseMarketServer.registerUser(appData.currentUserData)
+                        .then(success => {
+                            console.log('Регистрация в Firebase:', success ? '✅ Успешно' : '❌ Ошибка');
+                            initApp();
+                        })
+                        .catch(error => {
+                            console.error('Ошибка регистрации в Firebase:', error);
+                            initApp();
+                        });
+                } else {
+                    console.warn('⚠️ Нет данных пользователя в Telegram');
+                    createTestUser();
+                }
             } else {
-                text = `${Math.floor(diff / 3600)} час. назад`;
+                console.warn('⚠️ Telegram Web App не найден (открыто в браузере)');
+                createTestUser();
             }
             
-            if (syncText) syncText.textContent = `Обновлено: ${text}`;
-            if (serverSyncText) serverSyncText.textContent = `Данные: ${text}`;
+            function createTestUser() {
+                appData.currentUserId = 'test_user_' + Date.now();
+                appData.currentUserData = {
+                    id: appData.currentUserId,
+                    first_name: 'Тестовый',
+                    username: 'testuser_' + Math.floor(Math.random() * 1000),
+                    photo_url: null
+                };
+                
+                console.log('🔄 Создан тестовый пользователь:', appData.currentUserData);
+                
+                FirebaseMarketServer.registerUser(appData.currentUserData)
+                    .then(success => {
+                        console.log('Регистрация тестового пользователя:', success ? '✅ Успешно' : '❌ Ошибка');
+                        initApp();
+                    })
+                    .catch(error => {
+                        console.error('Ошибка регистрации тестового пользователя:', error);
+                        initApp();
+                    });
+            }
         }
-    }
-    
-    // Обновить статистику сервера
-    function updateServerStatsUI() {
-        if (!appData.serverStats) {
-            // Показываем заглушку если данные не загружены
+        
+        // Загрузить данные с Firebase
+        async function loadFromServer() {
+            try {
+                console.log('🔄 Загрузка данных с Firebase...');
+                
+                // Загружаем объявления
+                appData.ads = await FirebaseMarketServer.getAllAds();
+                console.log(`✅ Загружено ${appData.ads.length} объявлений из Firebase`);
+                
+                // Загружаем рейтинги
+                appData.userRatings = await FirebaseMarketServer.getRatings();
+                
+                // Загружаем историю
+                if (appData.currentUserId) {
+                    appData.history = await FirebaseMarketServer.getUserHistory(appData.currentUserId);
+                }
+                
+                // Загружаем статистику
+                appData.serverStats = await FirebaseMarketServer.getStats();
+                
+                appData.lastSyncTime = new Date();
+                appData.isDataLoaded = true;
+                
+                updateSyncStatus();
+                
+                updateUIAfterDataLoad();
+                
+                showNotification(`Данные загружены (${appData.ads.length} объявлений)`, 'success');
+                
+            } catch (error) {
+                console.error('❌ Ошибка загрузки данных:', error);
+                showNotification('Ошибка загрузки данных', 'warning');
+                
+                appData.isDataLoaded = true;
+                appData.ads = [];
+                updateUIAfterDataLoad();
+            }
+        }
+        
+        // Обновить UI после загрузки данных
+        function updateUIAfterDataLoad() {
+            if (!appData.isDataLoaded) return;
+            
+            updateUserProfile();
+            updateProfileStats();
+            renderAds();
+            
+            if (document.getElementById('page-profile').classList.contains('active')) {
+                updateMyAdsList();
+                updateHistory();
+            }
+            
+            if (document.getElementById('page-faq').classList.contains('active')) {
+                updateServerStatsUI();
+            }
+        }
+        
+        // Обновить статус синхронизации
+        function updateSyncStatus() {
+            const syncText = document.getElementById('sync-text');
+            const serverSyncText = document.getElementById('server-sync-text');
+            
+            if (appData.lastSyncTime) {
+                const now = new Date();
+                const diff = Math.floor((now - appData.lastSyncTime) / 1000);
+                
+                let text;
+                if (diff < 60) {
+                    text = 'Только что';
+                } else if (diff < 3600) {
+                    text = `${Math.floor(diff / 60)} мин. назад`;
+                } else {
+                    text = `${Math.floor(diff / 3600)} час. назад`;
+                }
+                
+                if (syncText) syncText.textContent = `Обновлено: ${text}`;
+                if (serverSyncText) serverSyncText.textContent = `Данные: ${text}`;
+            }
+        }
+        
+        // Обновить статистику сервера
+        function updateServerStatsUI() {
+            if (!appData.serverStats) {
+                const statsGrid = document.getElementById('server-stats-grid');
+                if (statsGrid) {
+                    statsGrid.innerHTML = `
+                        <div class="server-stat-item">
+                            <div class="server-stat-number">0</div>
+                            <div class="server-stat-label">Пользователей</div>
+                        </div>
+                        <div class="server-stat-item">
+                            <div class="server-stat-number">0</div>
+                            <div class="server-stat-label">Объявлений</div>
+                        </div>
+                        <div class="server-stat-item">
+                            <div class="server-stat-number">0</div>
+                            <div class="server-stat-label">Активных</div>
+                        </div>
+                        <div class="server-stat-item">
+                            <div class="server-stat-number">0</div>
+                            <div class="server-stat-label">Сегодня</div>
+                        </div>
+                        <div class="server-stat-item">
+                            <div class="server-stat-number">0</div>
+                            <div class="server-stat-label">Лайков</div>
+                        </div>
+                        <div class="server-stat-item">
+                            <div class="server-stat-number">0</div>
+                            <div class="server-stat-label">Дизлайков</div>
+                        </div>
+                    `;
+                }
+                return;
+            }
+            
             const statsGrid = document.getElementById('server-stats-grid');
+            const faqAnswer5 = document.getElementById('faq-answer-5');
+            
             if (statsGrid) {
                 statsGrid.innerHTML = `
                     <div class="server-stat-item">
-                        <div class="server-stat-number">0</div>
+                        <div class="server-stat-number">${appData.serverStats.totalUsers}</div>
                         <div class="server-stat-label">Пользователей</div>
                     </div>
                     <div class="server-stat-item">
-                        <div class="server-stat-number">0</div>
+                        <div class="server-stat-number">${appData.serverStats.totalAds}</div>
                         <div class="server-stat-label">Объявлений</div>
                     </div>
                     <div class="server-stat-item">
-                        <div class="server-stat-number">0</div>
+                        <div class="server-stat-number">${appData.serverStats.activeUsers}</div>
                         <div class="server-stat-label">Активных</div>
                     </div>
                     <div class="server-stat-item">
-                        <div class="server-stat-number">0</div>
+                        <div class="server-stat-number">${appData.serverStats.todayAds}</div>
                         <div class="server-stat-label">Сегодня</div>
                     </div>
                     <div class="server-stat-item">
-                        <div class="server-stat-number">0</div>
+                        <div class="server-stat-number">${appData.serverStats.totalLikes}</div>
                         <div class="server-stat-label">Лайков</div>
                     </div>
                     <div class="server-stat-item">
-                        <div class="server-stat-number">0</div>
+                        <div class="server-stat-number">${appData.serverStats.totalDislikes}</div>
                         <div class="server-stat-label">Дизлайков</div>
                     </div>
                 `;
             }
-            return;
-        }
-        
-        const statsGrid = document.getElementById('server-stats-grid');
-        const faqAnswer5 = document.getElementById('faq-answer-5');
-        
-        if (statsGrid) {
-            statsGrid.innerHTML = `
-                <div class="server-stat-item">
-                    <div class="server-stat-number">${appData.serverStats.totalUsers}</div>
-                    <div class="server-stat-label">Пользователей</div>
-                </div>
-                <div class="server-stat-item">
-                    <div class="server-stat-number">${appData.serverStats.totalAds}</div>
-                    <div class="server-stat-label">Объявлений</div>
-                </div>
-                <div class="server-stat-item">
-                    <div class="server-stat-number">${appData.serverStats.activeUsers}</div>
-                    <div class="server-stat-label">Активных</div>
-                </div>
-                <div class="server-stat-item">
-                    <div class="server-stat-number">${appData.serverStats.todayAds}</div>
-                    <div class="server-stat-label">Сегодня</div>
-                </div>
-                <div class="server-stat-item">
-                    <div class="server-stat-number">${appData.serverStats.totalLikes}</div>
-                    <div class="server-stat-label">Лайков</div>
-                </div>
-                <div class="server-stat-item">
-                    <div class="server-stat-number">${appData.serverStats.totalDislikes}</div>
-                    <div class="server-stat-label">Дизлайков</div>
-                </div>
-            `;
-        }
-        
-        if (faqAnswer5) {
-            const lastUpdated = new Date(appData.serverStats.lastUpdated).toLocaleString('ru-RU');
-            faqAnswer5.innerHTML = `
-                <strong>Статистика сервера Vape Market:</strong><br><br>
-                👥 <b>Пользователи:</b> ${appData.serverStats.totalUsers} (${appData.serverStats.activeUsers} активных)<br>
-                📦 <b>Объявления:</b> ${appData.serverStats.totalAds} (${appData.serverStats.todayAds} сегодня)<br>
-                👍 <b>Лайки:</b> ${appData.serverStats.totalLikes}<br>
-                👎 <b>Дизлайки:</b> ${appData.serverStats.totalDislikes}<br><br>
-                📊 <b>По категориям:</b><br>
-                • Жидкости: ${appData.serverStats.categories.liquids}<br>
-                • Одноразовые: ${appData.serverStats.categories.disposable}<br>
-                • Под-системы: ${appData.serverStats.categories.pod}<br>
-                • Расходники: ${appData.serverStats.categories.consumables}<br><br>
-                ⏰ <b>Обновлено:</b> ${lastUpdated}<br>
-                🟢 <b>Статус сервера:</b> ${appData.serverStats.serverStatus}<br>
-                🔥 <b>База данных:</b> Firebase
-            `;
-        }
-    }
-    
-    // Обновить статистику
-    async function refreshStats() {
-        appData.serverStats = await FirebaseMarketServer.getStats();
-        updateServerStatsUI();
-        showNotification('Статистика обновлена', 'success');
-    }
-    
-    // Инициализация приложения
-    function initApp() {
-        if (tg) {
-            tg.expand();
-            tg.ready();
             
-            // Устанавливаем тему
-            tg.setHeaderColor('#6D28D9');
-            tg.setBackgroundColor('#7C3AED');
-            
-            // Показываем кнопку "Назад"
-            tg.BackButton.show();
-            tg.BackButton.onClick(function() {
-                tg.close();
-            });
-        }
-        
-        // Сначала обновляем профиль с базовыми данными
-        updateUserProfile();
-        
-        // Загружаем данные с Firebase (асинхронно)
-        loadFromServer();
-        
-        // Слушаем новые объявления в реальном времени
-        FirebaseMarketServer.listenToAds((ads) => {
-            console.log('📡 Получены обновления в реальном времени:', ads.length);
-            appData.ads = ads;
-            if (appData.isDataLoaded) {
-                renderAds();
-                updateProfileStats();
-                updateMyAdsList();
-                updateServerStatsUI();
-                showNotification('Получены обновленные данные', 'info');
+            if (faqAnswer5) {
+                const lastUpdated = new Date(appData.serverStats.lastUpdated).toLocaleString('ru-RU');
+                faqAnswer5.innerHTML = `
+                    <strong>Статистика сервера Vape Market:</strong><br><br>
+                    👥 <b>Пользователи:</b> ${appData.serverStats.totalUsers} (${appData.serverStats.activeUsers} активных)<br>
+                    📦 <b>Объявления:</b> ${appData.serverStats.totalAds} (${appData.serverStats.todayAds} сегодня)<br>
+                    👍 <b>Лайки:</b> ${appData.serverStats.totalLikes}<br>
+                    👎 <b>Дизлайки:</b> ${appData.serverStats.totalDislikes}<br><br>
+                    📊 <b>По категориям:</b><br>
+                    • Жидкости: ${appData.serverStats.categories.liquids}<br>
+                    • Одноразовые: ${appData.serverStats.categories.disposable}<br>
+                    • Под-системы: ${appData.serverStats.categories.pod}<br>
+                    • Расходники: ${appData.serverStats.categories.consumables}<br><br>
+                    ⏰ <b>Обновлено:</b> ${lastUpdated}<br>
+                    🟢 <b>Статус сервера:</b> ${appData.serverStats.serverStatus}<br>
+                    🔥 <b>База данных:</b> Firebase
+                `;
             }
-        });
-        
-        // Инициализация FAQ
-        for (let i = 1; i <= 6; i++) {
-            const answer = document.getElementById(`faq-answer-${i}`);
-            if (answer) answer.style.display = 'none';
         }
         
-        // Обновляем статус каждую минуту
-        setInterval(updateSyncStatus, 60000);
+        // Обновить статистику
+        async function refreshStats() {
+            appData.serverStats = await FirebaseMarketServer.getStats();
+            updateServerStatsUI();
+            showNotification('Статистика обновлена', 'success');
+        }
         
-        showNotification(`Добро пожаловать, ${appData.currentUserData?.first_name || 'Пользователь'}!`, 'success');
-    }
+        // Инициализация приложения
+        function initApp() {
+            if (tg) {
+                tg.expand();
+                tg.ready();
+                
+                tg.setHeaderColor('#6D28D9');
+                tg.setBackgroundColor('#7C3AED');
+                
+                tg.BackButton.show();
+                tg.BackButton.onClick(function() {
+                    tg.close();
+                });
+            }
+            
+            updateUserProfile();
+            loadFromServer();
+            
+            FirebaseMarketServer.listenToAds((ads) => {
+                console.log('📡 Получены обновления в реальном времени:', ads.length);
+                appData.ads = ads;
+                if (appData.isDataLoaded) {
+                    renderAds();
+                    updateProfileStats();
+                    updateMyAdsList();
+                    updateServerStatsUI();
+                    showNotification('Получены обновленные данные', 'info');
+                }
+            });
+            
+            for (let i = 1; i <= 6; i++) {
+                const answer = document.getElementById(`faq-answer-${i}`);
+                if (answer) answer.style.display = 'none';
+            }
+            
+            setInterval(updateSyncStatus, 60000);
+            
+            showNotification(`Добро пожаловать, ${appData.currentUserData?.first_name || 'Пользователь'}!`, 'success');
+        }
         
         // Обновить профиль пользователя в UI
         function updateUserProfile() {
@@ -2352,21 +2343,18 @@
             const profileUsername = document.getElementById('profileUsername');
             const profileAvatar = document.getElementById('profileAvatar');
             
-            // Имя пользователя
             let fullName = appData.currentUserData.first_name;
             if (appData.currentUserData.last_name) {
                 fullName += ' ' + appData.currentUserData.last_name;
             }
             profileName.textContent = fullName;
             
-            // Username
             if (appData.currentUserData.username) {
                 profileUsername.textContent = '@' + appData.currentUserData.username;
             } else {
                 profileUsername.textContent = 'Без username';
             }
             
-            // Аватар
             if (appData.currentUserData.photo_url) {
                 profileAvatar.innerHTML = `<img src="${appData.currentUserData.photo_url}" alt="Аватар">`;
             } else {
@@ -2433,7 +2421,6 @@
             });
             document.getElementById(`${tab}-tab`).classList.add('active');
             
-            // Обновляем контент вкладки
             if (tab === 'history' && appData.isDataLoaded) {
                 updateHistory();
             }
@@ -2479,7 +2466,6 @@
         function renderAds() {
             const container = document.getElementById('ads-container');
             
-            // Проверяем, загружены ли данные
             if (!appData.isDataLoaded) {
                 container.innerHTML = `
                     <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
@@ -2493,12 +2479,10 @@
             
             container.innerHTML = '';
             
-            // Фильтруем объявления по категории
             const filteredAds = appData.currentCategory === 'all' 
                 ? appData.ads 
                 : appData.ads.filter(ad => ad.category === appData.currentCategory);
             
-            // Сортируем по дате (новые сверху)
             filteredAds.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             
             if (filteredAds.length === 0) {
@@ -2515,30 +2499,25 @@
                 return;
             }
             
-            // Рендерим каждое объявление
             filteredAds.forEach(ad => {
-                // Рассчитываем рейтинг продавца
                 const rating = calculateRating(ad.sellerId);
-                
-                // Проверяем, поставил ли текущий пользователь оценку
                 const userRating = appData.userRatings[ad.sellerId]?.[appData.currentUserId];
-                
-                // Проверяем, является ли объявление пользователя собственным
                 const isOwnAd = ad.sellerId === appData.currentUserId;
                 
                 const adElement = document.createElement('div');
                 adElement.className = 'advertisement-card';
                 adElement.id = `ad-${ad.id}`;
                 
-                // Генерируем фото
+                // =========== ИСПРАВЛЕННАЯ ЧАСТЬ: ОТОБРАЖЕНИЕ ФОТО ===========
                 const photoElements = [];
                 
-                if (ad.photoUrls && ad.photoUrls.length > 0) {
+                if (ad.photoUrls && ad.photoUrls.length > 0 && ad.photoUrls[0] !== null) {
+                    // Есть реальные фото
                     ad.photoUrls.forEach((photoUrl, index) => {
-                        if (photoUrl) {
+                        if (photoUrl && photoUrl !== 'null') {
                             photoElements.push(`
                                 <div class="photo-item" onclick="openPhotoViewer('${ad.id}', ${index})">
-                                    <img src="${photoUrl}" alt="Фото ${index + 1}">
+                                    <img src="${photoUrl}" alt="Фото ${index + 1}" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxMjAiIHJ4PSIxNSIgZmlsbD0iIzgzNUFGOSIvPjxwYXRoIGQ9Ik03NSA2MEw1NSA3NUw0NSA2MEw2MCA0NUw3NSA2MFoiIGZpbGw9IndoaXRlIi8+PHRleHQgeD0iNjAiIHk9Ijg1IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5GJmFtcDsjeDQ0Mzt0byAxPC90ZXh0Pjwvc3ZnPg=='">
                                     <div class="photo-label">Фото ${index + 1}</div>
                                 </div>
                             `);
@@ -2546,20 +2525,24 @@
                     });
                 }
                 
-                // Если нет фото, показываем заглушки
+                // Если нет фото или не удалось загрузить, показываем заглушки
                 if (photoElements.length === 0) {
-                    for (let i = 0; i < Math.min(ad.photos || 1, 3); i++) {
-                        const color = i % 2 === 0 ? '#8B5CF6' : '#7C3AED';
+                    const numPhotos = Math.min(ad.photos || 1, 3);
+                    for (let i = 0; i < numPhotos; i++) {
+                        const colors = ['#835AF9', '#7C3AED', '#6D28D9'];
+                        const color = colors[i % colors.length];
                         photoElements.push(`
                             <div class="photo-item">
                                 <div class="photo-placeholder" style="background: ${color};">
                                     <i class="fas fa-image"></i>
+                                    <span>Фото ${i + 1}</span>
                                 </div>
                                 <div class="photo-label">Фото ${i + 1}</div>
                             </div>
                         `);
                     }
                 }
+                // =========== КОНЕЦ ИСПРАВЛЕННОЙ ЧАСТИ ===========
                 
                 adElement.innerHTML = `
                     <div class="seller-header">
@@ -2640,20 +2623,31 @@
         // Открыть просмотр фото
         function openPhotoViewer(adId, photoIndex = 0) {
             const ad = appData.ads.find(a => a.id === adId);
-            if (!ad || !ad.photoUrls || ad.photoUrls.length === 0) {
+            if (!ad || !ad.photoUrls || ad.photoUrls.length === 0 || ad.photoUrls[0] === null) {
                 showNotification('Фотографии не найдены', 'error');
                 return;
             }
             
-            appData.currentPhotoList = ad.photoUrls;
-            appData.currentPhotoIndex = photoIndex;
+            // Фильтруем только существующие фото
+            const validPhotoUrls = ad.photoUrls.filter(url => url && url !== 'null');
+            if (validPhotoUrls.length === 0) {
+                showNotification('Фотографии не найдены', 'error');
+                return;
+            }
+            
+            appData.currentPhotoList = validPhotoUrls;
+            appData.currentPhotoIndex = Math.min(photoIndex, validPhotoUrls.length - 1);
             
             const modal = document.getElementById('photoModal');
             const modalImg = document.getElementById('modalPhoto');
             const counter = document.getElementById('photoCounter');
             
-            modalImg.src = ad.photoUrls[photoIndex];
-            counter.textContent = `${photoIndex + 1} / ${ad.photoUrls.length}`;
+            modalImg.src = validPhotoUrls[appData.currentPhotoIndex];
+            modalImg.onerror = function() {
+                this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDQwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiM4MzVBRjkiLz48cGF0aCBkPSJNMTYwIDE5MEwyNDAgMjQwTDE4MCAxOTBMMjIwIDE0MEwxNjAgMTkwWiIgZmlsbD0id2hpdGUiLz48dGV4dCB4PSIyMDAiIHk9IjI4MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+Rm90byBub3QgZm91bmQ8L3RleHQ+PC9zdmc+';
+            };
+            
+            counter.textContent = `${appData.currentPhotoIndex + 1} / ${validPhotoUrls.length}`;
             
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -2671,7 +2665,11 @@
             if (appData.currentPhotoList.length === 0) return;
             
             appData.currentPhotoIndex = (appData.currentPhotoIndex + 1) % appData.currentPhotoList.length;
-            document.getElementById('modalPhoto').src = appData.currentPhotoList[appData.currentPhotoIndex];
+            const modalImg = document.getElementById('modalPhoto');
+            modalImg.src = appData.currentPhotoList[appData.currentPhotoIndex];
+            modalImg.onerror = function() {
+                this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDQwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiM4MzVBRjkiLz48cGF0aCBkPSJNMTYwIDE5MEwyNDAgMjQwTDE4MCAxOTBMMjIwIDE0MEwxNjAgMTkwWiIgZmlsbD0id2hpdGUiLz48dGV4dCB4PSIyMDAiIHk9IjI4MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+Rm90byBub3QgZm91bmQ8L3RleHQ+PC9zdmc+';
+            };
             document.getElementById('photoCounter').textContent = 
                 `${appData.currentPhotoIndex + 1} / ${appData.currentPhotoList.length}`;
         }
@@ -2684,7 +2682,11 @@
                 ? appData.currentPhotoList.length - 1 
                 : appData.currentPhotoIndex - 1;
             
-            document.getElementById('modalPhoto').src = appData.currentPhotoList[appData.currentPhotoIndex];
+            const modalImg = document.getElementById('modalPhoto');
+            modalImg.src = appData.currentPhotoList[appData.currentPhotoIndex];
+            modalImg.onerror = function() {
+                this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDQwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiM4MzVBRjkiLz48cGF0aCBkPSJNMTYwIDE5MEwyNDAgMjQwTDE4MCAxOTBMMjIwIDE0MEwxNjAgMTkwWiIgZmlsbD0id2hpdGUiLz48dGV4dCB4PSIyMDAiIHk9IjI4MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+Rm90byBub3QgZm91bmQ8L3RleHQ+PC9zdmc+';
+            };
             document.getElementById('photoCounter').textContent = 
                 `${appData.currentPhotoIndex + 1} / ${appData.currentPhotoList.length}`;
         }
@@ -2699,7 +2701,6 @@
             const ad = appData.ads.find(a => a.id === adId);
             if (!ad) return;
             
-            // Проверяем, не является ли объявление собственным
             if (ad.sellerId === appData.currentUserId) {
                 showNotification('Нельзя оценивать собственное объявление', 'warning');
                 return;
@@ -2712,20 +2713,16 @@
                 return;
             }
             
-            // Обновляем в Firebase
             const success = await FirebaseMarketServer.updateRating(sellerId, appData.currentUserId, type);
             
             if (success) {
-                // Обновляем локальные данные
                 if (!appData.userRatings[sellerId]) {
                     appData.userRatings[sellerId] = {};
                 }
                 appData.userRatings[sellerId][appData.currentUserId] = type;
                 
-                // Перезагружаем данные с сервера
                 appData.userRatings = await FirebaseMarketServer.getRatings();
                 
-                // Обновляем UI
                 renderAds();
                 updateProfileStats();
                 updateServerStatsUI();
@@ -2743,11 +2740,9 @@
                 return;
             }
             
-            // Находим объявление
             const ad = appData.ads.find(a => a.id === adId);
             if (!ad) return;
             
-            // Формируем сообщение
             const categoryName = getCategoryName(category);
             const message = `Привет! Вижу твое объявление в Vape Market:\n\n` +
                            `📦 Товар: ${adTitle}\n` +
@@ -2755,7 +2750,6 @@
                            `💰 Цена: ${price.toLocaleString()} ₽\n\n` +
                            `Можешь рассказать подробнее о товаре?`;
             
-            // Добавляем в историю
             const historyItem = {
                 id: Date.now(),
                 adId: adId,
@@ -2766,18 +2760,14 @@
                 price: price
             };
             
-            // Сохраняем историю в Firebase
             await FirebaseMarketServer.addToHistory(appData.currentUserId, historyItem);
             
-            // Обновляем локальную историю
             appData.history = await FirebaseMarketServer.getUserHistory(appData.currentUserId);
             
-            // Обновляем историю в профиле если открыта страница
             if (document.getElementById('page-profile').classList.contains('active')) {
                 updateHistory();
             }
             
-            // Открываем чат в Telegram с готовым сообщением
             if (tg) {
                 try {
                     const cleanUsername = username.replace('@', '');
@@ -2790,7 +2780,6 @@
                     tg.showAlert(`Для связи с продавцом напишите ${username} в Telegram`);
                 }
             } else {
-                // Для теста в браузере
                 alert(`Сообщение для ${username}:\n\n${message}`);
                 showNotification(`Сообщение для ${username} отправлено`, 'info');
             }
@@ -2837,7 +2826,6 @@
                 return;
             }
             
-            // Фильтруем объявления текущего пользователя
             const myAds = appData.ads.filter(ad => ad.sellerId === appData.currentUserId);
             
             if (myAds.length === 0) {
@@ -2848,7 +2836,6 @@
             myAdsList.innerHTML = '';
             
             myAds.forEach(ad => {
-                // Рассчитываем рейтинг
                 const rating = calculateRating(appData.currentUserId);
                 
                 const adElement = document.createElement('div');
@@ -2890,11 +2877,9 @@
             const ad = appData.ads.find(a => a.id === adId);
             if (!ad) return;
             
-            // Удаляем с Firebase
             const success = await FirebaseMarketServer.deleteAd(adId, ad.sellerId);
             
             if (success) {
-                // Удаляем локально
                 appData.ads = appData.ads.filter(ad => ad.id !== adId);
                 
                 renderAds();
@@ -2912,33 +2897,30 @@
             const ad = appData.ads.find(a => a.id === adId);
             if (!ad) return;
             
-            // Заполняем форму данными объявления
             document.getElementById('adTitle').value = ad.title;
             document.getElementById('adCategory').value = ad.category;
             document.getElementById('adPrice').value = ad.price;
             document.getElementById('adDescription').value = ad.description;
             
-            // Загружаем фото
+            // =========== ИСПРАВЛЕННАЯ ЧАСТЬ: ЗАГРУЗКА ФОТО ПРИ РЕДАКТИРОВАНИИ ===========
             appData.uploadedPhotos = [];
             if (ad.photoUrls && ad.photoUrls.length > 0) {
                 ad.photoUrls.forEach((url, index) => {
-                    if (url) {
+                    if (url && url !== 'null') {
                         appData.uploadedPhotos.push({
                             id: Date.now() + index,
                             url: url,
-                            file: null
+                            file: null // Файл уже загружен, поэтому null
                         });
                     }
                 });
             }
+            // =========== КОНЕЦ ИСПРАВЛЕННОЙ ЧАСТИ ===========
             
-            // Обновляем превью фото
             updatePhotoPreviews();
             
-            // Помечаем, что редактируем
             appData.editingAdId = adId;
             
-            // Показываем форму
             toggleAddForm();
             
             showNotification('Редактирование объявления', 'info');
@@ -2946,8 +2928,6 @@
         
         // Удалить из истории
         async function removeFromHistory(id) {
-            // В Firebase удаление происходит автоматически при очистке истории
-            // Просто обновляем локальные данные
             appData.history = appData.history.filter(item => item.id !== id);
             updateHistory();
             showNotification('Удалено из истории', 'warning');
@@ -2964,16 +2944,14 @@
                 return;
             }
             
-            // Очищаем историю в Firebase
             const success = await FirebaseMarketServer.clearUserHistory(appData.currentUserId);
             
             if (success) {
-                // Очищаем локальную историю
                 appData.history = [];
                 updateHistory();
                 showNotification('История очищена', 'warning');
             } else {
-                showNotification('Ошибка при очистке истории', 'error');
+                showNotification('Ошибка при очистки истории', 'error');
             }
         }
         
@@ -2992,10 +2970,15 @@
                 return;
             }
             
-            // Обрабатываем каждый файл
+            // Очищаем старые фото если уже есть максимум
+            if (appData.uploadedPhotos.length + files.length > maxFiles) {
+                showNotification(`Максимум ${maxFiles} фото!`, 'error');
+                return;
+            }
+            
             const promises = [];
             
-            for (let i = 0; i < Math.min(files.length, maxFiles); i++) {
+            for (let i = 0; i < Math.min(files.length, maxFiles - appData.uploadedPhotos.length); i++) {
                 const file = files[i];
                 const reader = new FileReader();
                 
@@ -3003,9 +2986,13 @@
                     reader.onload = function(e) {
                         appData.uploadedPhotos.push({
                             id: Date.now() + i,
-                            url: e.target.result,
+                            url: e.target.result, // Сохраняем DataURL
                             file: file
                         });
+                        resolve();
+                    };
+                    reader.onerror = function() {
+                        showNotification(`Ошибка загрузки фото ${i + 1}`, 'error');
                         resolve();
                     };
                     reader.readAsDataURL(file);
@@ -3014,7 +3001,6 @@
                 promises.push(promise);
             }
             
-            // Когда все фото загружены, обновляем UI
             Promise.all(promises).then(() => {
                 updatePhotoPreviews();
                 event.target.value = '';
@@ -3026,7 +3012,6 @@
             const container = document.getElementById('uploaded-photos-container');
             container.innerHTML = '';
             
-            // Показываем загруженные фото
             appData.uploadedPhotos.forEach((photo, index) => {
                 const photoItem = document.createElement('div');
                 photoItem.className = 'uploaded-photo-item';
@@ -3037,10 +3022,8 @@
                 container.appendChild(photoItem);
             });
             
-            // Обновляем счетчик
             document.getElementById('photo-count').textContent = appData.uploadedPhotos.length;
             
-            // Если фото нет, показываем сообщение
             if (appData.uploadedPhotos.length === 0) {
                 container.innerHTML = `
                     <div style="text-align: center; width: 100%; color: #A78BFA; padding: 20px;">
@@ -3065,7 +3048,6 @@
             document.getElementById('adPrice').value = '';
             document.getElementById('adDescription').value = '';
             
-            // Очистить фотографии
             appData.uploadedPhotos = [];
             updatePhotoPreviews();
             
@@ -3079,7 +3061,6 @@
             const price = parseInt(document.getElementById('adPrice').value);
             const description = document.getElementById('adDescription').value.trim();
             
-            // Валидация
             if (!title) {
                 showNotification('Введите название товара!', 'error');
                 return;
@@ -3109,20 +3090,20 @@
                     ad.price = price;
                     ad.description = description || 'Без описания';
                     
-                    // 🔥 ИСПРАВЛЕНИЕ ДЛЯ FIREBASE 🔥
-                    ad.photoUrls = appData.uploadedPhotos.slice(0, 3).map((p, i) => {
-                        // Ограничиваем размер для Firebase
-                        if (p.url && p.url.length > 200000) {
-                            // Если фото >200KB, используем заглушку
-                            return `https://via.placeholder.com/150/8B5CF6/FFFFFF?text=Фото${i+1}`;
-                        }
-                        return p.url || `https://via.placeholder.com/150/7C3AED/FFFFFF?text=Фото${i+1}`;
-                    });
-                    
+                    // =========== ИСПРАВЛЕННАЯ ЧАСТЬ: СОХРАНЕНИЕ ФОТО ===========
+                    ad.photoUrls = appData.uploadedPhotos.map(p => p.url);
                     ad.photos = appData.uploadedPhotos.length;
+                    // =========== КОНЕЦ ИСПРАВЛЕННОЙ ЧАСТИ ===========
                     
-                    // Сохраняем на Firebase
-                    const success = await FirebaseMarketServer.updateAd(ad.id, ad);
+                    const success = await FirebaseMarketServer.updateAd(ad.id, {
+                        title: ad.title,
+                        category: ad.category,
+                        price: ad.price,
+                        description: ad.description,
+                        photoUrls: ad.photoUrls,
+                        photos: ad.photos,
+                        updatedAt: firebase.database.ServerValue.TIMESTAMP
+                    });
                     
                     if (success) {
                         renderAds();
@@ -3153,40 +3134,27 @@
                 description: description || 'Без описания',
                 photos: appData.uploadedPhotos.length,
                 
-                // 🔥 ИСПРАВЛЕНИЕ ДЛЯ FIREBASE 🔥
-                photoUrls: appData.uploadedPhotos.slice(0, 3).map((p, i) => {
-                    // Ограничиваем размер фото для Firebase
-                    const maxSize = 100000; // 100KB максимум
-                    if (p.url && p.url.length > maxSize) {
-                        // Если фото слишком большое, сжимаем или используем заглушку
-                        console.log(`Фото ${i+1} слишком большое: ${Math.round(p.url.length/1024)}KB`);
-                        return `https://via.placeholder.com/150/8B5CF6/FFFFFF?text=Фото${i+1}`;
-                    }
-                    return p.url || `https://via.placeholder.com/150/7C3AED/FFFFFF?text=Фото${i+1}`;
-                }),
+                // =========== ИСПРАВЛЕННАЯ ЧАСТЬ: СОХРАНЕНИЕ ФОТО В FIREBASE ===========
+                photoUrls: appData.uploadedPhotos.map(p => p.url), // Сохраняем DataURL
+                // =========== КОНЕЦ ИСПРАВЛЕННОЙ ЧАСТИ ===========
                 
                 likes: 0,
                 dislikes: 0
             };
             
             try {
-                // Сохраняем в Firebase
                 const adId = await FirebaseMarketServer.addAd(newAd);
                 
-                // Добавляем в локальный список
                 newAd.id = adId;
                 newAd.createdAt = new Date().toISOString();
                 appData.ads.unshift(newAd);
                 
-                // Обновляем статистику
                 appData.serverStats = await FirebaseMarketServer.getStats();
                 updateServerStatsUI();
                 
-                // Обновляем статистику профиля
                 updateProfileStats();
                 updateMyAdsList();
                 
-                // Обновляем отображение
                 renderAds();
                 hideAddForm();
                 
@@ -3200,7 +3168,6 @@
         // Обновить статистику профиля
         function updateProfileStats() {
             if (!appData.isDataLoaded) {
-                // Показываем нули если данные не загружены
                 document.getElementById('myAdsCount').textContent = '0';
                 document.getElementById('myLikesCount').textContent = '0';
                 document.getElementById('myDislikesCount').textContent = '0';
@@ -3208,11 +3175,9 @@
                 return;
             }
             
-            // Считаем мои объявления
             const myAds = appData.ads.filter(ad => ad.sellerId === appData.currentUserId).length;
             document.getElementById('myAdsCount').textContent = myAds;
             
-            // Считаем мои лайки и дизлайки
             let myLikes = 0;
             let myDislikes = 0;
             
@@ -3226,7 +3191,6 @@
             document.getElementById('myLikesCount').textContent = myLikes;
             document.getElementById('myDislikesCount').textContent = myDislikes;
             
-            // Рассчитываем мой рейтинг по формуле
             const myRating = calculateRating(appData.currentUserId);
             document.getElementById('myRating').textContent = myRating.toFixed(1);
         }
@@ -3240,7 +3204,6 @@
                 answer.style.display = 'block';
                 icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
                 
-                // Если это FAQ статистики, обновляем данные
                 if (id === 5 && appData.serverStats) {
                     updateServerStatsUI();
                 }
@@ -3292,4 +3255,4 @@
         });
     </script>
 </body>
-</html> 
+</html>
