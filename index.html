@@ -4177,5 +4177,33 @@
             }
         });
     </script>
+    <!-- Отладочная панель (только для разработки) -->
+<div style="position: fixed; bottom: 80px; right: 10px; z-index: 9999;">
+    <button onclick="debugDelete()" style="padding: 10px; background: #EF4444; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer;">
+        🐛
+    </button>
+</div>
+
+<script>
+// Функция для отладки удаления
+async function debugDelete() {
+    console.log('=== ДЕБАГ УДАЛЕНИЯ ===');
+    console.log('Текущий пользователь:', appData.currentUserId);
+    console.log('Права пользователя:', appData.userRights);
+    console.log('Все объявления:', appData.ads);
+    console.log('Мои объявления:', appData.ads.filter(ad => ad.sellerId === appData.currentUserId));
+    
+    // Создаем тестовое объявление для удаления
+    if (appData.ads.length > 0) {
+        const myAd = appData.ads.find(ad => ad.sellerId === appData.currentUserId);
+        if (myAd) {
+            console.log('Тестовое удаление объявления:', myAd.id);
+            deleteAd(myAd.id);
+        } else {
+            console.log('У вас нет своих объявлений для теста');
+        }
+    }
+}
+</script>
 </body>
 </html>
