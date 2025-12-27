@@ -1313,6 +1313,31 @@
             cursor: pointer;
             font-size: 12px;
         }
+        
+        /* Синхронизация статус */
+        .sync-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #A78BFA;
+            margin-top: 10px;
+        }
+        
+        .sync-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #10B981;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -1398,6 +1423,12 @@
 
                 <!-- Объявления будут добавляться здесь -->
                 <div id="ads-container"></div>
+                
+                <!-- Статус синхронизации -->
+                <div class="sync-status" id="sync-status">
+                    <div class="sync-indicator"></div>
+                    <span id="sync-text">Синхронизировано с сервером</span>
+                </div>
             </div>
 
             <!-- Страница 2: Личный кабинет -->
@@ -1547,9 +1578,16 @@
                         <div class="server-stats-header">
                             <i class="fas fa-server"></i>
                             <div class="server-stats-title">Статистика сервера</div>
+                            <button class="remove-photo-btn" onclick="refreshStats()" style="position: static; margin-left: auto; background: rgba(124, 58, 237, 0.6);">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
                         </div>
                         <div class="server-stats-grid" id="server-stats-grid">
                             <!-- Статистика будет заполнена динамически -->
+                        </div>
+                        <div class="sync-status">
+                            <div class="sync-indicator"></div>
+                            <span id="server-sync-text">Обновлено только что</span>
                         </div>
                     </div>
 
@@ -1608,52 +1646,58 @@
     </div>
 
     <script>
-        // ==================== УЛУЧШЕННЫЙ ЛОКАЛЬНЫЙ СЕРВЕР ====================
-        // Теперь данные будут сохраняться в специальном формате для одного аккаунта
-        
-        const MarketServer = {
-            // Ключи для хранения данных с привязкой к аккаунту @nukm0
+        // ==================== ЕДИНОЕ ГЛОБАЛЬНОЕ ХРАНИЛИЩЕ ====================
+        // Теперь все пользователи видят одни и те же объявления
+        const GlobalMarketServer = {
             STORAGE_KEYS: {
-                MARKET_DATA: 'vapeMarketData_NUKM0_998579758',
-                SYNC_INFO: 'vapeMarketSyncInfo',
-                SERVER_STATS: 'vapeMarketServerStats'
+                GLOBAL_DATA: 'vapeMarketGlobalData_ALL_USERS_V3',
+                STATS_CACHE: 'vapeMarketStatsCache'
             },
             
-            // Специальный ID для аккаунта @nukm0
-            ADMIN_USER_ID: '998579758',
-            
-            // Получить все данные с сервера
+            // Получить все данные
             getAllData: function() {
                 try {
-                    const data = localStorage.getItem(this.STORAGE_KEYS.MARKET_DATA);
+                    const data = localStorage.getItem(this.STORAGE_KEYS.GLOBAL_DATA);
                     if (!data) {
                         // Создаем начальные данные
                         const initialData = {
+                            version: '3.0',
                             ads: [],
                             ratings: {},
                             users: {},
-                            history: {},
-                            createdAt: new Date().toISOString(),
-                            adminId: this.ADMIN_USER_ID
+                            userHistory: {},
+                            metadata: {
+                                created: new Date().toISOString(),
+                                lastUpdated: new Date().toISOString(),
+                                totalUsers: 0,
+                                totalAds: 0
+                            }
                         };
-                        localStorage.setItem(this.STORAGE_KEYS.MARKET_DATA, JSON.stringify(initialData));
+                        localStorage.setItem(this.STORAGE_KEYS.GLOBAL_DATA, JSON.stringify(initialData));
                         return initialData;
                     }
                     return JSON.parse(data);
                 } catch (error) {
                     console.error('Ошибка загрузки данных:', error);
-                    return { ads: [], ratings: {}, users: {}, history: {} };
+                    return { ads: [], ratings: {}, users: {}, userHistory: {}, metadata: {} };
                 }
             },
             
             // Сохранить все данные
             saveAllData: function(data) {
                 try {
-                    localStorage.setItem(this.STORAGE_KEYS.MARKET_DATA, JSON.stringify(data));
-                    // Обновляем время синхронизации
-                    localStorage.setItem(this.STORAGE_KEYS.SYNC_INFO, Date.now().toString());
+                    data.metadata.lastUpdated = new Date().toISOString();
+                    data.metadata.totalUsers = Object.keys(data.users || {}).length;
+                    data.metadata.totalAds = (data.ads || []).length;
+                    
+                    localStorage.setItem(this.STORAGE_KEYS.GLOBAL_DATA, JSON.stringify(data));
+                    
                     // Обновляем статистику
-                    this.updateStats(data);
+                    this.updateStatsCache(data);
+                    
+                    // Синхронизируем с другими вкладками
+                    this.syncWithOtherTabs();
+                    
                     return true;
                 } catch (error) {
                     console.error('Ошибка сохранения данных:', error);
@@ -1661,48 +1705,197 @@
                 }
             },
             
-            // Получить статистику сервера
-            getServerStats: function() {
+            // Синхронизация с другими вкладками
+            syncWithOtherTabs: function() {
                 try {
-                    const stats = localStorage.getItem(this.STORAGE_KEYS.SERVER_STATS);
-                    if (stats) {
-                        return JSON.parse(stats);
-                    }
-                    
-                    const data = this.getAllData();
-                    return this.calculateStats(data);
-                } catch (error) {
-                    console.error('Ошибка загрузки статистики:', error);
-                    return this.calculateStats({ ads: [], ratings: {}, users: {}, history: {} });
+                    // Отправляем событие для других вкладок
+                    const event = new StorageEvent('storage', {
+                        key: this.STORAGE_KEYS.GLOBAL_DATA,
+                        newValue: localStorage.getItem(this.STORAGE_KEYS.GLOBAL_DATA)
+                    });
+                    window.dispatchEvent(event);
+                } catch (e) {
+                    console.log('Синхронизация с другими вкладками...');
                 }
             },
             
-            // Обновить статистику
-            updateStats: function(data) {
+            // Регистрация/обновление пользователя
+            registerUser: function(userData) {
+                const data = this.getAllData();
+                
+                if (!data.users) data.users = {};
+                
+                const isNewUser = !data.users[userData.id];
+                
+                data.users[userData.id] = {
+                    id: userData.id,
+                    name: userData.name || 'Пользователь',
+                    username: userData.username || '',
+                    photo_url: userData.photo_url || null,
+                    registrationDate: isNewUser ? new Date().toISOString() : (data.users[userData.id]?.registrationDate || new Date().toISOString()),
+                    lastActive: new Date().toISOString(),
+                    adsCount: 0,
+                    likesCount: 0,
+                    dislikesCount: 0
+                };
+                
+                this.saveAllData(data);
+                
+                if (isNewUser) {
+                    console.log(`✅ Новый пользователь: ${userData.name || userData.id}`);
+                }
+                
+                return userData;
+            },
+            
+            // Добавить объявление
+            addAd: function(adData) {
+                const data = this.getAllData();
+                
+                if (!data.ads) data.ads = [];
+                
+                // Увеличиваем счетчик объявлений пользователя
+                if (data.users && data.users[adData.sellerId]) {
+                    data.users[adData.sellerId].adsCount = (data.users[adData.sellerId].adsCount || 0) + 1;
+                }
+                
+                data.ads.push(adData);
+                return this.saveAllData(data);
+            },
+            
+            // Обновить объявление
+            updateAd: function(adId, adData) {
+                const data = this.getAllData();
+                const index = data.ads.findIndex(ad => ad.id === adId);
+                if (index !== -1) {
+                    data.ads[index] = { ...data.ads[index], ...adData };
+                    return this.saveAllData(data);
+                }
+                return false;
+            },
+            
+            // Удалить объявление
+            deleteAd: function(adId, sellerId) {
+                const data = this.getAllData();
+                const initialLength = data.ads.length;
+                data.ads = data.ads.filter(ad => ad.id !== adId);
+                
+                // Уменьшаем счетчик объявлений пользователя
+                if (data.users && data.users[sellerId] && data.ads.length < initialLength) {
+                    data.users[sellerId].adsCount = Math.max(0, (data.users[sellerId].adsCount || 1) - 1);
+                }
+                
+                return this.saveAllData(data);
+            },
+            
+            // Обновить рейтинг
+            updateRating: function(sellerId, userId, rating) {
+                const data = this.getAllData();
+                
+                if (!data.ratings) data.ratings = {};
+                if (!data.ratings[sellerId]) data.ratings[sellerId] = {};
+                
+                const oldRating = data.ratings[sellerId][userId];
+                data.ratings[sellerId][userId] = rating;
+                
+                // Обновляем счетчики лайков/дизлайков пользователя
+                if (data.users && data.users[sellerId]) {
+                    if (oldRating === 'like') {
+                        data.users[sellerId].likesCount = Math.max(0, (data.users[sellerId].likesCount || 1) - 1);
+                    } else if (oldRating === 'dislike') {
+                        data.users[sellerId].dislikesCount = Math.max(0, (data.users[sellerId].dislikesCount || 1) - 1);
+                    }
+                    
+                    if (rating === 'like') {
+                        data.users[sellerId].likesCount = (data.users[sellerId].likesCount || 0) + 1;
+                    } else if (rating === 'dislike') {
+                        data.users[sellerId].dislikesCount = (data.users[sellerId].dislikesCount || 0) + 1;
+                    }
+                }
+                
+                return this.saveAllData(data);
+            },
+            
+            // Добавить в историю
+            addToHistory: function(userId, historyItem) {
+                const data = this.getAllData();
+                
+                if (!data.userHistory) data.userHistory = {};
+                if (!data.userHistory[userId]) data.userHistory[userId] = [];
+                
+                data.userHistory[userId].unshift(historyItem);
+                
+                // Ограничиваем историю 50 записями
+                if (data.userHistory[userId].length > 50) {
+                    data.userHistory[userId] = data.userHistory[userId].slice(0, 50);
+                }
+                
+                return this.saveAllData(data);
+            },
+            
+            // Получить историю пользователя
+            getUserHistory: function(userId) {
+                const data = this.getAllData();
+                return data.userHistory?.[userId] || [];
+            },
+            
+            // Очистить историю пользователя
+            clearUserHistory: function(userId) {
+                const data = this.getAllData();
+                if (data.userHistory && data.userHistory[userId]) {
+                    data.userHistory[userId] = [];
+                    return this.saveAllData(data);
+                }
+                return false;
+            },
+            
+            // Получить статистику
+            getStats: function() {
+                try {
+                    const cachedStats = localStorage.getItem(this.STORAGE_KEYS.STATS_CACHE);
+                    if (cachedStats) {
+                        const stats = JSON.parse(cachedStats);
+                        // Если данные свежие (менее 5 минут), возвращаем кэш
+                        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+                        if (new Date(stats.calculatedAt) > fiveMinutesAgo) {
+                            return stats;
+                        }
+                    }
+                    
+                    return this.calculateStats();
+                } catch (error) {
+                    console.error('Ошибка получения статистики:', error);
+                    return this.calculateStats();
+                }
+            },
+            
+            // Обновить кэш статистики
+            updateStatsCache: function(data = null) {
                 const stats = this.calculateStats(data);
-                localStorage.setItem(this.STORAGE_KEYS.SERVER_STATS, JSON.stringify(stats));
+                localStorage.setItem(this.STORAGE_KEYS.STATS_CACHE, JSON.stringify(stats));
                 return stats;
             },
             
             // Рассчитать статистику
-            calculateStats: function(data) {
-                const ads = data.ads || [];
+            calculateStats: function(data = null) {
+                if (!data) data = this.getAllData();
+                
                 const users = data.users || {};
+                const ads = data.ads || [];
                 const ratings = data.ratings || {};
                 
-                // Считаем активных пользователей (были активны в последние 30 дней)
-                const activeUsers = Object.keys(users).filter(userId => {
-                    const user = users[userId];
-                    if (!user.lastActive) return false;
-                    const lastActive = new Date(user.lastActive);
-                    const thirtyDaysAgo = new Date();
-                    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                    return lastActive > thirtyDaysAgo;
+                // Считаем активных пользователей (были активны в последние 7 дней)
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                
+                const activeUsers = Object.values(users).filter(user => {
+                    return new Date(user.lastActive) > weekAgo;
                 }).length;
                 
-                // Считаем общее количество лайков и дизлайков
+                // Считаем лайки и дизлайки
                 let totalLikes = 0;
                 let totalDislikes = 0;
+                
                 Object.values(ratings).forEach(userRatings => {
                     Object.values(userRatings).forEach(rating => {
                         if (rating === 'like') totalLikes++;
@@ -1710,7 +1903,7 @@
                     });
                 });
                 
-                // Считаем объявления по категориям
+                // Считаем по категориям
                 const categories = {
                     liquids: 0,
                     disposable: 0,
@@ -1728,112 +1921,38 @@
                     }
                 });
                 
-                return {
+                // Считаем сегодняшние объявления
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const todayAds = ads.filter(ad => {
+                    return new Date(ad.createdAt) >= today;
+                }).length;
+                
+                const stats = {
                     totalUsers: Object.keys(users).length,
                     activeUsers: activeUsers,
                     totalAds: ads.length,
+                    todayAds: todayAds,
                     totalLikes: totalLikes,
                     totalDislikes: totalDislikes,
                     categories: categories,
-                    lastUpdated: new Date().toISOString(),
-                    adminOnline: true
+                    lastUpdated: data.metadata?.lastUpdated || new Date().toISOString(),
+                    calculatedAt: new Date().toISOString(),
+                    serverStatus: 'online'
                 };
-            },
-            
-            // Добавить объявление
-            addAd: function(adData) {
-                const data = this.getAllData();
-                data.ads.push(adData);
-                return this.saveAllData(data);
-            },
-            
-            // Обновить объявление
-            updateAd: function(adId, adData) {
-                const data = this.getAllData();
-                const index = data.ads.findIndex(ad => ad.id === adId);
-                if (index !== -1) {
-                    data.ads[index] = { ...data.ads[index], ...adData };
-                    return this.saveAllData(data);
-                }
-                return false;
-            },
-            
-            // Удалить объявление
-            deleteAd: function(adId) {
-                const data = this.getAllData();
-                data.ads = data.ads.filter(ad => ad.id !== adId);
-                return this.saveAllData(data);
-            },
-            
-            // Добавить пользователя
-            addUser: function(userData) {
-                const data = this.getAllData();
-                if (!data.users[userData.id]) {
-                    data.users[userData.id] = {
-                        name: userData.name,
-                        username: userData.username,
-                        registrationDate: new Date().toISOString(),
-                        lastActive: new Date().toISOString()
-                    };
-                    return this.saveAllData(data);
-                }
-                return false;
+                
+                return stats;
             },
             
             // Обновить активность пользователя
             updateUserActivity: function(userId) {
                 const data = this.getAllData();
-                if (data.users[userId]) {
+                if (data.users && data.users[userId]) {
                     data.users[userId].lastActive = new Date().toISOString();
-                    return this.saveAllData(data);
+                    this.saveAllData(data);
+                    return true;
                 }
                 return false;
-            },
-            
-            // Обновить рейтинг
-            updateRating: function(sellerId, userId, rating) {
-                const data = this.getAllData();
-                if (!data.ratings[sellerId]) {
-                    data.ratings[sellerId] = {};
-                }
-                data.ratings[sellerId][userId] = rating;
-                return this.saveAllData(data);
-            },
-            
-            // Добавить в историю
-            addToHistory: function(userId, historyItem) {
-                const data = this.getAllData();
-                if (!data.history[userId]) {
-                    data.history[userId] = [];
-                }
-                data.history[userId].unshift(historyItem);
-                // Ограничиваем историю 50 записями
-                if (data.history[userId].length > 50) {
-                    data.history[userId] = data.history[userId].slice(0, 50);
-                }
-                return this.saveAllData(data);
-            },
-            
-            // Очистить историю пользователя
-            clearUserHistory: function(userId) {
-                const data = this.getAllData();
-                if (data.history[userId]) {
-                    data.history[userId] = [];
-                    return this.saveAllData(data);
-                }
-                return false;
-            },
-            
-            // Получить историю пользователя
-            getUserHistory: function(userId) {
-                const data = this.getAllData();
-                return data.history[userId] || [];
-            },
-            
-            // Получить объявления пользователя
-            getUserAds: function(userId) {
-                const data = this.getAllData();
-                return data.ads.filter(ad => ad.sellerId === userId) || [];
             }
         };
         
@@ -1849,13 +1968,13 @@
             ads: [],
             userRatings: {},
             history: [],
-            uploadedPhotos: [], // Теперь храним массив объектов {id, url, file}
+            uploadedPhotos: [],
             currentPhotoIndex: 0,
             currentPhotoList: [],
-            nextAdId: Date.now(),
             currentCategory: 'all',
             editingAdId: null,
-            serverStats: null
+            serverStats: null,
+            lastSyncTime: null
         };
         
         // Проверка Telegram и инициализация пользователя
@@ -1889,12 +2008,8 @@
                 photo_url: user.photo_url || null
             };
             
-            // Регистрируем пользователя на сервере
-            MarketServer.addUser({
-                id: appData.currentUserId,
-                name: appData.currentUserData.first_name,
-                username: appData.currentUserData.username
-            });
+            // Регистрируем пользователя в глобальном хранилище
+            GlobalMarketServer.registerUser(appData.currentUserData);
             
             initApp();
         }
@@ -1902,31 +2017,28 @@
         // Загрузить данные с сервера
         function loadFromServer() {
             try {
-                const serverData = MarketServer.getAllData();
+                const serverData = GlobalMarketServer.getAllData();
                 
                 // Загружаем объявления
-                if (serverData.ads && serverData.ads.length > 0) {
-                    appData.ads = [...serverData.ads];
-                    console.log(`✅ Загружено ${serverData.ads.length} объявлений`);
-                }
+                appData.ads = serverData.ads || [];
+                console.log(`✅ Загружено ${appData.ads.length} объявлений`);
                 
                 // Загружаем рейтинги
-                if (serverData.ratings) {
-                    appData.userRatings = { ...serverData.ratings };
-                }
+                appData.userRatings = serverData.ratings || {};
                 
                 // Загружаем историю пользователя
-                if (serverData.history && appData.currentUserId) {
-                    appData.history = MarketServer.getUserHistory(appData.currentUserId);
-                }
-                
-                // Обновляем активность пользователя
                 if (appData.currentUserId) {
-                    MarketServer.updateUserActivity(appData.currentUserId);
+                    appData.history = GlobalMarketServer.getUserHistory(appData.currentUserId);
+                    GlobalMarketServer.updateUserActivity(appData.currentUserId);
                 }
                 
-                // Загружаем статистику сервера
-                appData.serverStats = MarketServer.getServerStats();
+                // Загружаем статистику
+                appData.serverStats = GlobalMarketServer.getStats();
+                
+                appData.lastSyncTime = new Date();
+                updateSyncStatus();
+                
+                showNotification(`Данные загружены (${appData.ads.length} объявлений)`, 'success');
                 
             } catch (error) {
                 console.error('Ошибка загрузки данных:', error);
@@ -1934,27 +2046,30 @@
             }
         }
         
-        // Сохранить объявление на сервер
-        function saveAdToServer(adData) {
-            const serverData = MarketServer.getAllData();
+        // Обновить статус синхронизации
+        function updateSyncStatus() {
+            const syncText = document.getElementById('sync-text');
+            const serverSyncText = document.getElementById('server-sync-text');
             
-            // Проверяем, есть ли уже такое объявление
-            const existingIndex = serverData.ads.findIndex(ad => ad.id === adData.id);
-            
-            if (existingIndex >= 0) {
-                // Обновляем существующее
-                serverData.ads[existingIndex] = adData;
-            } else {
-                // Добавляем новое
-                serverData.ads.push(adData);
+            if (appData.lastSyncTime) {
+                const now = new Date();
+                const diff = Math.floor((now - appData.lastSyncTime) / 1000);
+                
+                let text;
+                if (diff < 60) {
+                    text = 'Только что';
+                } else if (diff < 3600) {
+                    text = `${Math.floor(diff / 60)} мин. назад`;
+                } else {
+                    text = `${Math.floor(diff / 3600)} час. назад`;
+                }
+                
+                if (syncText) syncText.textContent = `Обновлено: ${text}`;
+                if (serverSyncText) serverSyncText.textContent = `Данные: ${text}`;
             }
-            
-            MarketServer.saveAllData(serverData);
-            appData.serverStats = MarketServer.getServerStats();
-            updateServerStatsUI();
         }
         
-        // Обновить UI статистики сервера
+        // Обновить статистику сервера
         function updateServerStatsUI() {
             if (!appData.serverStats) return;
             
@@ -1972,6 +2087,14 @@
                         <div class="server-stat-label">Объявлений</div>
                     </div>
                     <div class="server-stat-item">
+                        <div class="server-stat-number">${appData.serverStats.activeUsers}</div>
+                        <div class="server-stat-label">Активных</div>
+                    </div>
+                    <div class="server-stat-item">
+                        <div class="server-stat-number">${appData.serverStats.todayAds}</div>
+                        <div class="server-stat-label">Сегодня</div>
+                    </div>
+                    <div class="server-stat-item">
                         <div class="server-stat-number">${appData.serverStats.totalLikes}</div>
                         <div class="server-stat-label">Лайков</div>
                     </div>
@@ -1979,35 +2102,33 @@
                         <div class="server-stat-number">${appData.serverStats.totalDislikes}</div>
                         <div class="server-stat-label">Дизлайков</div>
                     </div>
-                    <div class="server-stat-item">
-                        <div class="server-stat-number">${appData.serverStats.activeUsers}</div>
-                        <div class="server-stat-label">Активных</div>
-                    </div>
-                    <div class="server-stat-item">
-                        <div class="server-stat-number">${appData.serverStats.adminOnline ? 'Онлайн' : 'Офлайн'}</div>
-                        <div class="server-stat-label">Админ</div>
-                    </div>
                 `;
             }
             
             if (faqAnswer5) {
-                const lastUpdated = new Date(appData.serverStats.lastUpdated).toLocaleDateString('ru-RU');
+                const lastUpdated = new Date(appData.serverStats.lastUpdated).toLocaleString('ru-RU');
                 faqAnswer5.innerHTML = `
-                    <strong>Статистика сервера Vape Market:</strong><br>
-                    • Всего пользователей: ${appData.serverStats.totalUsers}<br>
-                    • Активных пользователей: ${appData.serverStats.activeUsers}<br>
-                    • Всего объявлений: ${appData.serverStats.totalAds}<br>
-                    • Всего лайков: ${appData.serverStats.totalLikes}<br>
-                    • Всего дизлайков: ${appData.serverStats.totalDislikes}<br>
-                    • Объявлений по категориям:<br>
-                      - Жидкости: ${appData.serverStats.categories.liquids}<br>
-                      - Одноразовые: ${appData.serverStats.categories.disposable}<br>
-                      - Под-системы: ${appData.serverStats.categories.pod}<br>
-                      - Расходники: ${appData.serverStats.categories.consumables}<br>
-                    <br>Последнее обновление: ${lastUpdated}<br>
-                    Администратор: @nukm0 (${appData.serverStats.adminOnline ? 'онлайн' : 'офлайн'})
+                    <strong>Статистика сервера Vape Market:</strong><br><br>
+                    👥 <b>Пользователи:</b> ${appData.serverStats.totalUsers} (${appData.serverStats.activeUsers} активных)<br>
+                    📦 <b>Объявления:</b> ${appData.serverStats.totalAds} (${appData.serverStats.todayAds} сегодня)<br>
+                    👍 <b>Лайки:</b> ${appData.serverStats.totalLikes}<br>
+                    👎 <b>Дизлайки:</b> ${appData.serverStats.totalDislikes}<br><br>
+                    📊 <b>По категориям:</b><br>
+                    • Жидкости: ${appData.serverStats.categories.liquids}<br>
+                    • Одноразовые: ${appData.serverStats.categories.disposable}<br>
+                    • Под-системы: ${appData.serverStats.categories.pod}<br>
+                    • Расходники: ${appData.serverStats.categories.consumables}<br><br>
+                    ⏰ <b>Обновлено:</b> ${lastUpdated}<br>
+                    🟢 <b>Статус сервера:</b> онлайн
                 `;
             }
+        }
+        
+        // Обновить статистику
+        function refreshStats() {
+            appData.serverStats = GlobalMarketServer.updateStatsCache();
+            updateServerStatsUI();
+            showNotification('Статистика обновлена', 'success');
         }
         
         // Инициализация приложения
@@ -2030,6 +2151,17 @@
             // Загружаем данные с сервера
             loadFromServer();
             
+            // Слушаем события синхронизации от других вкладок
+            window.addEventListener('storage', function(event) {
+                if (event.key === GlobalMarketServer.STORAGE_KEYS.GLOBAL_DATA) {
+                    console.log('📡 Получены обновленные данные от другой вкладки');
+                    loadFromServer();
+                    renderAds();
+                    updateProfileStats();
+                    showNotification('Данные обновлены', 'info');
+                }
+            });
+            
             // Обновляем профиль
             updateUserProfile();
             
@@ -2046,6 +2178,9 @@
             for (let i = 1; i <= 6; i++) {
                 document.getElementById(`faq-answer-${i}`).style.display = 'none';
             }
+            
+            // Обновляем статус каждую минуту
+            setInterval(updateSyncStatus, 60000);
             
             showNotification(`Добро пожаловать, ${appData.currentUserData.first_name}!`, 'success');
         }
@@ -2407,17 +2542,14 @@
                 ad.dislikes = (ad.dislikes || 0) + 1;
             }
             
-            // Сохраняем оценку локально
+            // Сохраняем оценку в глобальном хранилище
+            GlobalMarketServer.updateRating(sellerId, appData.currentUserId, type);
+            
+            // Обновляем локальные данные
             if (!appData.userRatings[sellerId]) {
                 appData.userRatings[sellerId] = {};
             }
             appData.userRatings[sellerId][appData.currentUserId] = type;
-            
-            // Сохраняем оценку на сервере
-            MarketServer.updateRating(sellerId, appData.currentUserId, type);
-            
-            // Сохраняем объявление на сервере
-            saveAdToServer(ad);
             
             // Обновляем UI
             renderAds();
@@ -2452,11 +2584,9 @@
                 price: price
             };
             
-            // Сохраняем историю в локальных данных
+            // Сохраняем историю
             appData.history.unshift(historyItem);
-            
-            // Сохраняем историю на сервере
-            MarketServer.addToHistory(appData.currentUserId, historyItem);
+            GlobalMarketServer.addToHistory(appData.currentUserId, historyItem);
             
             // Обновляем историю в профиле если открыта страница
             if (document.getElementById('page-profile').classList.contains('active')) {
@@ -2566,7 +2696,7 @@
             if (!ad) return;
             
             // Удаляем с сервера
-            MarketServer.deleteAd(adId);
+            GlobalMarketServer.deleteAd(adId, ad.sellerId);
             
             // Удаляем локально
             appData.ads = appData.ads.filter(ad => ad.id !== adId);
@@ -2634,7 +2764,7 @@
             }
             
             // Очищаем историю на сервере
-            MarketServer.clearUserHistory(appData.currentUserId);
+            GlobalMarketServer.clearUserHistory(appData.currentUserId);
             
             // Очищаем локальную историю
             appData.history = [];
@@ -2647,7 +2777,7 @@
             document.getElementById('photoInput').click();
         }
         
-        // Обработка загрузки фото (ИСПРАВЛЕННАЯ)
+        // Обработка загрузки фото
         function handlePhotoUpload(event) {
             const files = event.target.files;
             const maxFiles = 3;
@@ -2667,7 +2797,7 @@
                 const promise = new Promise((resolve) => {
                     reader.onload = function(e) {
                         appData.uploadedPhotos.push({
-                            id: Date.now() + i, // Уникальный ID
+                            id: Date.now() + i,
                             url: e.target.result,
                             file: file
                         });
@@ -2777,11 +2907,12 @@
                     ad.photos = appData.uploadedPhotos.length;
                     
                     // Сохраняем на сервере
-                    saveAdToServer(ad);
+                    GlobalMarketServer.updateAd(ad.id, ad);
                     
                     renderAds();
                     updateProfileStats();
                     updateMyAdsList();
+                    updateServerStatsUI();
                     hideAddForm();
                     
                     appData.editingAdId = null;
@@ -2809,14 +2940,14 @@
                 createdAt: new Date().toISOString()
             };
             
-            // Сохраняем на сервере
-            MarketServer.addAd(newAd);
+            // Сохраняем в глобальное хранилище
+            GlobalMarketServer.addAd(newAd);
             
             // Добавляем в локальный список
             appData.ads.unshift(newAd);
             
             // Обновляем статистику
-            appData.serverStats = MarketServer.getServerStats();
+            appData.serverStats = GlobalMarketServer.updateStatsCache();
             updateServerStatsUI();
             
             // Обновляем статистику профиля
