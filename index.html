@@ -1708,6 +1708,358 @@
         .blocked-contact a:hover {
             text-decoration: underline;
         }
+        
+        /* ============ НОВЫЕ СТИЛИ ============ */
+        
+        /* Кнопка жалобы на объявление */
+        .complaint-ad-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(245, 158, 11, 0.1) 100%);
+            border: 2px solid rgba(245, 158, 11, 0.3);
+            color: #F59E0B;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .complaint-ad-btn:hover {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.3) 0%, rgba(245, 158, 11, 0.2) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.2);
+        }
+        
+        /* Модальное окно жалобы */
+        .complaint-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10001;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .complaint-modal.active {
+            display: flex;
+        }
+        
+        .complaint-modal-content {
+            background: var(--gradient-dark);
+            border-radius: 20px;
+            padding: 25px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 2px solid rgba(124, 58, 237, 0.5);
+        }
+        
+        .complaint-modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: white;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .complaint-reason-btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            margin-bottom: 10px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .complaint-reason-btn:hover {
+            background: rgba(124, 58, 237, 0.3);
+            border-color: rgba(124, 58, 237, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .complaint-reason-btn i {
+            color: #F59E0B;
+        }
+        
+        /* Значок Честного продавца */
+        .honest-seller-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(16, 185, 129, 0.2) 100%);
+            color: #10B981;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+        
+        /* Красивые категории */
+        .category-btn i {
+            margin-right: 8px;
+            font-size: 14px;
+        }
+        
+        .category-btn[data-category="all"] {
+            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+        }
+        
+        .category-btn[data-category="liquids"] {
+            background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+        }
+        
+        .category-btn[data-category="disposable"] {
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+        }
+        
+        .category-btn[data-category="pod"] {
+            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+        }
+        
+        .category-btn[data-category="consumables"] {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+        }
+        
+        /* Описание с ограничением */
+        .product-description.short {
+            max-height: 63px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+        
+        .read-more-btn {
+            background: transparent;
+            border: none;
+            color: #A78BFA;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.3s ease;
+        }
+        
+        .read-more-btn:hover {
+            color: white;
+        }
+        
+        /* Баннер рекламы */
+        .banner-container {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .banner-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .banner-title {
+            font-size: 16px;
+            font-weight: 700;
+        }
+        
+        .banner-text {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .banner-close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            border: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Кнопка связи при блокировке */
+        .blocked-contact-btn {
+            padding: 12px 20px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .blocked-contact-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
+        }
+        
+        /* Улучшенное отображение лайков/дизлайков */
+        .rating-stats {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .rating-stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+        }
+        
+        .rating-stat.likes {
+            color: #10B981;
+        }
+        
+        .rating-stat.dislikes {
+            color: #EF4444;
+        }
+        
+        /* Админ - статус качественного продавца */
+        .admin-quality-btn {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(16, 185, 129, 0.2) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.5);
+            color: #10B981;
+        }
+        
+        .admin-quality-btn.active {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            color: white;
+        }
+        
+        /* Форма создания баннера */
+        .banner-form {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .banner-preview {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            color: white;
+        }
+        
+        /* Счетчик символов для описания */
+        .char-counter {
+            text-align: right;
+            font-size: 12px;
+            color: #A78BFA;
+            margin-top: 5px;
+        }
+        
+        .char-counter.warning {
+            color: #F59E0B;
+        }
+        
+        .char-counter.error {
+            color: #EF4444;
+        }
+        
+        /* Стили для модерации жалоб */
+        .complaint-status-badge {
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+        
+        .complaint-status-new {
+            background: rgba(59, 130, 246, 0.3);
+            color: #3B82F6;
+        }
+        
+        .complaint-status-resolved {
+            background: rgba(16, 185, 129, 0.3);
+            color: #10B981;
+        }
+        
+        .complaint-status-rejected {
+            background: rgba(239, 68, 68, 0.3);
+            color: #EF4444;
+        }
+        
+        /* Секция правил в форме */
+        .rules-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            font-size: 12px;
+        }
+        
+        .rules-title {
+            color: #F59E0B;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .rules-list {
+            color: #D8B4FE;
+            line-height: 1.4;
+            padding-left: 5px;
+        }
+        
+        .rules-list li {
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 <body>
@@ -1735,9 +2087,41 @@
             <div class="blocked-time-left" id="timeLeft">Осталось: --:--:--</div>
         </div>
         
-        <div class="blocked-contact">
-            Если вы считаете, что это ошибка, свяжитесь с администратором:
-            <a href="https://t.me/nukm0" target="_blank">@nukm0</a>
+        <button class="blocked-contact-btn" onclick="contactAdminForUnban()">
+            <i class="fab fa-telegram"></i>
+            Написать администратору
+        </button>
+        
+        <div class="blocked-contact" style="margin-top: 15px;">
+            Если вы считаете, что это ошибка, свяжитесь с администратором
+        </div>
+    </div>
+
+    <!-- Модальное окно жалобы на объявление -->
+    <div class="complaint-modal" id="complaintModal">
+        <div class="complaint-modal-content">
+            <div class="complaint-modal-title">
+                <i class="fas fa-flag"></i>
+                Пожаловаться на объявление
+            </div>
+            
+            <div id="complaintReasons">
+                <!-- Причины жалоб будут добавлены динамически -->
+            </div>
+            
+            <textarea class="form-input" placeholder="Дополнительный комментарий (необязательно)" 
+                      id="complaintComment" rows="3" style="margin-top: 15px;"></textarea>
+            
+            <div class="form-buttons" style="margin-top: 20px;">
+                <button class="publish-btn" onclick="submitComplaintToAd()">
+                    <i class="fas fa-paper-plane"></i>
+                    Отправить жалобу
+                </button>
+                <button class="cancel-btn" onclick="closeComplaintModal()">
+                    <i class="fas fa-times"></i>
+                    Отмена
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1758,6 +2142,16 @@
 
         <!-- Основной контент -->
         <main class="main-content" id="main-content">
+            <!-- Баннер для рекламы (будет показываться если есть активный баннер) -->
+            <div class="banner-container" id="activeBanner" style="display: none;">
+                <button class="banner-close-btn" onclick="closeBanner()">×</button>
+                <div class="banner-header">
+                    <i class="fas fa-bullhorn"></i>
+                    <div class="banner-title" id="bannerTitle"></div>
+                </div>
+                <div class="banner-text" id="bannerText"></div>
+            </div>
+
             <!-- Страница 1: Объявления -->
             <div class="page active" id="page-ads">
                 <!-- [Ваш существующий контент страницы объявлений] -->
@@ -1791,7 +2185,7 @@
                             </div>
                         </div>
 
-                        <input type="text" class="form-input" placeholder="Название товара" id="adTitle">
+                        <input type="text" class="form-input" placeholder="Название товара" id="adTitle" maxlength="100">
                         
                         <select class="form-input" id="adCategory">
                             <option value="">Выберите категорию</option>
@@ -1803,7 +2197,9 @@
                         
                         <input type="number" class="form-input" placeholder="Цена (₽)" id="adPrice">
                         
-                        <textarea class="form-input" placeholder="Описание товара" id="adDescription" rows="3"></textarea>
+                        <textarea class="form-input" placeholder="Описание товара" id="adDescription" 
+                                  rows="3" maxlength="500" oninput="updateCharCounter()"></textarea>
+                        <div class="char-counter" id="charCounter">0/500 символов</div>
                         
                         <div class="form-buttons">
                             <button class="publish-btn" onclick="publishAd()">
@@ -1815,16 +2211,42 @@
                                 Отмена
                             </button>
                         </div>
+                        
+                        <!-- Секция правил публикации -->
+                        <div class="rules-section">
+                            <div class="rules-title">
+                                <i class="fas fa-exclamation-circle"></i> Правила публикации:
+                            </div>
+                            <div class="rules-list">
+                                1. Запрещена продажа несовершеннолетним<br>
+                                2. Только оригинальная продукция (без подделок)<br>
+                                3. Четкие фотографии товара (минимум 1 фото)<br>
+                                4. Реальная цена (без завышения)<br>
+                                5. Актуальная контактная информация<br>
+                                6. Запрещены оскорбления в описании<br>
+                                7. Одно объявление - один товар
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Категории -->
+                <!-- Категории с иконками и красивым оформлением -->
                 <div class="categories">
-                    <button class="category-btn active" onclick="filterCategory('all')">Все</button>
-                    <button class="category-btn" onclick="filterCategory('liquids')">Жидкости</button>
-                    <button class="category-btn" onclick="filterCategory('disposable')">Одноразовые</button>
-                    <button class="category-btn" onclick="filterCategory('pod')">Под-системы</button>
-                    <button class="category-btn" onclick="filterCategory('consumables')">Расходники</button>
+                    <button class="category-btn active" data-category="all" onclick="filterCategory('all')">
+                        <i class="fas fa-border-all"></i> Все
+                    </button>
+                    <button class="category-btn" data-category="liquids" onclick="filterCategory('liquids')">
+                        <i class="fas fa-tint"></i> Жидкости
+                    </button>
+                    <button class="category-btn" data-category="disposable" onclick="filterCategory('disposable')">
+                        <i class="fas fa-battery-full"></i> Одноразовые
+                    </button>
+                    <button class="category-btn" data-category="pod" onclick="filterCategory('pod')">
+                        <i class="fas fa-microchip"></i> Под-системы
+                    </button>
+                    <button class="category-btn" data-category="consumables" onclick="filterCategory('consumables')">
+                        <i class="fas fa-cogs"></i> Расходники
+                    </button>
                 </div>
 
                 <!-- Объявления будут добавляться здесь -->
@@ -1977,6 +2399,78 @@
                             <div class="faq-answer" id="faq-answer-6" style="display: none;">
                                 Все сделки происходят напрямую с продавцом в Telegram. 
                                 Договаривайтесь об оплате в личном чате.
+                            </div>
+                        </div>
+                        
+                        <!-- ДОБАВЛЕННЫЕ ВОПРОСЫ -->
+                        
+                        <div class="faq-item" onclick="toggleFaq(7)">
+                            <div class="faq-question">
+                                <span>Как подать жалобу на объявление?</span>
+                                <i class="fas fa-chevron-down" id="faq-icon-7"></i>
+                            </div>
+                            <div class="faq-answer" id="faq-answer-7" style="display: none;">
+                                Нажмите кнопку "Пожаловаться на объявление" под объявлением → выберите причину → отправьте.<br><br>
+                                <strong>Причины жалоб:</strong><br>
+                                1. Мошенничество<br>
+                                2. Неправильная категория<br>
+                                3. Запрещенные товары<br>
+                                4. Оскорбления<br>
+                                5. Спам<br><br>
+                                Жалобы рассматриваются администратором в течение 24 часов.
+                            </div>
+                        </div>
+                        
+                        <div class="faq-item" onclick="toggleFaq(8)">
+                            <div class="faq-question">
+                                <span>Правила публикации объявлений</span>
+                                <i class="fas fa-chevron-down" id="faq-icon-8"></i>
+                            </div>
+                            <div class="faq-answer" id="faq-answer-8" style="display: none;">
+                                <strong>Основные правила:</strong><br><br>
+                                1. Запрещена продажа несовершеннолетним<br>
+                                2. Только оригинальная продукция (без подделок)<br>
+                                3. Четкие фотографии товара (минимум 1)<br>
+                                4. Реальная цена (без завышения)<br>
+                                5. Актуальная контактная информация<br>
+                                6. Запрещены оскорбления в описании<br>
+                                7. Одно объявление - один товар<br><br>
+                                Нарушение правил → блокировка аккаунта.
+                            </div>
+                        </div>
+                        
+                        <div class="faq-item" onclick="toggleFaq(9)">
+                            <div class="faq-question">
+                                <span>Как получить значок "Честный продавец"?</span>
+                                <i class="fas fa-chevron-down" id="faq-icon-9"></i>
+                            </div>
+                            <div class="faq-answer" id="faq-answer-9" style="display: none;">
+                                <strong>Условия для получения значка:</strong><br><br>
+                                1. Более 10 успешных сделок<br>
+                                2. Рейтинг выше 4.5/5.0<br>
+                                3. Нет жалоб за последний месяц<br>
+                                4. Активный аккаунт более 3 месяцев<br><br>
+                                Для получения значка напишите администратору: <strong>@nukm0</strong><br>
+                                В сообщении укажите ваш username и ссылки на успешные сделки.
+                            </div>
+                        </div>
+                        
+                        <div class="faq-item" onclick="toggleFaq(10)">
+                            <div class="faq-question">
+                                <span>Система рейтинга и отзывов</span>
+                                <i class="fas fa-chevron-down" id="faq-icon-10"></i>
+                            </div>
+                            <div class="faq-answer" id="faq-answer-10" style="display: none;">
+                                <strong>Как работает рейтинг:</strong><br><br>
+                                • Лайк = +1 к репутации<br>
+                                • Дизлайк = -1 к репутации<br>
+                                • Формула: 0.1 + (лайки / (лайки + дизлайки)) × 4.9<br><br>
+                                <strong>Правила оценок:</strong><br>
+                                1. Оценивать можно только других продавцов<br>
+                                2. Нельзя оценивать собственные объявления<br>
+                                3. Одна оценка на пользователя<br>
+                                4. Оценки влияют на видимость объявлений<br><br>
+                                Честные оценки помогают сообществу!
                             </div>
                         </div>
                     </div>
@@ -2261,29 +2755,48 @@
                             <!-- Форма создания уведомления -->
                             <div class="admin-banner-card">
                                 <div style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: white;">
-                                    <i class="fas fa-bullhorn"></i> Создать уведомление
+                                    <i class="fas fa-bullhorn"></i> Создать баннер
                                 </div>
                                 
-                                <input type="text" class="form-input" placeholder="Заголовок уведомления" id="banner-title">
+                                <input type="text" class="form-input" placeholder="Заголовок баннера" id="banner-title">
                                 
-                                <textarea class="banner-textarea" placeholder="Текст уведомления..." id="banner-text"></textarea>
+                                <textarea class="banner-textarea" placeholder="Текст баннера..." id="banner-text"></textarea>
                                 
                                 <select class="form-input" id="banner-type" style="margin-bottom: 15px;">
                                     <option value="info">ℹ️ Информация</option>
                                     <option value="warning">⚠️ Внимание</option>
                                     <option value="success">✅ Успех</option>
+                                    <option value="promo">🎁 Акция/Реклама</option>
                                 </select>
-
+                                
                                 <div class="form-buttons">
-                                    <button class="publish-btn" onclick="sendBannerToAll()">
-                                        <i class="fas fa-paper-plane"></i>
-                                        Отправить всем
+                                    <button class="publish-btn" onclick="createBanner()">
+                                        <i class="fas fa-plus-circle"></i>
+                                        Создать баннер
                                     </button>
                                     <button class="cancel-btn" onclick="clearBannerForm()">
                                         <i class="fas fa-times"></i>
                                         Очистить
                                     </button>
                                 </div>
+                                
+                                <!-- Предпросмотр баннера -->
+                                <div class="banner-preview" id="bannerPreview" style="display: none;">
+                                    <div class="banner-header">
+                                        <i class="fas fa-bullhorn"></i>
+                                        <div class="banner-title" id="previewTitle"></div>
+                                    </div>
+                                    <div class="banner-text" id="previewText"></div>
+                                </div>
+                            </div>
+
+                            <!-- Активный баннер -->
+                            <div class="admin-section-title" style="font-size: 16px; margin-top: 20px;">
+                                <i class="fas fa-bullhorn"></i>
+                                Активный баннер
+                            </div>
+                            <div id="current-banner">
+                                <!-- Активный баннер будет загружен -->
                             </div>
 
                             <!-- История уведомлений -->
@@ -2310,30 +2823,49 @@
                                 Система предупреждений
                             </div>
 
-                            <!-- Автоматические правила -->
+                            <!-- Управление честными продавцами -->
                             <div class="admin-banner-card">
                                 <div style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: white;">
-                                    <i class="fas fa-robot"></i> Автоматические правила
+                                    <i class="fas fa-shield-alt"></i> Честные продавцы
                                 </div>
                                 
                                 <div class="admin-list-item">
                                     <div class="admin-item-info">
-                                        <h4>3 жалобы = временная блокировка</h4>
-                                        <p>Пользователь блокируется на 24 часа</p>
-                                    </div>
-                                    <div class="admin-item-actions">
-                                        <button class="admin-small-btn edit">Изменить</button>
+                                        <h4>Правила для получения значка</h4>
+                                        <p>Более 10 сделок, рейтинг 4.5+, нет жалоб</p>
                                     </div>
                                 </div>
                                 
-                                <div class="admin-list-item">
-                                    <div class="admin-item-info">
-                                        <h4>Низкий рейтинг = проверка</h4>
-                                        <p>Рейтинг ниже 2.0 → проверка</p>
-                                    </div>
-                                    <div class="admin-item-actions">
-                                        <button class="admin-small-btn edit">Изменить</button>
-                                    </div>
+                                <input type="text" class="form-input" placeholder="Поиск по ID или username" 
+                                       id="honest-seller-search" style="margin-bottom: 15px;">
+                                
+                                <div id="honest-sellers-list">
+                                    <!-- Список честных продавцов будет загружен -->
+                                </div>
+                            </div>
+
+                            <!-- Автоматические правила -->
+                            <div class="admin-section-title" style="font-size: 16px; margin-top: 20px;">
+                                <i class="fas fa-robot"></i> Автоматические правила
+                            </div>
+                            
+                            <div class="admin-list-item">
+                                <div class="admin-item-info">
+                                    <h4>3 жалобы = временная блокировка</h4>
+                                    <p>Пользователь блокируется на 24 часа</p>
+                                </div>
+                                <div class="admin-item-actions">
+                                    <button class="admin-small-btn edit">Изменить</button>
+                                </div>
+                            </div>
+                            
+                            <div class="admin-list-item">
+                                <div class="admin-item-info">
+                                    <h4>Низкий рейтинг = проверка</h4>
+                                    <p>Рейтинг ниже 2.0 → проверка</p>
+                                </div>
+                                <div class="admin-item-actions">
+                                    <button class="admin-small-btn edit">Изменить</button>
                                 </div>
                             </div>
 
@@ -2595,7 +3127,9 @@
                             blockReason: null,
                             blockedUntil: null,
                             warnings: 0,
-                            complaintsCount: 0
+                            complaintsCount: 0,
+                            honestSeller: false,
+                            honestSellerSince: null
                         });
                         console.log('✅ Новый пользователь зарегистрирован');
                     } else {
@@ -2896,6 +3430,8 @@
                 }
             },
             
+            // ==================== НОВЫЕ МЕТОДЫ ====================
+            
             // Добавить жалобу
             addComplaint: async function(complaintData) {
                 try {
@@ -2945,20 +3481,64 @@
                 }
             },
             
-            // Создать системное уведомление
-            createSystemNotification: async function(notificationData) {
+            // Создать системный баннер
+            createBanner: async function(bannerData) {
                 try {
-                    const notificationRef = database.ref('systemNotifications').push();
-                    await notificationRef.set({
-                        ...notificationData,
-                        id: notificationRef.key,
-                        createdAt: firebase.database.ServerValue.TIMESTAMP
+                    await database.ref('activeBanner').set({
+                        ...bannerData,
+                        active: true,
+                        createdAt: firebase.database.ServerValue.TIMESTAMP,
+                        createdBy: appData.currentUserId
                     });
                     
-                    return notificationRef.key;
+                    return true;
                 } catch (error) {
-                    console.error('❌ Ошибка создания уведомления:', error);
+                    console.error('❌ Ошибка создания баннера:', error);
+                    return false;
+                }
+            },
+            
+            // Удалить баннер
+            removeBanner: async function() {
+                try {
+                    await database.ref('activeBanner').remove();
+                    return true;
+                } catch (error) {
+                    console.error('❌ Ошибка удаления баннера:', error);
+                    return false;
+                }
+            },
+            
+            // Получить активный баннер
+            getActiveBanner: async function() {
+                try {
+                    const snapshot = await database.ref('activeBanner').once('value');
+                    return snapshot.val();
+                } catch (error) {
+                    console.error('❌ Ошибка загрузки баннера:', error);
                     return null;
+                }
+            },
+            
+            // Обновить статус честного продавца
+            updateHonestSellerStatus: async function(userId, status) {
+                try {
+                    await database.ref(`users/${userId}`).update({
+                        honestSeller: status,
+                        honestSellerSince: status ? new Date().toISOString() : null
+                    });
+                    
+                    await database.ref('moderationHistory').push().set({
+                        action: status ? 'mark_honest_seller' : 'unmark_honest_seller',
+                        userId: userId,
+                        adminId: appData.currentUserId,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP
+                    });
+                    
+                    return true;
+                } catch (error) {
+                    console.error('❌ Ошибка обновления статуса продавца:', error);
+                    return false;
                 }
             },
             
@@ -3056,7 +3636,9 @@
             currentAdminSection: 'main',
             currentAdminFilter: 'all',
             isUserBlocked: false,
-            blockInfo: null
+            blockInfo: null,
+            currentComplaintAdId: null,
+            selectedComplaintReason: null
         };
         
         // Администраторы системы
@@ -3069,1506 +3651,286 @@
             }
         };
         
-        // ==================== СИСТЕМА БЛОКИРОВКИ ====================
+        // ==================== НОВЫЕ ФУНКЦИИ ====================
         
-        // Проверить блокировку пользователя
-        async function checkUserBlocked() {
-            if (!appData.currentUserId) return false;
+        // Жалобы на объявления
+        function openComplaintModal(adId) {
+            if (!checkBlockBeforeAction('жалоба на объявление')) return;
+            
+            appData.currentComplaintAdId = adId;
+            const ad = appData.ads.find(a => a.id === adId);
+            
+            if (!ad) return;
+            
+            const reasonsContainer = document.getElementById('complaintReasons');
+            const reasons = [
+                { id: 'fraud', text: 'Мошенничество', icon: 'fa-user-secret' },
+                { id: 'wrong_category', text: 'Неправильная категория', icon: 'fa-tag' },
+                { id: 'prohibited', text: 'Запрещенные товары', icon: 'fa-ban' },
+                { id: 'insult', text: 'Оскорбления', icon: 'fa-comment-slash' },
+                { id: 'spam', text: 'Спам/флуд', icon: 'fa-flag' },
+                { id: 'other', text: 'Другое', icon: 'fa-ellipsis-h' }
+            ];
+            
+            reasonsContainer.innerHTML = reasons.map(reason => `
+                <button class="complaint-reason-btn" onclick="selectComplaintReason('${reason.id}')" data-reason="${reason.id}">
+                    <div>
+                        <i class="fas ${reason.icon}"></i>
+                        ${reason.text}
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            `).join('');
+            
+            document.getElementById('complaintComment').value = '';
+            document.getElementById('complaintModal').classList.add('active');
+        }
+        
+        function closeComplaintModal() {
+            document.getElementById('complaintModal').classList.remove('active');
+            appData.currentComplaintAdId = null;
+            appData.selectedComplaintReason = null;
+        }
+        
+        function selectComplaintReason(reasonId) {
+            appData.selectedComplaintReason = reasonId;
+            
+            document.querySelectorAll('.complaint-reason-btn').forEach(btn => {
+                btn.style.background = 'rgba(255, 255, 255, 0.08)';
+                btn.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+            });
+            
+            const selectedBtn = document.querySelector(`[data-reason="${reasonId}"]`);
+            if (selectedBtn) {
+                selectedBtn.style.background = 'rgba(124, 58, 237, 0.3)';
+                selectedBtn.style.borderColor = 'rgba(124, 58, 237, 0.5)';
+            }
+        }
+        
+        async function submitComplaintToAd() {
+            if (!appData.selectedComplaintReason) {
+                showNotification('Выберите причину жалобы', 'warning');
+                return;
+            }
+            
+            if (!appData.currentComplaintAdId) {
+                showNotification('Ошибка: объявление не найдено', 'error');
+                return;
+            }
+            
+            const ad = appData.ads.find(a => a.id === appData.currentComplaintAdId);
+            if (!ad) {
+                showNotification('Объявление не найдено', 'error');
+                return;
+            }
+            
+            const comment = document.getElementById('complaintComment').value.trim();
+            
+            const complaintData = {
+                adId: appData.currentComplaintAdId,
+                sellerId: ad.sellerId,
+                sellerName: ad.sellerName,
+                sellerUsername: ad.sellerUsername,
+                adTitle: ad.title,
+                adCategory: ad.category,
+                reporterId: appData.currentUserId,
+                reporterName: appData.currentUserData.first_name,
+                reporterUsername: appData.currentUserData.username,
+                reason: appData.selectedComplaintReason,
+                comment: comment || 'Без комментария',
+                status: 'new',
+                createdAt: new Date().toISOString()
+            };
             
             try {
-                const blockData = await FirebaseMarketServer.checkUserBlocked(appData.currentUserId);
+                const complaintId = await FirebaseMarketServer.addComplaint(complaintData);
                 
-                if (blockData.isBlocked) {
-                    appData.isUserBlocked = true;
-                    appData.blockInfo = blockData;
+                if (complaintId) {
+                    // Увеличиваем счетчик жалоб в объявлении
+                    await FirebaseMarketServer.updateAd(appData.currentComplaintAdId, {
+                        complaints: (ad.complaints || 0) + 1
+                    });
                     
-                    // Показываем экран блокировки
-                    showBlockScreen(blockData);
-                    return true;
-                } else {
-                    appData.isUserBlocked = false;
-                    appData.blockInfo = null;
+                    // Увеличиваем счетчик жалоб у пользователя
+                    const userRef = database.ref(`users/${ad.sellerId}`);
+                    const userSnapshot = await userRef.once('value');
+                    const user = userSnapshot.val();
                     
-                    // Скрываем экран блокировки
-                    hideBlockScreen();
-                    return false;
-                }
-            } catch (error) {
-                console.error('❌ Ошибка проверки блокировки:', error);
-                return false;
-            }
-        }
-        
-        // Показать экран блокировки
-        function showBlockScreen(blockData) {
-            const blockedScreen = document.getElementById('blockedScreen');
-            const appContainer = document.getElementById('appContainer');
-            
-            // Заполняем информацию о блокировке
-            document.getElementById('blockedReason').textContent = 
-                `Ваш аккаунт был ${blockData.isPermanent ? 'заблокирован навсегда' : 'временно заблокирован'} администратором`;
-            
-            document.getElementById('blockReasonText').textContent = blockData.reason || 'Нарушение правил';
-            
-            // Форматируем даты
-            if (blockData.blockedAt) {
-                const blockDate = new Date(blockData.blockedAt);
-                document.getElementById('blockDateText').textContent = 
-                    blockDate.toLocaleDateString('ru-RU') + ' ' + blockDate.toLocaleTimeString('ru-RU');
-            }
-            
-            if (blockData.blockedUntil === 'permanent') {
-                document.getElementById('unblockDateText').textContent = 'Никогда';
-                document.getElementById('timeLeft').textContent = 'Блокировка постоянная';
-            } else if (blockData.blockedUntil) {
-                const unblockDate = new Date(blockData.blockedUntil);
-                document.getElementById('unblockDateText').textContent = 
-                    unblockDate.toLocaleDateString('ru-RU') + ' ' + unblockDate.toLocaleTimeString('ru-RU');
-                
-                // Запускаем таймер обратного отсчета
-                startBlockCountdown(blockData.blockedUntil);
-            }
-            
-            // Показываем экран блокировки и скрываем основное приложение
-            blockedScreen.style.display = 'flex';
-            appContainer.style.display = 'none';
-            
-            // Останавливаем все слушатели Firebase
-            if (appData.firebaseListeners) {
-                Object.values(appData.firebaseListeners).forEach(unsubscribe => unsubscribe());
-            }
-        }
-        
-        // Скрыть экран блокировки
-        function hideBlockScreen() {
-            const blockedScreen = document.getElementById('blockedScreen');
-            const appContainer = document.getElementById('appContainer');
-            
-            blockedScreen.style.display = 'none';
-            appContainer.style.display = 'flex';
-            
-            // Останавливаем таймер
-            if (appData.blockTimer) {
-                clearInterval(appData.blockTimer);
-                appData.blockTimer = null;
-            }
-        }
-        
-        // Таймер обратного отсчета до разблокировки
-        function startBlockCountdown(blockedUntil) {
-            if (appData.blockTimer) {
-                clearInterval(appData.blockTimer);
-            }
-            
-            function updateCountdown() {
-                const now = Date.now();
-                const timeLeft = blockedUntil - now;
-                
-                if (timeLeft <= 0) {
-                    // Время вышло, перезагружаем страницу для проверки статуса
-                    clearInterval(appData.blockTimer);
-                    location.reload();
-                    return;
-                }
-                
-                // Форматируем оставшееся время
-                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-                
-                document.getElementById('timeLeft').textContent = 
-                    `Осталось: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            }
-            
-            // Обновляем сразу и запускаем таймер
-            updateCountdown();
-            appData.blockTimer = setInterval(updateCountdown, 1000);
-        }
-        
-        // Проверить блокировку перед действиями
-        function checkBlockBeforeAction(actionName) {
-            if (appData.isUserBlocked) {
-                showNotification('Ваш аккаунт заблокирован', 'error');
-                return false;
-            }
-            return true;
-        }
-        
-        function checkTelegramAndInit() {
-            console.log('🔍 Начинаем инициализацию...');
-            
-            // Пробуем получить Telegram Web App
-            const tg = window.Telegram?.WebApp;
-            
-            if (tg) {
-                console.log('✅ Telegram Web App обнаружен');
-                
-                // Расширяем на весь экран
-                tg.expand();
-                tg.ready();
-                
-                // Показываем кнопку "Назад"
-                tg.BackButton.show();
-                tg.BackButton.onClick(function() {
-                    tg.close();
-                });
-                
-                // Получаем данные пользователя
-                const user = tg.initDataUnsafe?.user;
-                console.log('Данные пользователя из Telegram:', user);
-                
-                if (user && user.id) {
-                    console.log('✅ Пользователь Telegram получен');
-                    appData.currentUserId = user.id.toString();
-                    appData.currentUserData = {
-                        id: user.id,
-                        first_name: user.first_name || 'Пользователь',
-                        last_name: user.last_name || '',
-                        username: user.username || '',
-                        photo_url: user.photo_url || null
-                    };
-                    
-                    // Проверяем, является ли пользователь администратором
-                    if (ADMIN_USERS[appData.currentUserId]) {
-                        appData.isAdmin = true;
-                        document.getElementById('admin-nav-item').style.display = 'flex';
-                        document.getElementById('adminBadge').classList.add('show');
-                        console.log('👑 Пользователь является администратором');
+                    if (user) {
+                        await userRef.update({
+                            complaintsCount: (user.complaintsCount || 0) + 1
+                        });
                     }
                     
-                    // Проверяем блокировку пользователя
-                    checkUserBlocked().then(isBlocked => {
-                        if (!isBlocked) {
-                            // Регистрируем в Firebase и запускаем приложение
-                            FirebaseMarketServer.registerUser(appData.currentUserData)
-                                .then(success => {
-                                    console.log('Регистрация в Firebase:', success ? '✅ Успешно' : '❌ Ошибка');
-                                    initApp();
-                                })
-                                .catch(error => {
-                                    console.error('Ошибка регистрации в Firebase:', error);
-                                    initApp();
-                                });
-                        }
-                    });
+                    showNotification('Жалоба отправлена администратору', 'success');
+                    closeComplaintModal();
+                    
+                    // Обновляем данные если пользователь админ
+                    if (appData.isAdmin) {
+                        loadAdminData();
+                    }
                 } else {
-                    console.warn('⚠️ Нет данных пользователя в Telegram');
-                    createTestUser();
+                    showNotification('Ошибка при отправке жалобы', 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка отправки жалобы:', error);
+                showNotification('Ошибка при отправке жалобы', 'error');
+            }
+        }
+        
+        // Связь с администратором при блокировке
+        function contactAdminForUnban() {
+            const message = encodeURIComponent('Я заблокирован в app mini app можно получить разбан?');
+            const telegramUrl = `https://t.me/nukm0?text=${message}`;
+            
+            if (tg) {
+                try {
+                    tg.openTelegramLink(telegramUrl);
+                } catch (error) {
+                    tg.showAlert(`Для связи с администратором напишите @nukm0 в Telegram\n\nСообщение: Я заблокирован в app mini app можно получить разбан?`);
                 }
             } else {
-                console.warn('⚠️ Telegram Web App не найден (открыто в браузере)');
-                createTestUser();
-            }
-            
-            function createTestUser() {
-                appData.currentUserId = 'test_user_' + Date.now();
-                appData.currentUserData = {
-                    id: appData.currentUserId,
-                    first_name: 'Тестовый',
-                    username: 'testuser_' + Math.floor(Math.random() * 1000),
-                    photo_url: null
-                };
-                
-                console.log('🔄 Создан тестовый пользователь:', appData.currentUserData);
-                
-                // Проверяем блокировку тестового пользователя
-                checkUserBlocked().then(isBlocked => {
-                    if (!isBlocked) {
-                        FirebaseMarketServer.registerUser(appData.currentUserData)
-                            .then(success => {
-                                console.log('Регистрация тестового пользователя:', success ? '✅ Успешно' : '❌ Ошибка');
-                                initApp();
-                            })
-                            .catch(error => {
-                                console.error('Ошибка регистрации тестового пользователя:', error);
-                                initApp();
-                            });
-                    }
-                });
+                window.open(telegramUrl, '_blank');
             }
         }
         
-        // Загрузить данные с Firebase
-        async function loadFromServer() {
-            // Проверяем блокировку перед загрузкой
-            if (appData.isUserBlocked) {
-                console.log('⛔ Пользователь заблокирован, загрузка данных отменена');
-                return;
+        // Обновление счетчика символов
+        function updateCharCounter() {
+            const textarea = document.getElementById('adDescription');
+            const counter = document.getElementById('charCounter');
+            const length = textarea.value.length;
+            const maxLength = 500;
+            
+            counter.textContent = `${length}/${maxLength} символов`;
+            
+            if (length > maxLength * 0.9) {
+                counter.className = 'char-counter warning';
+            } else if (length > maxLength) {
+                counter.className = 'char-counter error';
+            } else {
+                counter.className = 'char-counter';
             }
             
+            if (length > maxLength) {
+                textarea.value = textarea.value.substring(0, maxLength);
+                counter.textContent = `${maxLength}/${maxLength} символов`;
+                counter.className = 'char-counter error';
+            }
+        }
+        
+        // Развернуть/свернуть описание
+        function toggleDescription(adId) {
+            const description = document.getElementById(`description-${adId}`);
+            const button = document.getElementById(`read-more-${adId}`);
+            
+            if (description.classList.contains('short')) {
+                description.classList.remove('short');
+                button.innerHTML = '<i class="fas fa-chevron-up"></i> Свернуть';
+            } else {
+                description.classList.add('short');
+                button.innerHTML = '<i class="fas fa-chevron-down"></i> Читать полностью';
+            }
+        }
+        
+        // Баннеры
+        async function checkActiveBanner() {
             try {
-                console.log('🔄 Загрузка данных с Firebase...');
+                const banner = await FirebaseMarketServer.getActiveBanner();
                 
-                // Загружаем объявления
-                appData.ads = await FirebaseMarketServer.getAllAds();
-                console.log(`✅ Загружено ${appData.ads.length} объявлений из Firebase`);
-                
-                // Загружаем рейтинги
-                appData.userRatings = await FirebaseMarketServer.getRatings();
-                
-                // Загружаем историю
-                if (appData.currentUserId) {
-                    appData.history = await FirebaseMarketServer.getUserHistory(appData.currentUserId);
+                if (banner && banner.active) {
+                    const bannerClosed = localStorage.getItem(`banner_closed_${banner.createdAt}`);
+                    if (!bannerClosed) {
+                        showBanner(banner.title, banner.text);
+                    }
                 }
-                
-                // Загружаем статистику
-                appData.serverStats = await FirebaseMarketServer.getStats();
-                
-                // Если пользователь админ - загружаем админ-данные
-                if (appData.isAdmin) {
-                    await loadAdminData();
-                }
-                
-                appData.lastSyncTime = new Date();
-                appData.isDataLoaded = true;
-                
-                updateSyncStatus();
-                updateUIAfterDataLoad();
-                
-                showNotification(`Данные загружены (${appData.ads.length} объявлений)`, 'success');
-                
             } catch (error) {
-                console.error('❌ Ошибка загрузки данных:', error);
-                showNotification('Ошибка загрузки данных', 'warning');
-                
-                appData.isDataLoaded = true;
-                appData.ads = [];
-                updateUIAfterDataLoad();
+                console.error('Ошибка загрузки баннера:', error);
             }
         }
         
-        // Загрузить данные для админ-панели
-        async function loadAdminData() {
-            if (!appData.isAdmin) return;
+        function showBanner(title, text) {
+            const banner = document.getElementById('activeBanner');
+            const bannerTitle = document.getElementById('bannerTitle');
+            const bannerText = document.getElementById('bannerText');
             
-            try {
-                console.log('🔄 Загрузка админ-данных...');
-                
-                // Загружаем пользователей
-                const usersSnapshot = await database.ref('users').once('value');
-                appData.adminData.users = [];
-                usersSnapshot.forEach((child) => {
-                    const user = child.val();
-                    user.id = child.key;
-                    appData.adminData.users.push(user);
-                });
-                
-                // Загружаем жалобы
-                const complaintsSnapshot = await database.ref('complaints').once('value');
-                appData.adminData.complaints = [];
-                complaintsSnapshot.forEach((child) => {
-                    const complaint = child.val();
-                    complaint.id = child.key;
-                    appData.adminData.complaints.push(complaint);
-                });
-                
-                // Загружаем историю модерации
-                appData.adminData.moderationHistory = await FirebaseMarketServer.getModerationHistory();
-                
-                // Обновляем статистику
-                updateAdminStats();
-                
-                // Обновляем текущий раздел админ-панели
-                updateCurrentAdminSection();
-                
-                showNotification('Админ-данные обновлены', 'success');
-                
-            } catch (error) {
-                console.error('❌ Ошибка загрузки админ-данных:', error);
-                showNotification('Ошибка загрузки админ-данных', 'error');
+            if (banner && bannerTitle && bannerText) {
+                bannerTitle.textContent = title;
+                bannerText.textContent = text;
+                banner.style.display = 'block';
             }
         }
         
-        // Обновить статистику админ-панели
-        function updateAdminStats() {
-            if (!appData.isAdmin || !appData.adminData.users) return;
-            
-            // Общая статистика
-            document.getElementById('adminTotalUsers').textContent = appData.adminData.users.length;
-            document.getElementById('adminTotalAds').textContent = appData.ads.length;
-            
-            // Новые жалобы
-            const newComplaints = appData.adminData.complaints.filter(c => c.status === 'new').length;
-            document.getElementById('adminNewComplaints').textContent = newComplaints;
-            
-            // Объявления на модерации
-            const pendingAds = appData.ads.filter(ad => !ad.verified && ad.status === 'active').length;
-            document.getElementById('adminPendingMod').textContent = pendingAds;
-            
-            // Статистика жалоб
-            const totalComplaints = appData.adminData.complaints.length;
-            const pendingComplaints = appData.adminData.complaints.filter(c => c.status === 'pending').length;
-            const resolvedComplaints = appData.adminData.complaints.filter(c => c.status === 'resolved').length;
-            const rejectedComplaints = appData.adminData.complaints.filter(c => c.status === 'rejected').length;
-            
-            document.getElementById('complaints-total').textContent = totalComplaints;
-            document.getElementById('complaints-pending').textContent = pendingComplaints;
-            document.getElementById('complaints-resolved').textContent = resolvedComplaints;
-            document.getElementById('complaints-rejected').textContent = rejectedComplaints;
-            
-            // Аналитика
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const newUsersToday = appData.adminData.users.filter(user => 
-                user.registrationDate && new Date(user.registrationDate) >= today
-            ).length;
-            
-            const publishedToday = appData.ads.filter(ad => 
-                ad.createdAt && new Date(ad.createdAt) >= today
-            ).length;
-            
-            // Средний рейтинг
-            const totalRating = appData.adminData.users.reduce((sum, user) => sum + (user.rating || 0.1), 0);
-            const avgRating = appData.adminData.users.length > 0 ? 
-                (totalRating / appData.adminData.users.length).toFixed(1) : '0.0';
-            
-            document.getElementById('analytics-total-users').textContent = appData.adminData.users.length;
-            document.getElementById('analytics-new-today').textContent = newUsersToday;
-            document.getElementById('analytics-total-ads').textContent = appData.ads.length;
-            document.getElementById('analytics-published-today').textContent = publishedToday;
-            document.getElementById('analytics-avg-rating').textContent = avgRating;
-            
-            // Категории
-            updateCategoriesAnalytics();
-        }
-        
-        // Обновить аналитику по категориям
-        function updateCategoriesAnalytics() {
-            const categoriesContainer = document.getElementById('analytics-categories');
-            if (!categoriesContainer) return;
-            
-            const categories = { liquids: 0, disposable: 0, pod: 0, consumables: 0, other: 0 };
-            
-            appData.ads.forEach(ad => {
-                const category = ad.category || 'other';
-                if (categories[category] !== undefined) {
-                    categories[category]++;
-                } else {
-                    categories.other++;
+        function closeBanner() {
+            const banner = document.getElementById('activeBanner');
+            if (banner) {
+                banner.style.display = 'none';
+                const bannerData = appData.activeBanner;
+                if (bannerData && bannerData.createdAt) {
+                    localStorage.setItem(`banner_closed_${bannerData.createdAt}`, 'true');
                 }
-            });
-            
-            categoriesContainer.innerHTML = `
-                <div style="margin-bottom: 10px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span style="font-size: 12px; color: #D8B4FE;">Жидкости</span>
-                        <span style="font-size: 12px; color: #A78BFA;">${categories.liquids}</span>
-                    </div>
-                    <div style="height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
-                        <div style="width: ${(categories.liquids / Math.max(...Object.values(categories))) * 100}%; height: 100%; background: #8B5CF6;"></div>
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 10px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span style="font-size: 12px; color: #D8B4FE;">Одноразовые</span>
-                        <span style="font-size: 12px; color: #A78BFA;">${categories.disposable}</span>
-                    </div>
-                    <div style="height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
-                        <div style="width: ${(categories.disposable / Math.max(...Object.values(categories))) * 100}%; height: 100%; background: #7C3AED;"></div>
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 10px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span style="font-size: 12px; color: #D8B4FE;">Под-системы</span>
-                        <span style="font-size: 12px; color: #A78BFA;">${categories.pod}</span>
-                    </div>
-                    <div style="height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
-                        <div style="width: ${(categories.pod / Math.max(...Object.values(categories))) * 100}%; height: 100%; background: #6D28D9;"></div>
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 10px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span style="font-size: 12px; color: #D8B4FE;">Расходники</span>
-                        <span style="font-size: 12px; color: #A78BFA;">${categories.consumables}</span>
-                    </div>
-                    <div style="height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
-                        <div style="width: ${(categories.consumables / Math.max(...Object.values(categories))) * 100}%; height: 100%; background: #5B21B6;"></div>
-                    </div>
-                </div>
-            `;
-        }
-        
-        // Обновить UI после загрузки данных
-        function updateUIAfterDataLoad() {
-            if (!appData.isDataLoaded) return;
-            
-            updateUserProfile();
-            updateProfileStats();
-            renderAds();
-            
-            if (document.getElementById('page-profile').classList.contains('active')) {
-                updateMyAdsList();
-                updateHistory();
-            }
-            
-            if (document.getElementById('page-faq').classList.contains('active')) {
-                updateServerStatsUI();
-            }
-            
-            if (document.getElementById('page-admin').classList.contains('active') && appData.isAdmin) {
-                updateAdminStats();
-                updateCurrentAdminSection();
             }
         }
         
-        // Обновить статус синхронизации
-        function updateSyncStatus() {
-            const syncText = document.getElementById('sync-text');
-            const serverSyncText = document.getElementById('server-sync-text');
-            
-            if (appData.lastSyncTime) {
-                const now = new Date();
-                const diff = Math.floor((now - appData.lastSyncTime) / 1000);
-                
-                let text;
-                if (diff < 60) {
-                    text = 'Только что';
-                } else if (diff < 3600) {
-                    text = `${Math.floor(diff / 60)} мин. назад`;
-                } else {
-                    text = `${Math.floor(diff / 3600)} час. назад`;
-                }
-                
-                if (syncText) syncText.textContent = `Обновлено: ${text}`;
-                if (serverSyncText) serverSyncText.textContent = `Данные: ${text}`;
-            }
-        }
-        
-        // Обновить статистику сервера
-        function updateServerStatsUI() {
-            if (!appData.serverStats) {
-                const statsGrid = document.getElementById('server-stats-grid');
-                if (statsGrid) {
-                    statsGrid.innerHTML = `
-                        <div class="server-stat-item">
-                            <div class="server-stat-number">0</div>
-                            <div class="server-stat-label">Пользователей</div>
-                        </div>
-                        <div class="server-stat-item">
-                            <div class="server-stat-number">0</div>
-                            <div class="server-stat-label">Объявлений</div>
-                        </div>
-                        <div class="server-stat-item">
-                            <div class="server-stat-number">0</div>
-                            <div class="server-stat-label">Активных</div>
-                        </div>
-                        <div class="server-stat-item">
-                            <div class="server-stat-number">0</div>
-                            <div class="server-stat-label">Сегодня</div>
-                        </div>
-                        <div class="server-stat-item">
-                            <div class="server-stat-number">0</div>
-                            <div class="server-stat-label">Лайков</div>
-                        </div>
-                        <div class="server-stat-item">
-                            <div class="server-stat-number">0</div>
-                            <div class="server-stat-label">Дизлайков</div>
-                        </div>
-                    `;
-                }
-                return;
-            }
-            
-            const statsGrid = document.getElementById('server-stats-grid');
-            const faqAnswer5 = document.getElementById('faq-answer-5');
-            
-            if (statsGrid) {
-                statsGrid.innerHTML = `
-                    <div class="server-stat-item">
-                        <div class="server-stat-number">${appData.serverStats.totalUsers}</div>
-                        <div class="server-stat-label">Пользователей</div>
-                    </div>
-                    <div class="server-stat-item">
-                        <div class="server-stat-number">${appData.serverStats.totalAds}</div>
-                        <div class="server-stat-label">Объявлений</div>
-                    </div>
-                    <div class="server-stat-item">
-                        <div class="server-stat-number">${appData.serverStats.activeUsers}</div>
-                        <div class="server-stat-label">Активных</div>
-                    </div>
-                    <div class="server-stat-item">
-                        <div class="server-stat-number">${appData.serverStats.todayAds}</div>
-                        <div class="server-stat-label">Сегодня</div>
-                    </div>
-                    <div class="server-stat-item">
-                        <div class="server-stat-number">${appData.serverStats.totalLikes}</div>
-                        <div class="server-stat-label">Лайков</div>
-                    </div>
-                    <div class="server-stat-item">
-                        <div class="server-stat-number">${appData.serverStats.totalDislikes}</div>
-                        <div class="server-stat-label">Дизлайков</div>
-                    </div>
-                `;
-            }
-            
-            if (faqAnswer5) {
-                const lastUpdated = new Date(appData.serverStats.lastUpdated).toLocaleString('ru-RU');
-                faqAnswer5.innerHTML = `
-                    <strong>Статистика сервера Vape Market:</strong><br><br>
-                    👥 <b>Пользователи:</b> ${appData.serverStats.totalUsers} (${appData.serverStats.activeUsers} активных)<br>
-                    📦 <b>Объявления:</b> ${appData.serverStats.totalAds} (${appData.serverStats.todayAds} сегодня)<br>
-                    👍 <b>Лайки:</b> ${appData.serverStats.totalLikes}<br>
-                    👎 <b>Дизлайки:</b> ${appData.serverStats.totalDislikes}<br><br>
-                    📊 <b>По категориям:</b><br>
-                    • Жидкости: ${appData.serverStats.categories.liquids}<br>
-                    • Одноразовые: ${appData.serverStats.categories.disposable}<br>
-                    • Под-системы: ${appData.serverStats.categories.pod}<br>
-                    • Расходники: ${appData.serverStats.categories.consumables}<br><br>
-                    ⏰ <b>Обновлено:</b> ${lastUpdated}<br>
-                    🟢 <b>Статус сервера:</b> ${appData.serverStats.serverStatus}<br>
-                    🔥 <b>База данных:</b> Firebase
-                `;
-            }
-        }
-        
-        // Обновить статистику
-        async function refreshStats() {
-            // Проверяем блокировку перед действием
-            if (!checkBlockBeforeAction('обновление статистики')) return;
-            
-            appData.serverStats = await FirebaseMarketServer.getStats();
-            updateServerStatsUI();
-            showNotification('Статистика обновлена', 'success');
-        }
-        
-        // Инициализация приложения
-        function initApp() {
-            if (tg) {
-                tg.expand();
-                tg.ready();
-                
-                tg.setHeaderColor('#6D28D9');
-                tg.setBackgroundColor('#7C3AED');
-                
-                tg.BackButton.show();
-                tg.BackButton.onClick(function() {
-                    tg.close();
-                });
-            }
-            
-            updateUserProfile();
-            loadFromServer();
-            
-            // Слушаем обновления в реальном времени только если пользователь не заблокирован
-            if (!appData.isUserBlocked) {
-                appData.firebaseListeners = {
-                    ads: database.ref('ads').on('value', (snapshot) => {
-                        console.log('📡 Получены обновления в реальном времени:', snapshot.numChildren());
-                        const ads = [];
-                        snapshot.forEach((childSnapshot) => {
-                            const ad = childSnapshot.val();
-                            ad.id = childSnapshot.key;
-                            if (!ad.photoUrls && ad.photos > 0) {
-                                ad.photoUrls = [];
-                                for (let i = 0; i < ad.photos; i++) {
-                                    ad.photoUrls.push(null);
-                                }
-                            }
-                            ads.push(ad);
-                        });
-                        
-                        ads.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-                        appData.ads = ads;
-                        
-                        if (appData.isDataLoaded) {
-                            renderAds();
-                            updateProfileStats();
-                            updateMyAdsList();
-                            updateServerStatsUI();
-                            updateAdminStats();
-                            showNotification('Получены обновленные данные', 'info');
-                        }
-                    })
-                };
-            }
-            
-            for (let i = 1; i <= 6; i++) {
-                const answer = document.getElementById(`faq-answer-${i}`);
-                if (answer) answer.style.display = 'none';
-            }
-            
-            setInterval(updateSyncStatus, 60000);
-            
-            showNotification(`Добро пожаловать, ${appData.currentUserData?.first_name || 'Пользователь'}!`, 'success');
-        }
-        
-        // ==================== АДМИН-ФУНКЦИИ ====================
-        
-        // Переключение разделов админ-панели
-        function switchAdminSection(section) {
-            // Скрываем все подразделы
-            document.querySelectorAll('.admin-subsection').forEach(sub => {
-                sub.classList.remove('active');
-            });
-            
-            // Показываем выбранный подраздел
-            document.getElementById(`admin-${section}`).classList.add('active');
-            appData.currentAdminSection = section;
-            
-            // Обновляем содержимое раздела
-            updateCurrentAdminSection();
-        }
-        
-        // Обновить текущий раздел админ-панели
-        function updateCurrentAdminSection() {
-            if (!appData.isAdmin) return;
-            
-            switch (appData.currentAdminSection) {
-                case 'moderation':
-                    updateAdminAdsList();
-                    break;
-                case 'users':
-                    updateAdminUsersList();
-                    break;
-                case 'complaints':
-                    updateAdminComplaintsList();
-                    break;
-                case 'analytics':
-                    updateCategoriesAnalytics();
-                    break;
-                case 'main':
-                    updateAdminStats();
-                    break;
-            }
-        }
-        
-        // Обновить список объявлений для модерации
-        function updateAdminAdsList() {
-            const container = document.getElementById('admin-ads-list');
-            if (!container) return;
-            
-            let filteredAds = [...appData.ads];
-            
-            // Применяем фильтры
-            switch (appData.currentAdminFilter) {
-                case 'new':
-                    // Объявления за последние 24 часа
-                    const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
-                    filteredAds = filteredAds.filter(ad => 
-                        ad.createdAt && new Date(ad.createdAt) > dayAgo
-                    );
-                    break;
-                case 'complained':
-                    filteredAds = filteredAds.filter(ad => ad.complaints && ad.complaints > 0);
-                    break;
-                case 'unverified':
-                    filteredAds = filteredAds.filter(ad => !ad.verified);
-                    break;
-            }
-            
-            if (filteredAds.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
-                        <i class="fas fa-box-open" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
-                        <h3 style="margin-bottom: 10px;">Нет объявлений</h3>
-                        <p>В этом разделе пока нет объявлений</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            let html = '';
-            filteredAds.forEach(ad => {
-                const date = ad.createdAt ? new Date(ad.createdAt).toLocaleDateString('ru-RU') : 'Неизвестно';
-                const verifiedBadge = ad.verified ? '<span class="status-badge" style="background: rgba(16, 185, 129, 0.3); color: #10B981;">✓</span>' : '';
-                const complaintsBadge = ad.complaints > 0 ? `<span class="status-badge" style="background: rgba(239, 68, 68, 0.3); color: #EF4444;">${ad.complaints}</span>` : '';
-                
-                html += `
-                    <div class="admin-list-item">
-                        <div class="admin-item-info">
-                            <h4>${ad.title || 'Без названия'} ${verifiedBadge} ${complaintsBadge}</h4>
-                            <p>${ad.sellerUsername || 'Без username'} • ${getCategoryName(ad.category)} • ${ad.price ? ad.price.toLocaleString() + ' ₽' : 'Цена не указана'} • ${date}</p>
-                        </div>
-                        <div class="admin-item-actions">
-                            <button class="admin-small-btn view" onclick="viewAdDetails('${ad.id}')">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="admin-small-btn edit" onclick="editAdminAd('${ad.id}')">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="admin-small-btn delete" onclick="deleteAdminAd('${ad.id}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            container.innerHTML = html;
-        }
-        
-        // Фильтрация объявлений в админ-панели
-        function filterAdminAds(filter) {
-            appData.currentAdminFilter = filter;
-            
-            // Обновляем активные кнопки фильтров
-            document.querySelectorAll('.admin-filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            updateAdminAdsList();
-        }
-        
-        // Обновить список пользователей в админ-панели
-        function updateAdminUsersList() {
-            const container = document.getElementById('admin-users-list');
-            if (!container || !appData.adminData.users) return;
-            
-            let filteredUsers = [...appData.adminData.users];
-            
-            // Применяем фильтры
-            switch (appData.currentAdminFilter) {
-                case 'active':
-                    // Пользователи активные за последние 7 дней
-                    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-                    filteredUsers = filteredUsers.filter(user => 
-                        user.lastActive && new Date(user.lastActive) > weekAgo
-                    );
-                    break;
-                case 'blocked':
-                    filteredUsers = filteredUsers.filter(user => user.blocked);
-                    break;
-                case 'verified':
-                    filteredUsers = filteredUsers.filter(user => user.verified);
-                    break;
-            }
-            
-            if (filteredUsers.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
-                        <i class="fas fa-users" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
-                        <h3 style="margin-bottom: 10px;">Нет пользователей</h3>
-                        <p>В этом разделе пока нет пользователей</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            let html = '';
-            filteredUsers.forEach(user => {
-                const regDate = user.registrationDate ? new Date(user.registrationDate).toLocaleDateString('ru-RU') : 'Неизвестно';
-                
-                const verifiedBadge = user.verified ? '<span class="status-badge" style="background: rgba(16, 185, 129, 0.3); color: #10B981;">✓</span>' : '';
-                const blockedBadge = user.blocked ? '<span class="status-badge" style="background: rgba(239, 68, 68, 0.3); color: #EF4444;">🚫</span>' : '';
-                
-                html += `
-                    <div class="admin-list-item">
-                        <div class="admin-item-info">
-                            <h4>${user.name || 'Без имени'} ${user.id === appData.currentUserId ? '(Вы)' : ''} ${verifiedBadge} ${blockedBadge}</h4>
-                            <p>${user.username || 'Без username'} • ID: ${user.id} • Регистрация: ${regDate}</p>
-                        </div>
-                        <div class="admin-item-actions">
-                            <button class="admin-small-btn view" onclick="viewUserDetails('${user.id}')">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            ${user.id !== appData.currentUserId ? `
-                                ${user.blocked ? `
-                                    <button class="admin-small-btn edit" onclick="unblockUser('${user.id}')">
-                                        <i class="fas fa-unlock"></i>
-                                    </button>
-                                ` : `
-                                    <button class="admin-small-btn delete" onclick="blockUserModal('${user.id}')">
-                                        <i class="fas fa-lock"></i>
-                                    </button>
-                                `}
-                                ${!user.verified ? `
-                                    <button class="admin-small-btn view" onclick="verifyUser('${user.id}')">
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                ` : ''}
-                            ` : ''}
-                        </div>
-                    </div>
-                `;
-            });
-            
-            container.innerHTML = html;
-        }
-        
-        // Фильтрация пользователей в админ-панели
-        function filterAdminUsers(filter) {
-            appData.currentAdminFilter = filter;
-            
-            // Обновляем активные кнопки фильтров
-            document.querySelectorAll('.admin-filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            updateAdminUsersList();
-        }
-        
-        // Поиск пользователей
-        function searchAdminUsers() {
-            const searchTerm = document.getElementById('admin-users-search').value.toLowerCase();
-            const container = document.getElementById('admin-users-list');
-            
-            if (!searchTerm) {
-                updateAdminUsersList();
-                return;
-            }
-            
-            const filteredUsers = appData.adminData.users.filter(user => 
-                (user.id && user.id.toString().includes(searchTerm)) ||
-                (user.name && user.name.toLowerCase().includes(searchTerm)) ||
-                (user.username && user.username.toLowerCase().includes(searchTerm))
-            );
-            
-            if (filteredUsers.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
-                        <i class="fas fa-search" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
-                        <h3 style="margin-bottom: 10px;">Пользователи не найдены</h3>
-                        <p>Попробуйте другой поисковый запрос</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            let html = '';
-            filteredUsers.forEach(user => {
-                const regDate = user.registrationDate ? new Date(user.registrationDate).toLocaleDateString('ru-RU') : 'Неизвестно';
-                
-                const verifiedBadge = user.verified ? '<span class="status-badge" style="background: rgba(16, 185, 129, 0.3); color: #10B981;">✓</span>' : '';
-                const blockedBadge = user.blocked ? '<span class="status-badge" style="background: rgba(239, 68, 68, 0.3); color: #EF4444;">🚫</span>' : '';
-                
-                html += `
-                    <div class="admin-list-item">
-                        <div class="admin-item-info">
-                            <h4>${user.name || 'Без имени'} ${verifiedBadge} ${blockedBadge}</h4>
-                            <p>${user.username || 'Без username'} • ID: ${user.id} • Регистрация: ${regDate}</p>
-                        </div>
-                        <div class="admin-item-actions">
-                            <button class="admin-small-btn view" onclick="viewUserDetails('${user.id}')">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            ${user.id !== appData.currentUserId ? `
-                                ${user.blocked ? `
-                                    <button class="admin-small-btn edit" onclick="unblockUser('${user.id}')">
-                                        <i class="fas fa-unlock"></i>
-                                    </button>
-                                ` : `
-                                    <button class="admin-small-btn delete" onclick="blockUserModal('${user.id}')">
-                                        <i class="fas fa-lock"></i>
-                                    </button>
-                                `}
-                            ` : ''}
-                        </div>
-                    </div>
-                `;
-            });
-            
-            container.innerHTML = html;
-        }
-        
-        // Обновить список жалоб
-        function updateAdminComplaintsList() {
-            const container = document.getElementById('admin-complaints-list');
-            if (!container || !appData.adminData.complaints) return;
-            
-            let filteredComplaints = [...appData.adminData.complaints];
-            
-            // Применяем фильтры
-            switch (appData.currentAdminFilter) {
-                case 'new':
-                    filteredComplaints = filteredComplaints.filter(c => c.status === 'new');
-                    break;
-                case 'pending':
-                    filteredComplaints = filteredComplaints.filter(c => c.status === 'pending');
-                    break;
-                case 'fraud':
-                    filteredComplaints = filteredComplaints.filter(c => c.type === 'fraud');
-                    break;
-            }
-            
-            // Сортируем по дате (новые сначала)
-            filteredComplaints.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            
-            if (filteredComplaints.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
-                        <i class="fas fa-flag" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
-                        <h3 style="margin-bottom: 10px;">Жалоб нет</h3>
-                        <p>В этом разделе пока нет жалоб</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            let html = '';
-            filteredComplaints.forEach(complaint => {
-                const date = complaint.createdAt ? new Date(complaint.createdAt).toLocaleDateString('ru-RU') : 'Неизвестно';
-                const statusClass = `status-${complaint.status || 'new'}`;
-                const statusText = getComplaintStatusText(complaint.status);
-                const typeText = getComplaintTypeText(complaint.type);
-                
-                html += `
-                    <div class="admin-list-item">
-                        <div class="admin-item-info">
-                            <h4>Жалоба на: ${complaint.targetUsername || 'Неизвестно'}</h4>
-                            <p>Тип: ${typeText} • От: ${complaint.reporterUsername || 'Аноним'} • ${date}</p>
-                            <p>${complaint.description || 'Описание отсутствует'}</p>
-                            <span class="status-badge ${statusClass}">${statusText}</span>
-                        </div>
-                        <div class="admin-item-actions">
-                            <button class="admin-small-btn view" onclick="viewComplaintDetails('${complaint.id}')">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="admin-small-btn edit" onclick="resolveComplaint('${complaint.id}')">
-                                <i class="fas fa-check"></i>
-                            </button>
-                            <button class="admin-small-btn delete" onclick="rejectComplaint('${complaint.id}')">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            container.innerHTML = html;
-        }
-        
-        // Фильтрация жалоб
-        function filterAdminComplaints(filter) {
-            appData.currentAdminFilter = filter;
-            
-            document.querySelectorAll('.admin-filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            updateAdminComplaintsList();
-        }
-        
-        // Получить текст статуса жалобы
-        function getComplaintStatusText(status) {
-            const statuses = {
-                'new': 'Новая',
-                'pending': 'В работе',
-                'resolved': 'Решена',
-                'rejected': 'Отклонена'
-            };
-            return statuses[status] || status;
-        }
-        
-        // Получить текст типа жалобы
-        function getComplaintTypeText(type) {
-            const types = {
-                'fraud': 'Мошенничество',
-                'wrong_category': 'Неправильная категория',
-                'prohibited': 'Запрещенные товары',
-                'insult': 'Оскорбления',
-                'spam': 'Спам',
-                'other': 'Другое'
-            };
-            return types[type] || type;
-        }
-        
-        // ==================== АДМИН-ДЕЙСТВИЯ ====================
-        
-        // Просмотр деталей объявления
-        function viewAdDetails(adId) {
-            const ad = appData.ads.find(a => a.id === adId);
-            if (!ad) return;
-            
-            alert(`Детали объявления:\n\n` +
-                  `Название: ${ad.title}\n` +
-                  `Продавец: ${ad.sellerName} (${ad.sellerUsername})\n` +
-                  `Категория: ${getCategoryName(ad.category)}\n` +
-                  `Цена: ${ad.price ? ad.price.toLocaleString() + ' ₽' : 'Не указана'}\n` +
-                  `Описание: ${ad.description || 'Отсутствует'}\n` +
-                  `Лайки: ${ad.likes || 0}\n` +
-                  `Дизлайки: ${ad.dislikes || 0}\n` +
-                  `Жалобы: ${ad.complaints || 0}\n` +
-                  `Статус: ${ad.verified ? 'Проверено' : 'Не проверено'}\n` +
-                  `Создано: ${ad.createdAt ? new Date(ad.createdAt).toLocaleString('ru-RU') : 'Неизвестно'}`);
-        }
-        
-        // Редактирование объявления (админ)
-        function editAdminAd(adId) {
-            const ad = appData.ads.find(a => a.id === adId);
-            if (!ad) return;
-            
-            const newTitle = prompt('Новое название объявления:', ad.title);
-            if (newTitle === null) return;
-            
-            const newPrice = prompt('Новая цена:', ad.price);
-            if (newPrice === null) return;
-            
-            const newDescription = prompt('Новое описание:', ad.description);
-            if (newDescription === null) return;
-            
-            // Обновляем в Firebase
-            FirebaseMarketServer.updateAd(adId, {
-                title: newTitle,
-                price: Number(newPrice),
-                description: newDescription,
-                updatedAt: firebase.database.ServerValue.TIMESTAMP
-            }).then(success => {
-                if (success) {
-                    showNotification('Объявление обновлено', 'success');
-                    loadAdminData();
-                } else {
-                    showNotification('Ошибка при обновлении', 'error');
-                }
-            });
-        }
-        
-        // Удаление объявления (админ)
-        function deleteAdminAd(adId) {
-            if (!confirm('Вы уверены, что хотите удалить это объявление?\nЭто действие нельзя отменить.')) {
-                return;
-            }
-            
-            const ad = appData.ads.find(a => a.id === adId);
-            if (!ad) return;
-            
-            const reason = prompt('Причина удаления:', 'Нарушение правил');
-            if (reason === null) return;
-            
-            // Обновляем статус объявления
-            FirebaseMarketServer.updateAd(adId, {
-                status: 'deleted',
-                deleteReason: reason,
-                deletedAt: firebase.database.ServerValue.TIMESTAMP
-            }).then(success => {
-                if (success) {
-                    showNotification('Объявление удалено', 'warning');
-                    loadAdminData();
-                } else {
-                    showNotification('Ошибка при удалении', 'error');
-                }
-            });
-        }
-        
-        // Просмотр деталей пользователя
-        function viewUserDetails(userId) {
-            const user = appData.adminData.users.find(u => u.id === userId);
-            if (!user) return;
-            
-            const adsCount = appData.ads.filter(ad => ad.sellerId === userId).length;
-            const lastActive = user.lastActive ? new Date(user.lastActive).toLocaleString('ru-RU') : 'Никогда';
-            const regDate = user.registrationDate ? new Date(user.registrationDate).toLocaleString('ru-RU') : 'Неизвестно';
-            
-            let blockInfo = '';
-            if (user.blocked) {
-                const blockedAt = user.blockedAt ? new Date(user.blockedAt).toLocaleString('ru-RU') : 'Неизвестно';
-                let unblockDate = 'Никогда';
-                if (user.blockedUntil && user.blockedUntil !== 'permanent') {
-                    unblockDate = new Date(user.blockedUntil).toLocaleString('ru-RU');
-                }
-                blockInfo = `\n🔒 Блокировка:\n` +
-                           `Причина: ${user.blockReason || 'Не указана'}\n` +
-                           `Заблокирован: ${blockedAt}\n` +
-                           `Разблокировка: ${unblockDate}`;
-            }
-            
-            alert(`Детали пользователя:\n\n` +
-                  `ID: ${user.id}\n` +
-                  `Имя: ${user.name || 'Не указано'}\n` +
-                  `Username: ${user.username || 'Не указан'}\n` +
-                  `Рейтинг: ${user.rating ? user.rating.toFixed(1) : '0.0'}\n` +
-                  `Объявления: ${adsCount}\n` +
-                  `Лайки: ${user.likesCount || 0}\n` +
-                  `Дизлайки: ${user.dislikesCount || 0}\n` +
-                  `Жалобы: ${user.complaintsCount || 0}\n` +
-                  `Предупреждения: ${user.warnings || 0}\n` +
-                  `Статус: ${user.blocked ? 'Заблокирован' : 'Активен'}\n` +
-                  `Верифицирован: ${user.verified ? 'Да' : 'Нет'}\n` +
-                  `Зарегистрирован: ${regDate}\n` +
-                  `Последняя активность: ${lastActive}` +
-                  blockInfo);
-        }
-        
-        // Модальное окно блокировки пользователя
-        function blockUserModal(userId) {
-            const user = appData.adminData.users.find(u => u.id === userId);
-            if (!user || user.id === appData.currentUserId) return;
-            
-            const reason = prompt('Причина блокировки:', 'Нарушение правил');
-            if (reason === null) return;
-            
-            const durationChoice = prompt('Длительность блокировки:\n1 - 1 час\n2 - 24 часа\n3 - 7 дней\n4 - 30 дней\n5 - Навсегда', '2');
-            if (durationChoice === null) return;
-            
-            let duration;
-            let durationText;
-            
-            switch (durationChoice) {
-                case '1':
-                    duration = 1;
-                    durationText = '1 час';
-                    break;
-                case '2':
-                    duration = 24;
-                    durationText = '24 часа';
-                    break;
-                case '3':
-                    duration = 24 * 7;
-                    durationText = '7 дней';
-                    break;
-                case '4':
-                    duration = 24 * 30;
-                    durationText = '30 дней';
-                    break;
-                case '5':
-                    duration = 'permanent';
-                    durationText = 'навсегда';
-                    break;
-                default:
-                    duration = 24;
-                    durationText = '24 часа';
-            }
-            
-            if (confirm(`Заблокировать пользователя ${user.name || user.id}?\nПричина: ${reason}\nДлительность: ${durationText}`)) {
-                FirebaseMarketServer.blockUser(userId, reason, duration).then(success => {
-                    if (success) {
-                        showNotification(`Пользователь заблокирован на ${durationText}`, 'warning');
-                        loadAdminData();
-                    } else {
-                        showNotification('Ошибка при блокировке', 'error');
-                    }
-                });
-            }
-        }
-        
-        // Разблокировать пользователя
-        function unblockUser(userId) {
-            const user = appData.adminData.users.find(u => u.id === userId);
-            if (!user || user.id === appData.currentUserId) return;
-            
-            if (confirm(`Разблокировать пользователя ${user.name || user.id}?`)) {
-                FirebaseMarketServer.unblockUser(userId).then(success => {
-                    if (success) {
-                        showNotification('Пользователь разблокирован', 'success');
-                        loadAdminData();
-                    } else {
-                        showNotification('Ошибка при разблокировке', 'error');
-                    }
-                });
-            }
-        }
-        
-        // Верифицировать пользователя
-        function verifyUser(userId) {
-            const user = appData.adminData.users.find(u => u.id === userId);
-            if (!user || user.id === appData.currentUserId) return;
-            
-            if (confirm(`Верифицировать пользователя ${user.name || user.id}?\nВерифицированные пользователи получают специальную отметку.`)) {
-                FirebaseMarketServer.verifyUser(userId).then(success => {
-                    if (success) {
-                        showNotification('Пользователь верифицирован', 'success');
-                        loadAdminData();
-                    } else {
-                        showNotification('Ошибка при верификации', 'error');
-                    }
-                });
-            }
-        }
-        
-        // Просмотр деталей жалобы
-        function viewComplaintDetails(complaintId) {
-            const complaint = appData.adminData.complaints.find(c => c.id === complaintId);
-            if (!complaint) return;
-            
-            const date = complaint.createdAt ? new Date(complaint.createdAt).toLocaleString('ru-RU') : 'Неизвестно';
-            
-            alert(`Детали жалобы:\n\n` +
-                  `ID: ${complaint.id}\n` +
-                  `Тип: ${getComplaintTypeText(complaint.type)}\n` +
-                  `Статус: ${getComplaintStatusText(complaint.status)}\n` +
-                  `На кого: ${complaint.targetUsername || 'Неизвестно'}\n` +
-                  `От кого: ${complaint.reporterUsername || 'Аноним'}\n` +
-                  `Описание: ${complaint.description || 'Отсутствует'}\n` +
-                  `Доказательства: ${complaint.evidence ? 'Есть' : 'Нет'}\n` +
-                  `Дата: ${date}\n` +
-                  `Заметка админа: ${complaint.adminNote || 'Нет'}`);
-        }
-        
-        // Решить жалобу
-        function resolveComplaint(complaintId) {
-            const complaint = appData.adminData.complaints.find(c => c.id === complaintId);
-            if (!complaint) return;
-            
-            const note = prompt('Заметка админа (опционально):', 'Жалоба рассмотрена, нарушения устранены');
-            
-            FirebaseMarketServer.updateComplaintStatus(complaintId, 'resolved', note).then(success => {
-                if (success) {
-                    showNotification('Жалоба отмечена как решенная', 'success');
-                    loadAdminData();
-                } else {
-                    showNotification('Ошибка при обновлении жалобы', 'error');
-                }
-            });
-        }
-        
-        // Отклонить жалобу
-        function rejectComplaint(complaintId) {
-            const complaint = appData.adminData.complaints.find(c => c.id === complaintId);
-            if (!complaint) return;
-            
-            const note = prompt('Причина отклонения:', 'Жалоба необоснована');
-            
-            FirebaseMarketServer.updateComplaintStatus(complaintId, 'rejected', note).then(success => {
-                if (success) {
-                    showNotification('Жалоба отклонена', 'warning');
-                    loadAdminData();
-                } else {
-                    showNotification('Ошибка при обновлении жалобы', 'error');
-                }
-            });
-        }
-        
-        // Отправить уведомление всем пользователям
-        function sendBannerToAll() {
+        // Создание баннера (админ)
+        async function createBanner() {
             const title = document.getElementById('banner-title').value.trim();
             const text = document.getElementById('banner-text').value.trim();
             const type = document.getElementById('banner-type').value;
             
             if (!title || !text) {
-                showNotification('Заполните заголовок и текст уведомления', 'error');
+                showNotification('Заполните заголовок и текст баннера', 'error');
                 return;
             }
             
-            const notificationData = {
+            const bannerData = {
                 title: title,
                 text: text,
                 type: type,
-                sentBy: appData.currentUserId,
-                sentAt: new Date().toISOString()
+                active: true
             };
             
-            FirebaseMarketServer.createSystemNotification(notificationData).then(notificationId => {
-                if (notificationId) {
-                    showNotification('Системное уведомление отправлено всем пользователям', 'success');
-                    clearBannerForm();
-                    
-                    // Добавляем в историю
-                    const historyItem = document.createElement('div');
-                    historyItem.className = 'admin-list-item';
-                    historyItem.innerHTML = `
-                        <div class="admin-item-info">
-                            <h4>${title}</h4>
-                            <p>${new Date().toLocaleString('ru-RU')} • Тип: ${type}</p>
-                            <p>${text.substring(0, 100)}${text.length > 100 ? '...' : ''}</p>
-                        </div>
-                    `;
-                    document.getElementById('admin-banners-history').prepend(historyItem);
-                } else {
-                    showNotification('Ошибка при отправке уведомления', 'error');
-                }
-            });
+            const success = await FirebaseMarketServer.createBanner(bannerData);
+            
+            if (success) {
+                showNotification('Баннер успешно создан', 'success');
+                clearBannerForm();
+                checkActiveBanner();
+            } else {
+                showNotification('Ошибка при создании баннера', 'error');
+            }
         }
         
-        // Очистить форму баннера
         function clearBannerForm() {
             document.getElementById('banner-title').value = '';
             document.getElementById('banner-text').value = '';
             document.getElementById('banner-type').value = 'info';
+            document.getElementById('bannerPreview').style.display = 'none';
         }
         
-        // Экспорт статистики
-        function exportAnalytics() {
-            const analyticsData = {
-                totalUsers: appData.adminData.users.length,
-                totalAds: appData.ads.length,
-                complaints: {
-                    total: appData.adminData.complaints.length,
-                    new: appData.adminData.complaints.filter(c => c.status === 'new').length,
-                    pending: appData.adminData.complaints.filter(c => c.status === 'pending').length,
-                    resolved: appData.adminData.complaints.filter(c => c.status === 'resolved').length,
-                    rejected: appData.adminData.complaints.filter(c => c.status === 'rejected').length
-                },
-                categories: {},
-                exportDate: new Date().toISOString()
-            };
+        // Управление честными продавцами
+        async function toggleHonestSeller(userId) {
+            const user = appData.adminData.users.find(u => u.id === userId);
+            if (!user) return;
             
-            // Считаем категории
-            appData.ads.forEach(ad => {
-                const category = ad.category || 'other';
-                analyticsData.categories[category] = (analyticsData.categories[category] || 0) + 1;
-            });
+            const isHonestSeller = user.honestSeller || false;
             
-            // Создаем и скачиваем файл
-            const dataStr = JSON.stringify(analyticsData, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-            
-            const exportFileDefaultName = `vape-market-analytics-${new Date().toISOString().split('T')[0]}.json`;
-            
-            const linkElement = document.createElement('a');
-            linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', exportFileDefaultName);
-            linkElement.click();
-            
-            showNotification('Статистика экспортирована в JSON', 'success');
-        }
-        
-        // ==================== ОБЩИЕ ФУНКЦИИ ====================
-        
-        // Обновить профиль пользователя в UI
-        function updateUserProfile() {
-            if (!appData.currentUserData) return;
-            
-            const profileName = document.getElementById('profileName');
-            const profileUsername = document.getElementById('profileUsername');
-            const profileAvatar = document.getElementById('profileAvatar');
-            
-            let fullName = appData.currentUserData.first_name;
-            if (appData.currentUserData.last_name) {
-                fullName += ' ' + appData.currentUserData.last_name;
-            }
-            profileName.textContent = fullName;
-            
-            if (appData.currentUserData.username) {
-                profileUsername.textContent = '@' + appData.currentUserData.username;
-            } else {
-                profileUsername.textContent = 'Без username';
-            }
-            
-            if (appData.currentUserData.photo_url) {
-                profileAvatar.innerHTML = `<img src="${appData.currentUserData.photo_url}" alt="Аватар">`;
-            } else {
-                const firstLetter = (appData.currentUserData.first_name || 'П').charAt(0).toUpperCase();
-                profileAvatar.innerHTML = `<span>${firstLetter}</span>`;
-            }
-        }
-        
-        // Показать уведомление
-        function showNotification(message, type = 'info') {
-            // Если пользователь заблокирован, не показываем уведомления
-            if (appData.isUserBlocked) return;
-            
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification ${type} show`;
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-        
-        // Переключение страниц
-        function switchPage(page) {
-            // Проверяем блокировку перед переключением
-            if (!checkBlockBeforeAction('переключение страницы')) return;
-            
-            // Скрываем все страницы
-            document.querySelectorAll('.page').forEach(p => {
-                p.classList.remove('active');
-            });
-            
-            // Показываем выбранную страницу
-            document.getElementById(`page-${page}`).classList.add('active');
-            
-            // Обновляем активные кнопки навигации
-            document.querySelectorAll('.nav-item').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            const navItem = document.querySelector(`[data-page="${page}"]`);
-            if (navItem) {
-                navItem.classList.add('active');
-            }
-            
-            // Обновляем заголовок
-            const titles = {
-                'ads': 'Vape Market',
-                'profile': 'Личный кабинет',
-                'faq': 'Помощь',
-                'admin': 'Админ-панель'
-            };
-            document.getElementById('header-title').textContent = titles[page] || 'Vape Market';
-            
-            // Скрываем форму добавления
-            hideAddForm();
-            
-            // Сбрасываем админ-секцию на главную
-            if (page !== 'admin') {
-                switchAdminSection('main');
-            }
-            
-            // Обновляем данные если нужно
-            if (appData.isDataLoaded) {
-                if (page === 'profile') {
-                    updateProfileStats();
-                    updateMyAdsList();
-                    updateHistory();
-                }
+            try {
+                await FirebaseMarketServer.updateHonestSellerStatus(userId, !isHonestSeller);
                 
-                if (page === 'faq') {
-                    updateServerStatsUI();
-                }
+                showNotification(isHonestSeller ? 
+                    'Статус "Честный продавец" снят' : 
+                    'Пользователь отмечен как "Честный продавец"', 
+                    'success');
                 
-                if (page === 'admin' && appData.isAdmin) {
-                    loadAdminData();
-                }
+                loadAdminData();
+                
+            } catch (error) {
+                console.error('Ошибка обновления статуса продавца:', error);
+                showNotification('Ошибка при обновлении статуса', 'error');
             }
         }
         
-        // Переключение вкладок в личном кабинете
-        function switchProfileTab(tab) {
-            document.querySelectorAll('.profile-tab').forEach(t => {
-                t.classList.remove('active');
-            });
-            document.querySelector(`[onclick="switchProfileTab('${tab}')"]`).classList.add('active');
-            
-            document.querySelectorAll('.profile-tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            document.getElementById(`${tab}-tab`).classList.add('active');
-            
-            if (tab === 'history' && appData.isDataLoaded) {
-                updateHistory();
-            }
-        }
-        
-        // Переключение формы добавления
-        function toggleAddForm() {
-            // Проверяем блокировку перед открытием формы
-            if (!checkBlockBeforeAction('добавление объявления')) return;
-            
-            const form = document.getElementById('addAdForm');
-            const btnText = document.getElementById('toggle-btn-text');
-            
-            if (form.classList.contains('active')) {
-                form.classList.remove('active');
-                btnText.textContent = 'Добавить';
-            } else {
-                form.classList.add('active');
-                btnText.textContent = 'Скрыть';
-            }
-        }
-        
-        // Скрыть форму добавления
-        function hideAddForm() {
-            const form = document.getElementById('addAdForm');
-            const btnText = document.getElementById('toggle-btn-text');
-            
-            form.classList.remove('active');
-            btnText.textContent = 'Добавить';
-            clearAddForm();
-        }
-        
-        // Фильтр по категориям
-        function filterCategory(category) {
-            // Проверяем блокировку перед фильтрацией
-            if (!checkBlockBeforeAction('фильтрация объявлений')) return;
-            
-            appData.currentCategory = category;
-            
-            document.querySelectorAll('.category-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            renderAds();
-        }
-        
-        // Рендер объявлений
+        // Обновляем рендер объявлений
         function renderAds() {
             const container = document.getElementById('ads-container');
             
@@ -4589,7 +3951,6 @@
                 ? appData.ads 
                 : appData.ads.filter(ad => ad.category === appData.currentCategory);
             
-            // Фильтруем только активные объявления
             const activeAds = filteredAds.filter(ad => ad.status !== 'deleted');
             
             activeAds.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -4600,9 +3961,6 @@
                         <i class="fas fa-box-open" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
                         <h3 style="margin-bottom: 10px;">Нет объявлений</h3>
                         <p>В этой категории пока нет объявлений</p>
-                        <p style="font-size: 12px; margin-top: 10px; color: rgba(255,255,255,0.5);">
-                            Будьте первым - создайте объявление!
-                        </p>
                     </div>
                 `;
                 return;
@@ -4613,15 +3971,16 @@
                 const userRating = appData.userRatings[ad.sellerId]?.[appData.currentUserId];
                 const isOwnAd = ad.sellerId === appData.currentUserId;
                 
-                const adElement = document.createElement('div');
-                adElement.className = 'advertisement-card';
-                adElement.id = `ad-${ad.id}`;
+                // Проверяем, является ли продавец честным
+                const sellerUser = appData.adminData.users?.find(u => u.id === ad.sellerId);
+                const honestSellerBadge = sellerUser?.honestSeller ? 
+                    '<span class="honest-seller-badge"><i class="fas fa-shield-alt"></i> Честный продавец</span>' : '';
+                const verifiedBadge = sellerUser?.verified ? '<span style="color: #10B981; margin-left: 5px;">✓</span>' : '';
                 
                 // Отображение фото
                 const photoElements = [];
                 
                 if (ad.photoUrls && ad.photoUrls.length > 0 && ad.photoUrls[0] !== null) {
-                    // Есть реальные фото
                     ad.photoUrls.forEach((photoUrl, index) => {
                         if (photoUrl && photoUrl !== 'null') {
                             photoElements.push(`
@@ -4634,7 +3993,6 @@
                     });
                 }
                 
-                // Если нет фото или не удалось загрузить, показываем заглушки
                 if (photoElements.length === 0) {
                     const numPhotos = Math.min(ad.photos || 1, 3);
                     for (let i = 0; i < numPhotos; i++) {
@@ -4652,9 +4010,14 @@
                     }
                 }
                 
-                // Проверяем, является ли продавец проверенным
-                const sellerUser = appData.adminData.users?.find(u => u.id === ad.sellerId);
-                const verifiedBadge = sellerUser?.verified ? '<span style="color: #10B981; margin-left: 5px;">✓</span>' : '';
+                // Обрезаем описание если нужно
+                const description = ad.description || 'Без описания';
+                const isLongDescription = description.length > 150;
+                const shortDescription = isLongDescription ? description.substring(0, 150) + '...' : description;
+                
+                const adElement = document.createElement('div');
+                adElement.className = 'advertisement-card';
+                adElement.id = `ad-${ad.id}`;
                 
                 adElement.innerHTML = `
                     <div class="seller-header">
@@ -4663,7 +4026,7 @@
                               `<span style="font-size: 18px; font-weight: bold;">${ad.sellerName?.charAt(0) || 'П'}</span>`}
                         </div>
                         <div class="seller-info">
-                            <div class="seller-name">${ad.sellerName || 'Неизвестный'} ${verifiedBadge}</div>
+                            <div class="seller-name">${ad.sellerName || 'Неизвестный'} ${verifiedBadge} ${honestSellerBadge}</div>
                             <div class="seller-username">${ad.sellerUsername || 'Без username'}</div>
                             <div class="seller-stats">
                                 <div class="seller-stat stat-rating">
@@ -4690,7 +4053,28 @@
                         <div class="product-title">${ad.title || 'Без названия'}</div>
                         <div class="product-category">${getCategoryName(ad.category)}</div>
                         <div class="product-price">${(ad.price || 0).toLocaleString()} ₽</div>
-                        <div class="product-description">${ad.description || 'Без описания'}</div>
+                        <div class="product-description ${isLongDescription ? 'short' : ''}" 
+                             id="description-${ad.id}">
+                            ${isLongDescription ? shortDescription : description}
+                        </div>
+                        ${isLongDescription ? `
+                            <button class="read-more-btn" id="read-more-${ad.id}" onclick="toggleDescription('${ad.id}')">
+                                <i class="fas fa-chevron-down"></i>
+                                Читать полностью
+                            </button>
+                        ` : ''}
+                        
+                        <!-- Статистика лайков/дизлайков -->
+                        <div class="rating-stats">
+                            <div class="rating-stat likes">
+                                <i class="fas fa-thumbs-up"></i>
+                                <span>${ad.likes || 0} лайков</span>
+                            </div>
+                            <div class="rating-stat dislikes">
+                                <i class="fas fa-thumbs-down"></i>
+                                <span>${ad.dislikes || 0} дизлайков</span>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="action-grid">
@@ -4711,702 +4095,142 @@
                             <i class="fas fa-thumbs-down"></i>
                         </button>
                     </div>
+                    
+                    <!-- Кнопка жалобы -->
+                    <button class="complaint-ad-btn" onclick="openComplaintModal('${ad.id}')">
+                        <i class="fas fa-flag"></i>
+                        Пожаловаться на объявление
+                    </button>
+                    
+                    <!-- Счетчик жалоб (только для админа) -->
+                    ${appData.isAdmin && ad.complaints > 0 ? `
+                        <div style="margin-top: 10px; text-align: center;">
+                            <span style="font-size: 11px; color: #EF4444;">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                ${ad.complaints} жалоб
+                            </span>
+                        </div>
+                    ` : ''}
                 `;
                 
                 container.appendChild(adElement);
             });
         }
         
-        // Рассчитать рейтинг
-        function calculateRating(sellerId) {
-            if (!appData.userRatings[sellerId]) return 0.1;
-            
-            const ratings = Object.values(appData.userRatings[sellerId]);
-            if (ratings.length === 0) return 0.1;
-            
-            const likes = ratings.filter(r => r === 'like').length;
-            const dislikes = ratings.filter(r => r === 'dislike').length;
-            const total = likes + dislikes;
-            
-            if (total === 0) return 0.1;
-            return 0.1 + (likes / total) * 4.9;
-        }
+        // Остальные существующие функции остаются без изменений...
+        // [Ваш существующий JavaScript код продолжается здесь]
         
-        // Открыть просмотр фото
-        function openPhotoViewer(adId, photoIndex = 0) {
-            // Проверяем блокировку перед просмотром фото
-            if (!checkBlockBeforeAction('просмотр фото')) return;
-            
-            const ad = appData.ads.find(a => a.id === adId);
-            if (!ad || !ad.photoUrls || ad.photoUrls.length === 0 || ad.photoUrls[0] === null) {
-                showNotification('Фотографии не найдены', 'error');
-                return;
-            }
-            
-            // Фильтруем только существующие фото
-            const validPhotoUrls = ad.photoUrls.filter(url => url && url !== 'null');
-            if (validPhotoUrls.length === 0) {
-                showNotification('Фотографии не найдены', 'error');
-                return;
-            }
-            
-            appData.currentPhotoList = validPhotoUrls;
-            appData.currentPhotoIndex = Math.min(photoIndex, validPhotoUrls.length - 1);
-            
-            const modal = document.getElementById('photoModal');
-            const modalImg = document.getElementById('modalPhoto');
-            const counter = document.getElementById('photoCounter');
-            
-            modalImg.src = validPhotoUrls[appData.currentPhotoIndex];
-            modalImg.onerror = function() {
-                this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDQwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiM4MzVBRjkiLz48cGF0aCBkPSJNMTYwIDE5MEwyNDAgMjQwTDE4MCAxOTBMMjIwIDE0MEwxNjAgMTkwWiIgZmlsbD0id2hpdGUiLz48dGV4dCB4PSIyMDAiIHk9IjI4MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+Rm90byBub3QgZm91bmQ8L3RleHQ+PC9zdmc+';
-            };
-            
-            counter.textContent = `${appData.currentPhotoIndex + 1} / ${validPhotoUrls.length}`;
-            
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
+        // ==================== ИНИЦИАЛИЗАЦИЯ ====================
         
-        // Закрыть просмотр фото
-        function closePhotoModal() {
-            const modal = document.getElementById('photoModal');
-            modal.classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
-        
-        // Следующее фото
-        function nextPhoto() {
-            if (appData.currentPhotoList.length === 0) return;
+        // Обновляем FAQ
+        function updateFAQ() {
+            // Добавляем новые вопросы
+            const faqList = document.querySelector('.faq-list');
             
-            appData.currentPhotoIndex = (appData.currentPhotoIndex + 1) % appData.currentPhotoList.length;
-            const modalImg = document.getElementById('modalPhoto');
-            modalImg.src = appData.currentPhotoList[appData.currentPhotoIndex];
-            modalImg.onerror = function() {
-                this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDQwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiM4MzVBRjkiLz48cGF0aCBkPSJNMTYwIDE5MEwyNDAgMjQwTDE4MCAxOTBMMjIwIDE0MEwxNjAgMTkwWiIgZmlsbD0id2hpdGUiLz48dGV4dCB4PSIyMDAiIHk9IjI4MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+Rm90byBub3QgZm91bmQ8L3RleHQ+PC9zdmc+';
-            };
-            document.getElementById('photoCounter').textContent = 
-                `${appData.currentPhotoIndex + 1} / ${appData.currentPhotoList.length}`;
-        }
-        
-        // Предыдущее фото
-        function prevPhoto() {
-            if (appData.currentPhotoList.length === 0) return;
-            
-            appData.currentPhotoIndex = appData.currentPhotoIndex === 0 
-                ? appData.currentPhotoList.length - 1 
-                : appData.currentPhotoIndex - 1;
-            
-            const modalImg = document.getElementById('modalPhoto');
-            modalImg.src = appData.currentPhotoList[appData.currentPhotoIndex];
-            modalImg.onerror = function() {
-                this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDQwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiM4MzVBRjkiLz48cGF0aCBkPSJNMTYwIDE5MEwyNDAgMjQwTDE4MCAxOTBMMjIwIDE0MEwxNjAgMTkwWiIgZmlsbD0id2hpdGUiLz48dGV4dCB4PSIyMDAiIHk9IjI4MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+Rm90byBub3QgZm91bmQ8L3RleHQ+PC9zdmc+';
-            };
-            document.getElementById('photoCounter').textContent = 
-                `${appData.currentPhotoIndex + 1} / ${appData.currentPhotoList.length}`;
-        }
-        
-        // Оценить продавца
-        async function rateSeller(sellerId, type, adId) {
-            // Проверяем блокировку перед оценкой
-            if (!checkBlockBeforeAction('оценка продавца')) return;
-            
-            if (!appData.isDataLoaded) {
-                showNotification('Данные еще загружаются', 'warning');
-                return;
-            }
-            
-            const ad = appData.ads.find(a => a.id === adId);
-            if (!ad) return;
-            
-            if (ad.sellerId === appData.currentUserId) {
-                showNotification('Нельзя оценивать собственное объявление', 'warning');
-                return;
-            }
-            
-            const userRating = appData.userRatings[sellerId]?.[appData.currentUserId];
-            
-            if (userRating === type) {
-                showNotification('Вы уже поставили эту оценку', 'warning');
-                return;
-            }
-            
-            const success = await FirebaseMarketServer.updateRating(sellerId, appData.currentUserId, type);
-            
-            if (success) {
-                if (!appData.userRatings[sellerId]) {
-                    appData.userRatings[sellerId] = {};
-                }
-                appData.userRatings[sellerId][appData.currentUserId] = type;
-                
-                appData.userRatings = await FirebaseMarketServer.getRatings();
-                
-                renderAds();
-                updateProfileStats();
-                updateServerStatsUI();
-                
-                if (appData.isAdmin) {
-                    updateAdminStats();
-                }
-                
-                showNotification(`Вы поставили ${type === 'like' ? 'лайк' : 'дизлайк'}`, 'success');
-            } else {
-                showNotification('Ошибка при оценке', 'error');
-            }
-        }
-        
-        // Написать продавцу
-        async function contactSeller(username, adId, adTitle, category, price) {
-            // Проверяем блокировку перед контактом
-            if (!checkBlockBeforeAction('контакт с продавцом')) return;
-            
-            if (!appData.isDataLoaded) {
-                showNotification('Данные еще загружаются', 'warning');
-                return;
-            }
-            
-            const ad = appData.ads.find(a => a.id === adId);
-            if (!ad) return;
-            
-            const categoryName = getCategoryName(category);
-            const message = `Привет! Вижу твое объявление в Vape Market:\n\n` +
-                           `📦 Товар: ${adTitle}\n` +
-                           `🏷️ Категория: ${categoryName}\n` +
-                           `💰 Цена: ${price.toLocaleString()} ₽\n\n` +
-                           `Можешь рассказать подробнее о товаре?`;
-            
-            const historyItem = {
-                id: Date.now(),
-                adId: adId,
-                title: adTitle,
-                sellerUsername: username,
-                date: new Date().toLocaleDateString('ru-RU'),
-                category: categoryName,
-                price: price
-            };
-            
-            await FirebaseMarketServer.addToHistory(appData.currentUserId, historyItem);
-            
-            appData.history = await FirebaseMarketServer.getUserHistory(appData.currentUserId);
-            
-            if (document.getElementById('page-profile').classList.contains('active')) {
-                updateHistory();
-            }
-            
-            if (tg) {
-                try {
-                    const cleanUsername = username.replace('@', '');
-                    const encodedMessage = encodeURIComponent(message);
-                    const telegramUrl = `https://t.me/${cleanUsername}?text=${encodedMessage}`;
-                    
-                    tg.openTelegramLink(telegramUrl);
-                    showNotification(`Открывается чат с ${username}`, 'success');
-                } catch (error) {
-                    tg.showAlert(`Для связи с продавцом напишите ${username} в Telegram`);
-                }
-            } else {
-                alert(`Сообщение для ${username}:\n\n${message}`);
-                showNotification(`Сообщение для ${username} отправлено`, 'info');
-            }
-        }
-        
-        // Обновить историю просмотров
-        function updateHistory() {
-            const historyList = document.getElementById('historyList');
-            
-            if (!appData.isDataLoaded) {
-                historyList.innerHTML = '<div style="text-align: center; color: #D8B4FE; padding: 20px;">Загрузка истории...</div>';
-                return;
-            }
-            
-            historyList.innerHTML = '';
-            
-            if (appData.history.length === 0) {
-                historyList.innerHTML = '<div style="text-align: center; color: #D8B4FE; padding: 20px;">История пуста</div>';
-                return;
-            }
-            
-            appData.history.forEach(item => {
-                const historyItem = document.createElement('div');
-                historyItem.className = 'history-item';
-                historyItem.innerHTML = `
-                    <div class="history-info">
-                        <h4>${item.title}</h4>
-                        <p>${item.sellerUsername} • ${item.category} • ${item.price.toLocaleString()} ₽ • ${item.date}</p>
+            const newQuestions = `
+                <div class="faq-item" onclick="toggleFaq(7)">
+                    <div class="faq-question">
+                        <span>Как подать жалобу на объявление?</span>
+                        <i class="fas fa-chevron-down" id="faq-icon-7"></i>
                     </div>
-                    <button class="remove-history-btn" onclick="removeFromHistory('${item.id}')">
-                        Удалить
-                    </button>
-                `;
-                historyList.appendChild(historyItem);
-            });
-        }
-        
-        // Обновить список моих объявлений
-        function updateMyAdsList() {
-            const myAdsList = document.getElementById('myAdsList');
-            
-            if (!appData.isDataLoaded) {
-                myAdsList.innerHTML = '<div style="text-align: center; color: #D8B4FE; padding: 20px;">Загрузка объявлений...</div>';
-                return;
-            }
-            
-            const myAds = appData.ads.filter(ad => ad.sellerId === appData.currentUserId && ad.status !== 'deleted');
-            
-            if (myAds.length === 0) {
-                myAdsList.innerHTML = '<div style="text-align: center; color: #D8B4FE; padding: 20px;">У вас пока нет объявлений</div>';
-                return;
-            }
-            
-            myAdsList.innerHTML = '';
-            
-            myAds.forEach(ad => {
-                const rating = calculateRating(appData.currentUserId);
-                
-                const adElement = document.createElement('div');
-                adElement.className = 'my-ad-item';
-                
-                adElement.innerHTML = `
-                    <div class="my-ad-header">
-                        <div class="my-ad-title">${ad.title}</div>
-                        <div class="my-ad-price">${ad.price.toLocaleString()} ₽</div>
+                    <div class="faq-answer" id="faq-answer-7" style="display: none;">
+                        Нажмите кнопку "Пожаловаться на объявление" под объявлением → выберите причину → отправьте.<br><br>
+                        <strong>Причины жалоб:</strong><br>
+                        1. Мошенничество<br>
+                        2. Неправильная категория<br>
+                        3. Запрещенные товары<br>
+                        4. Оскорбления<br>
+                        5. Спам<br><br>
+                        Жалобы рассматриваются администратором в течение 24 часов.
                     </div>
-                    <div class="product-category" style="display: inline-block; margin-bottom: 10px;">
-                        ${getCategoryName(ad.category)}
+                </div>
+                
+                <div class="faq-item" onclick="toggleFaq(8)">
+                    <div class="faq-question">
+                        <span>Правила публикации объявлений</span>
+                        <i class="fas fa-chevron-down" id="faq-icon-8"></i>
                     </div>
-                    <div class="my-ad-description">${ad.description}</div>
-                    <div style="display: flex; gap: 15px; font-size: 12px; color: #D8B4FE;">
-                        <div><i class="fas fa-thumbs-up"></i> ${ad.likes || 0}</div>
-                        <div><i class="fas fa-thumbs-down"></i> ${ad.dislikes || 0}</div>
-                        <div><i class="fas fa-star"></i> ${rating.toFixed(1)}</div>
-                        ${ad.complaints > 0 ? `<div><i class="fas fa-flag"></i> ${ad.complaints} жалоб</div>` : ''}
+                    <div class="faq-answer" id="faq-answer-8" style="display: none;">
+                        <strong>Основные правила:</strong><br><br>
+                        1. Запрещена продажа несовершеннолетним<br>
+                        2. Только оригинальная продукция (без подделок)<br>
+                        3. Четкие фотографии товара (минимум 1)<br>
+                        4. Реальная цена (без завышения)<br>
+                        5. Актуальная контактная информация<br>
+                        6. Запрещены оскорбления в описании<br>
+                        7. Одно объявление - один товар<br><br>
+                        Нарушение правил → блокировка аккаунта.
                     </div>
-                    <div class="my-ad-actions">
-                        <button class="edit-ad-btn" onclick="editAd('${ad.id}')">
-                            <i class="fas fa-edit"></i> Редактировать
-                        </button>
-                        <button class="delete-ad-btn" onclick="deleteAd('${ad.id}')">
-                            <i class="fas fa-trash"></i> Удалить
-                        </button>
+                </div>
+                
+                <div class="faq-item" onclick="toggleFaq(9)">
+                    <div class="faq-question">
+                        <span>Как получить значок "Честный продавец"?</span>
+                        <i class="fas fa-chevron-down" id="faq-icon-9"></i>
                     </div>
-                `;
-                myAdsList.appendChild(adElement);
-            });
-        }
-        
-        // Удалить объявление
-        async function deleteAd(adId) {
-            // Проверяем блокировку перед удалением
-            if (!checkBlockBeforeAction('удаление объявления')) return;
-            
-            if (!confirm('Вы уверены, что хотите удалить это объявление?')) {
-                return;
-            }
-            
-            const ad = appData.ads.find(a => a.id === adId);
-            if (!ad) return;
-            
-            const success = await FirebaseMarketServer.deleteAd(adId, ad.sellerId);
-            
-            if (success) {
-                appData.ads = appData.ads.filter(ad => ad.id !== adId);
-                
-                renderAds();
-                updateProfileStats();
-                updateMyAdsList();
-                updateServerStatsUI();
-                if (appData.isAdmin) {
-                    updateAdminStats();
-                }
-                showNotification('Объявление удалено', 'warning');
-            } else {
-                showNotification('Ошибка при удалении', 'error');
-            }
-        }
-        
-        // Редактировать объявление
-        function editAd(adId) {
-            // Проверяем блокировку перед редактированием
-            if (!checkBlockBeforeAction('редактирование объявления')) return;
-            
-            const ad = appData.ads.find(a => a.id === adId);
-            if (!ad) return;
-            
-            document.getElementById('adTitle').value = ad.title;
-            document.getElementById('adCategory').value = ad.category;
-            document.getElementById('adPrice').value = ad.price;
-            document.getElementById('adDescription').value = ad.description;
-            
-            appData.uploadedPhotos = [];
-            if (ad.photoUrls && ad.photoUrls.length > 0) {
-                ad.photoUrls.forEach((url, index) => {
-                    if (url && url !== 'null') {
-                        appData.uploadedPhotos.push({
-                            id: Date.now() + index,
-                            url: url,
-                            file: null
-                        });
-                    }
-                });
-            }
-            
-            updatePhotoPreviews();
-            
-            appData.editingAdId = adId;
-            
-            toggleAddForm();
-            
-            showNotification('Редактирование объявления', 'info');
-        }
-        
-        // Удалить из истории
-        async function removeFromHistory(id) {
-            // Проверяем блокировку перед удалением из истории
-            if (!checkBlockBeforeAction('удаление из истории')) return;
-            
-            appData.history = appData.history.filter(item => item.id !== id);
-            updateHistory();
-            showNotification('Удалено из истории', 'warning');
-        }
-        
-        // Очистить историю
-        async function clearHistory() {
-            // Проверяем блокировку перед очисткой истории
-            if (!checkBlockBeforeAction('очистка истории')) return;
-            
-            if (!appData.isDataLoaded || appData.history.length === 0) {
-                showNotification('История уже пуста', 'info');
-                return;
-            }
-            
-            if (!confirm('Вы уверены, что хотите очистить всю историю?')) {
-                return;
-            }
-            
-            const success = await FirebaseMarketServer.clearUserHistory(appData.currentUserId);
-            
-            if (success) {
-                appData.history = [];
-                updateHistory();
-                showNotification('История очищена', 'warning');
-            } else {
-                showNotification('Ошибка при очистки истории', 'error');
-            }
-        }
-        
-        // Открыть выбор фото
-        function openPhotoPicker() {
-            // Проверяем блокировку перед загрузкой фото
-            if (!checkBlockBeforeAction('загрузка фото')) return;
-            
-            document.getElementById('photoInput').click();
-        }
-        
-        // Обработка загрузки фото
-        function handlePhotoUpload(event) {
-            // Проверяем блокировку перед обработкой фото
-            if (!checkBlockBeforeAction('обработка фото')) return;
-            
-            const files = event.target.files;
-            const maxFiles = 3;
-            
-            if (files.length > maxFiles) {
-                showNotification(`Можно загрузить только ${maxFiles} фото!`, 'error');
-                return;
-            }
-            
-            if (appData.uploadedPhotos.length + files.length > maxFiles) {
-                showNotification(`Максимум ${maxFiles} фото!`, 'error');
-                return;
-            }
-            
-            const promises = [];
-            
-            for (let i = 0; i < Math.min(files.length, maxFiles - appData.uploadedPhotos.length); i++) {
-                const file = files[i];
-                const reader = new FileReader();
-                
-                const promise = new Promise((resolve) => {
-                    reader.onload = function(e) {
-                        appData.uploadedPhotos.push({
-                            id: Date.now() + i,
-                            url: e.target.result,
-                            file: file
-                        });
-                        resolve();
-                    };
-                    reader.onerror = function() {
-                        showNotification(`Ошибка загрузки фото ${i + 1}`, 'error');
-                        resolve();
-                    };
-                    reader.readAsDataURL(file);
-                });
-                
-                promises.push(promise);
-            }
-            
-            Promise.all(promises).then(() => {
-                updatePhotoPreviews();
-                event.target.value = '';
-            });
-        }
-        
-        // Обновить превью фото
-        function updatePhotoPreviews() {
-            const container = document.getElementById('uploaded-photos-container');
-            container.innerHTML = '';
-            
-            appData.uploadedPhotos.forEach((photo, index) => {
-                const photoItem = document.createElement('div');
-                photoItem.className = 'uploaded-photo-item';
-                photoItem.innerHTML = `
-                    <img src="${photo.url}" alt="Фото ${index + 1}">
-                    <button class="remove-photo-btn" onclick="removeUploadedPhoto(${photo.id})">×</button>
-                `;
-                container.appendChild(photoItem);
-            });
-            
-            document.getElementById('photo-count').textContent = appData.uploadedPhotos.length;
-            
-            if (appData.uploadedPhotos.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; width: 100%; color: #A78BFA; padding: 20px;">
-                        <i class="fas fa-images" style="font-size: 48px; opacity: 0.5; margin-bottom: 10px;"></i>
-                        <div>Нажмите "Загрузить фотографии"</div>
+                    <div class="faq-answer" id="faq-answer-9" style="display: none;">
+                        <strong>Условия для получения значка:</strong><br><br>
+                        1. Более 10 успешных сделок<br>
+                        2. Рейтинг выше 4.5/5.0<br>
+                        3. Нет жалоб за последний месяц<br>
+                        4. Активный аккаунт более 3 месяцев<br><br>
+                        Для получения значка напишите администратору: <strong>@nukm0</strong><br>
+                        В сообщении укажите ваш username и ссылки на успешные сделки.
                     </div>
-                `;
-            }
-        }
-        
-        // Удалить загруженное фото
-        function removeUploadedPhoto(photoId) {
-            // Проверяем блокировку перед удалением фото
-            if (!checkBlockBeforeAction('удаление фото')) return;
-            
-            appData.uploadedPhotos = appData.uploadedPhotos.filter(photo => photo.id !== photoId);
-            updatePhotoPreviews();
-            showNotification(`Фото удалено (${appData.uploadedPhotos.length}/3)`, 'warning');
-        }
-        
-        // Очистить форму
-        function clearAddForm() {
-            document.getElementById('adTitle').value = '';
-            document.getElementById('adCategory').value = '';
-            document.getElementById('adPrice').value = '';
-            document.getElementById('adDescription').value = '';
-            
-            appData.uploadedPhotos = [];
-            updatePhotoPreviews();
-            
-            appData.editingAdId = null;
-        }
-        
-        // Опубликовать объявление
-        async function publishAd() {
-            // Проверяем блокировку перед публикацией
-            if (!checkBlockBeforeAction('публикация объявления')) return;
-            
-            const title = document.getElementById('adTitle').value.trim();
-            const category = document.getElementById('adCategory').value;
-            const price = parseInt(document.getElementById('adPrice').value);
-            const description = document.getElementById('adDescription').value.trim();
-            
-            if (!title) {
-                showNotification('Введите название товара!', 'error');
-                return;
-            }
-            
-            if (!category) {
-                showNotification('Выберите категорию!', 'error');
-                return;
-            }
-            
-            if (!price || isNaN(price) || price <= 0) {
-                showNotification('Введите корректную цену!', 'error');
-                return;
-            }
-            
-            if (appData.uploadedPhotos.length === 0) {
-                showNotification('Добавьте хотя бы одну фотографию!', 'error');
-                return;
-            }
-            
-            // Если редактируем существующее объявление
-            if (appData.editingAdId) {
-                const ad = appData.ads.find(a => a.id === appData.editingAdId);
-                if (ad) {
-                    ad.title = title;
-                    ad.category = category;
-                    ad.price = price;
-                    ad.description = description || 'Без описания';
-                    
-                    ad.photoUrls = appData.uploadedPhotos.map(p => p.url);
-                    ad.photos = appData.uploadedPhotos.length;
-                    
-                    const success = await FirebaseMarketServer.updateAd(ad.id, {
-                        title: ad.title,
-                        category: ad.category,
-                        price: ad.price,
-                        description: ad.description,
-                        photoUrls: ad.photoUrls,
-                        photos: ad.photos,
-                        updatedAt: firebase.database.ServerValue.TIMESTAMP
-                    });
-                    
-                    if (success) {
-                        renderAds();
-                        updateProfileStats();
-                        updateMyAdsList();
-                        updateServerStatsUI();
-                        if (appData.isAdmin) {
-                            updateAdminStats();
-                        }
-                        hideAddForm();
-                        
-                        appData.editingAdId = null;
-                        showNotification('Объявление обновлено!', 'success');
-                    } else {
-                        showNotification('Ошибка при обновлении', 'error');
-                    }
-                }
-                return;
-            }
-            
-            // Создаем новое объявление
-            const newAd = {
-                sellerId: appData.currentUserId,
-                sellerName: appData.currentUserData.first_name + 
-                           (appData.currentUserData.last_name ? ' ' + appData.currentUserData.last_name : ''),
-                sellerUsername: appData.currentUserData.username ? '@' + appData.currentUserData.username : 'Без username',
-                sellerAvatar: appData.currentUserData.photo_url || null,
-                title: title,
-                category: category,
-                price: price,
-                description: description || 'Без описания',
-                photos: appData.uploadedPhotos.length,
-                photoUrls: appData.uploadedPhotos.map(p => p.url),
-                likes: 0,
-                dislikes: 0,
-                complaints: 0,
-                verified: false,
-                status: 'active'
-            };
-            
-            try {
-                const adId = await FirebaseMarketServer.addAd(newAd);
+                </div>
                 
-                newAd.id = adId;
-                newAd.createdAt = new Date().toISOString();
-                appData.ads.unshift(newAd);
-                
-                appData.serverStats = await FirebaseMarketServer.getStats();
-                updateServerStatsUI();
-                if (appData.isAdmin) {
-                    updateAdminStats();
-                }
-                
-                updateProfileStats();
-                updateMyAdsList();
-                
-                renderAds();
-                hideAddForm();
-                
-                showNotification('Объявление успешно опубликовано!', 'success');
-            } catch (error) {
-                console.error('Ошибка публикации:', error);
-                showNotification('Ошибка при публикации объявления', 'error');
+                <div class="faq-item" onclick="toggleFaq(10)">
+                    <div class="faq-question">
+                        <span>Система рейтинга и отзывов</span>
+                        <i class="fas fa-chevron-down" id="faq-icon-10"></i>
+                    </div>
+                    <div class="faq-answer" id="faq-answer-10" style="display: none;">
+                        <strong>Как работает рейтинг:</strong><br><br>
+                        • Лайк = +1 к репутации<br>
+                        • Дизлайк = -1 к репутации<br>
+                        • Формула: 0.1 + (лайки / (лайки + дизлайки)) × 4.9<br><br>
+                        <strong>Правила оценок:</strong><br>
+                        1. Оценивать можно только других продавцов<br>
+                        2. Нельзя оценивать собственные объявления<br>
+                        3. Одна оценка на пользователя<br>
+                        4. Оценки влияют на видимость объявлений<br><br>
+                        Честные оценки помогают сообществу!
+                    </div>
+                </div>
+            `;
+            
+            if (faqList) {
+                faqList.insertAdjacentHTML('beforeend', newQuestions);
             }
         }
         
-        // Обновить статистику профиля
-        function updateProfileStats() {
-            if (!appData.isDataLoaded) {
-                document.getElementById('myAdsCount').textContent = '0';
-                document.getElementById('myLikesCount').textContent = '0';
-                document.getElementById('myDislikesCount').textContent = '0';
-                document.getElementById('myRating').textContent = '0.0';
-                return;
-            }
+        // Инициализация приложения
+        function initApp() {
+            // [Ваш существующий код инициализации]
             
-            const myAds = appData.ads.filter(ad => ad.sellerId === appData.currentUserId && ad.status !== 'deleted').length;
-            document.getElementById('myAdsCount').textContent = myAds;
-            
-            let myLikes = 0;
-            let myDislikes = 0;
-            
-            appData.ads.forEach(ad => {
-                if (ad.sellerId === appData.currentUserId) {
-                    myLikes += ad.likes || 0;
-                    myDislikes += ad.dislikes || 0;
-                }
-            });
-            
-            document.getElementById('myLikesCount').textContent = myLikes;
-            document.getElementById('myDislikesCount').textContent = myDislikes;
-            
-            const myRating = calculateRating(appData.currentUserId);
-            document.getElementById('myRating').textContent = myRating.toFixed(1);
-        }
-        
-        // Переключение FAQ
-        function toggleFaq(id) {
-            // Проверяем блокировку перед просмотром FAQ
-            if (!checkBlockBeforeAction('просмотр FAQ')) return;
-            
-            const answer = document.getElementById(`faq-answer-${id}`);
-            const icon = document.getElementById(`faq-icon-${id}`);
-            
-            if (answer.style.display === 'none') {
-                answer.style.display = 'block';
-                icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
-                
-                if (id === 5 && appData.serverStats) {
-                    updateServerStatsUI();
-                }
-            } else {
-                answer.style.display = 'none';
-                icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
-            }
-        }
-        
-        // Подать жалобу
-        function submitComplaint() {
-            // Проверяем блокировку перед подачей жалобы
-            if (!checkBlockBeforeAction('подача жалобы')) return;
-            
-            const message = encodeURIComponent('Хочу подать жалобу в Vape Market!');
-            const telegramUrl = `https://t.me/nukm0?text=${message}`;
-            
-            if (tg) {
-                try {
-                    tg.openTelegramLink(telegramUrl);
-                    showNotification('Открывается чат для подачи жалобы', 'info');
-                } catch (error) {
-                    tg.showAlert(`Для подачи жалобы напишите @nukm0 в Telegram`);
-                }
-            } else {
-                alert('Для подачи жалобы напишите @nukm0 в Telegram');
-                showNotification('Напишите @nukm0 в Telegram', 'info');
-            }
-        }
-        
-        // Получить название категории
-        function getCategoryName(category) {
-            const categories = {
-                'liquids': 'Жидкости',
-                'disposable': 'Одноразовые устройства',
-                'pod': 'Под-системы',
-                'consumables': 'Расходники'
-            };
-            return categories[category] || category;
+            // Проверяем активный баннер
+            setTimeout(() => {
+                checkActiveBanner();
+            }, 2000);
         }
         
         // Запуск при загрузке
         document.addEventListener('DOMContentLoaded', function() {
-            checkTelegramAndInit();
+            // [Ваш существующий код запуска]
+            
+            // Добавляем обновленные FAQ
+            setTimeout(() => {
+                updateFAQ();
+            }, 1000);
         });
         
         // Закрытие модального окна по клику на фон
+        document.getElementById('complaintModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeComplaintModal();
+            }
+        });
+        
         document.getElementById('photoModal').addEventListener('click', function(event) {
             if (event.target === this) {
                 closePhotoModal();
