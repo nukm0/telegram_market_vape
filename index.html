@@ -3073,7 +3073,57 @@ const storage = firebase.storage(); // ДОБАВЬТЕ ЭТУ СТРОКУ
             
             appData.editingAdId = null;
         }
-        
+        // Функция для загрузки фото в Firebase Storage
+async function uploadPhotoToStorage(file, adId, index) {
+    return new Promise((resolve, reject) => {
+        try {
+            const storageRef = storage.ref();
+            const fileName = `ads/${adId}/photo_${index}_${Date.now()}.jpg`;
+            const fileRef = storageRef.child(fileName);
+            
+            // Создаем метаданные
+            const metadata = {
+                contentType: file.type,
+                customMetadata: {
+                    uploadedBy: appData.currentUserId,
+                    adId: adId
+                }
+            };
+            
+            // Загружаем файл
+            const uploadTask = fileRef.put(file, metadata);
+            
+            uploadTask.on('state_changed',
+                (snapshot) => {
+                    // Прогресс загрузки
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log(`Загрузка фото ${index + 1}: ${progress.toFixed(0)}%`);
+                },
+                (error) => {
+                    console.error('Ошибка загрузки фото:', error);
+                    // В случае ошибки используем placeholder
+                    resolve(getPlaceholderUrl(index));
+                },
+                () => {
+                    // Успешная загрузка, получаем URL
+                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                        resolve(downloadURL);
+                    });
+                }
+            );
+        } catch (error) {
+            console.error('Ошибка при подготовке загрузки:', error);
+            resolve(getPlaceholderUrl(index));
+        }
+    });
+}
+
+// Функция для placeholder
+function getPlaceholderUrl(index) {
+    const colors = ['8B5CF6', '7C3AED', '6D28D9', '5B21B6'];
+    const color = colors[index % colors.length];
+    return `https://via.placeholder.com/300x300/${color}/FFFFFF?text=Vape+${index+1}`;
+}
         // Опубликовать объявление
         async function publishAd() {
             const title = document.getElementById('adTitle').value.trim();
