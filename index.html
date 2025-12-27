@@ -2573,7 +2573,7 @@
                             <div class="seller-stats">
                                 <div class="seller-stat stat-rating">
                                     <i class="fas fa-star"></i>
-                                    <span>${rating.toFixed(1)}</span>
+                                    <span id="rating-${ad.sellerId}">${calculateRating(ad.sellerId).toFixed(1)}</span>
                                 </div>
                                 <div class="seller-stat stat-likes">
                                     <i class="fas fa-thumbs-up"></i>
