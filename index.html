@@ -2323,40 +2323,52 @@
     }
     
     // Инициализация приложения
-    function initApp() {
-    // Удаляем неподдерживаемые функции для Telegram 6.0
-    //     tg.close();
-    // });
-    
-    // Обновляем профиль
-    updateUserProfile();
-    
-    // Загружаем данные
-    loadFromServer();
-    
-    // Слушаем новые объявления
-    FirebaseMarketServer.listenToAds((ads) => {
-        console.log('📡 Получены обновления:', ads.length);
-        appData.ads = ads;
-        if (appData.isDataLoaded) {
-            renderAds();
-            updateProfileStats();
-            updateMyAdsList();
-            updateServerStatsUI();
-            showNotification('Данные обновлены', 'info');
+            // Инициализация приложения
+        function initApp() {
+            const tg = window.Telegram?.WebApp;
+            
+            if (tg) {
+                // ТОЛЬКО ЭТО РАБОТАЕТ В 6.0:
+                tg.expand();
+                tg.ready();
+                
+                // УДАЛИТЕ ЭТИ СТРОКИ (не работают в 6.0):
+                // tg.setHeaderColor('#6D28D9');
+                // tg.setBackgroundColor('#7C3AED');
+                // tg.BackButton.show();
+                // tg.BackButton.onClick(function() {
+                //     tg.close();
+                // });
+            }
+            
+            // Обновляем профиль
+            updateUserProfile();
+            
+            // Загружаем данные с Firebase
+            loadFromServer();
+            
+            // Слушаем новые объявления
+            FirebaseMarketServer.listenToAds((ads) => {
+                console.log('📡 Получены обновления:', ads.length);
+                appData.ads = ads;
+                if (appData.isDataLoaded) {
+                    renderAds();
+                    updateProfileStats();
+                    updateMyAdsList();
+                    updateServerStatsUI();
+                }
+            });
+            
+            // FAQ
+            for (let i = 1; i <= 6; i++) {
+                const answer = document.getElementById(`faq-answer-${i}`);
+                if (answer) answer.style.display = 'none';
+            }
+            
+            setInterval(updateSyncStatus, 60000);
+            
+            showNotification('Добро пожаловать!', 'success');
         }
-    });
-    
-    // Инициализация FAQ
-    for (let i = 1; i <= 6; i++) {
-        const answer = document.getElementById(`faq-answer-${i}`);
-        if (answer) answer.style.display = 'none';
-    }
-    
-    setInterval(updateSyncStatus, 60000);
-    
-    showNotification(`Добро пожаловать, ${appData.currentUserData?.first_name || 'Пользователь'}!`, 'success');
-}
         
         // Обновить профиль пользователя в UI
         function updateUserProfile() {
