@@ -9,7 +9,6 @@
     <!-- Firebase скрипты -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     <style>
         /* [Ваш CSS код остается полностью без изменений] */
         /* Фиолетовые градиенты для фона */
@@ -1664,9 +1663,8 @@
     };
 
     // Инициализация Firebase
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
-const storage = firebase.storage(); // ДОБАВЬТЕ ЭТУ СТРОКУ
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
     // ==================== КОНЕЦ FIREBASE ====================
 
     // ==================== FIREBASE СЕРВЕР (ПОЛНОСТЬЮ ИСПРАВЛЕННЫЙ) ====================
@@ -2536,18 +2534,17 @@ const storage = firebase.storage(); // ДОБАВЬТЕ ЭТУ СТРОКУ
                 const photoElements = [];
                 
                 if (ad.photoUrls && ad.photoUrls.length > 0) {
-    ad.photoUrls.forEach((photoUrl, index) => {
-        if (photoUrl && photoUrl.startsWith('http')) {
-            photoElements.push(`
-                <div class="photo-item" onclick="openPhotoViewer('${ad.id}', ${index})">
-                    <img src="${photoUrl}" alt="Фото ${index + 1}" 
-                         onerror="this.src='https://via.placeholder.com/120x120/8B5CF6/FFFFFF?text=Vape'">
-                    <div class="photo-label">Фото ${index + 1}</div>
-                </div>
-            `);
-        }
-    });
-}
+                    ad.photoUrls.forEach((photoUrl, index) => {
+                        if (photoUrl) {
+                            photoElements.push(`
+                                <div class="photo-item" onclick="openPhotoViewer('${ad.id}', ${index})">
+                                    <img src="${photoUrl}" alt="Фото ${index + 1}">
+                                    <div class="photo-label">Фото ${index + 1}</div>
+                                </div>
+                            `);
+                        }
+                    });
+                }
                 
                 // Если нет фото, показываем заглушки
                 if (photoElements.length === 0) {
@@ -2922,18 +2919,18 @@ const storage = firebase.storage(); // ДОБАВЬТЕ ЭТУ СТРОКУ
             document.getElementById('adDescription').value = ad.description;
             
             // Загружаем фото
-appData.uploadedPhotos = [];
-if (ad.photoUrls && ad.photoUrls.length > 0) {
-    ad.photoUrls.forEach((url, index) => {
-        if (url && url.startsWith('http')) {
-            appData.uploadedPhotos.push({
-                id: Date.now() + index,
-                url: url,
-                file: null
-            });
-        }
-    });
-}
+            appData.uploadedPhotos = [];
+            if (ad.photoUrls && ad.photoUrls.length > 0) {
+                ad.photoUrls.forEach((url, index) => {
+                    if (url) {
+                        appData.uploadedPhotos.push({
+                            id: Date.now() + index,
+                            url: url,
+                            file: null
+                        });
+                    }
+                });
+            }
             
             // Обновляем превью фото
             updatePhotoPreviews();
@@ -3074,57 +3071,7 @@ if (ad.photoUrls && ad.photoUrls.length > 0) {
             
             appData.editingAdId = null;
         }
-        // Функция для загрузки фото в Firebase Storage
-async function uploadPhotoToStorage(file, adId, index) {
-    return new Promise((resolve, reject) => {
-        try {
-            const storageRef = storage.ref();
-            const fileName = `ads/${adId}/photo_${index}_${Date.now()}.jpg`;
-            const fileRef = storageRef.child(fileName);
-            
-            // Создаем метаданные
-            const metadata = {
-                contentType: file.type,
-                customMetadata: {
-                    uploadedBy: appData.currentUserId,
-                    adId: adId
-                }
-            };
-            
-            // Загружаем файл
-            const uploadTask = fileRef.put(file, metadata);
-            
-            uploadTask.on('state_changed',
-                (snapshot) => {
-                    // Прогресс загрузки
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    console.log(`Загрузка фото ${index + 1}: ${progress.toFixed(0)}%`);
-                },
-                (error) => {
-                    console.error('Ошибка загрузки фото:', error);
-                    // В случае ошибки используем placeholder
-                    resolve(getPlaceholderUrl(index));
-                },
-                () => {
-                    // Успешная загрузка, получаем URL
-                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-                        resolve(downloadURL);
-                    });
-                }
-            );
-        } catch (error) {
-            console.error('Ошибка при подготовке загрузки:', error);
-            resolve(getPlaceholderUrl(index));
-        }
-    });
-}
-
-// Функция для placeholder
-function getPlaceholderUrl(index) {async
-    const colors = ['8B5CF6', '7C3AED', '6D28D9', '5B21B6'];
-    const color = colors[index % colors.length];
-    return `https://via.placeholder.com/300x300/${color}/FFFFFF?text=Vape+${index+1}`;
-}
+        
         // Опубликовать объявление
         async function publishAd() {
             const title = document.getElementById('adTitle').value.trim();
@@ -3162,29 +3109,15 @@ function getPlaceholderUrl(index) {async
                     ad.price = price;
                     ad.description = description || 'Без описания';
                     
-                    // 🔥 ИСПРАВЛЕНИЕ: Загружаем фото в Firebase Storage 🔥
-photoUrls: await Promise.all(
-    appData.uploadedPhotos.slice(0, 3).map(async (p, i) => {
-        try {
-            // Если есть файл, загружаем в Storage
-            if (p.file) {
-                const downloadURL = await uploadPhotoToStorage(p.file, adId, i);
-                return downloadURL;
-            }
-            // Если нет файла, но есть URL (при редактировании)
-            else if (p.url && p.url.startsWith('http')) {
-                return p.url; // Возвращаем существующий URL
-            }
-            // Во всех остальных случаях - placeholder
-            else {
-                return getPlaceholderUrl(i);
-            }
-        } catch (error) {
-            console.error(`Ошибка загрузки фото ${i}:`, error);
-            return getPlaceholderUrl(i);
-        }
-    })
-),
+                    // 🔥 ИСПРАВЛЕНИЕ ДЛЯ FIREBASE 🔥
+                    ad.photoUrls = appData.uploadedPhotos.slice(0, 3).map((p, i) => {
+                        // Ограничиваем размер для Firebase
+                        if (p.url && p.url.length > 200000) {
+                            // Если фото >200KB, используем заглушку
+                            return `https://via.placeholder.com/150/8B5CF6/FFFFFF?text=Фото${i+1}`;
+                        }
+                        return p.url || `https://via.placeholder.com/150/7C3AED/FFFFFF?text=Фото${i+1}`;
+                    });
                     
                     ad.photos = appData.uploadedPhotos.length;
                     
