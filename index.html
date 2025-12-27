@@ -3316,13 +3316,11 @@
         
         // Запуск при загрузке
           document.getElementById('photoModal').addEventListener('click', function(event) {
-        if (event.target === this) {
-            closePhotoModal();
-        }
-    });
-    
-});
-    
+            if (event.target === this) {
+                closePhotoModal();
+            }
+        });
+    }); // закрываем DOMContentLoaded
 </script>
 </body>
 </html>
