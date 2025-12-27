@@ -2718,8 +2718,18 @@
                         </button>
                     </div>
                 </div>
-                
-                <div class="complaint-modal-footer">
+              <!-- Сразу после раздела с доказательствами добавьте: -->
+<div class="complaint-attached-photos" style="margin-top: 15px;">
+    <div class="complaint-evidence-title" style="margin-bottom: 10px;">
+        <i class="fas fa-paperclip"></i> Прикрепленные фото
+    </div>
+    <div id="complaint-attached-photos" style="display: flex; flex-wrap: wrap; gap: 8px; min-height: 70px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 10px;">
+        <!-- Фото будут добавляться здесь -->
+        <div style="text-align: center; padding: 10px; color: #A78BFA; font-size: 12px; width: 100%;">
+            Фото не прикреплены
+        </div>
+    </div>
+</div>      <div class="complaint-modal-footer">
                     <button class="complaint-submit-btn" onclick="submitComplaintToServer()">
                         <i class="fas fa-paper-plane"></i>
                         Отправить жалобу
