@@ -4495,39 +4495,39 @@ database.ref('complaints').on('value', (snapshot) => {
     }
 });
 </script>
-    <!-- ЭКРАН БЛОКИРОВКИ -->
-<div id="blocked-screen" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%); z-index: 10000; padding: 20px; align-items: center; justify-content: center;">
-    <div style="background: rgba(0,0,0,0.9); border-radius: 20px; padding: 40px; text-align: center; max-width: 400px; border: 2px solid #EF4444;">
-        <div style="font-size: 60px; color: #EF4444; margin-bottom: 20px;">
-            <i class="fas fa-ban"></i>
+       <!-- ЭКРАН БЛОКИРОВКИ -->
+    <div id="blocked-screen" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%); z-index: 10000; padding: 20px; align-items: center; justify-content: center;">
+        <div style="background: rgba(0,0,0,0.9); border-radius: 20px; padding: 40px; text-align: center; max-width: 400px; border: 2px solid #EF4444;">
+            <div style="font-size: 60px; color: #EF4444; margin-bottom: 20px;">
+                <i class="fas fa-ban"></i>
+            </div>
+            <h1 style="color: #EF4444; margin-bottom: 15px; font-size: 24px;">Ваш аккаунт заблокирован</h1>
+            <div style="background: rgba(239,68,68,0.2); padding: 15px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #EF4444;">
+                <p id="block-reason-text" style="color: white; margin: 0;">Нарушение правил сообщества</p>
+            </div>
+            <p style="margin: 20px 0; color: #D8B4FE; font-size: 14px;">
+                Если вы считаете, что блокировка ошибочна,<br>свяжитесь с администратором
+            </p>
+            <button onclick="contactAdmin()" style="padding: 15px 25px; border-radius: 12px; background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); border: 2px solid rgba(255,255,255,0.3); color: white; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; margin-top: 20px; font-size: 16px;">
+                <i class="fab fa-telegram"></i>
+                Связаться с @nukm0
+            </button>
         </div>
-        <h1 style="color: #EF4444; margin-bottom: 15px; font-size: 24px;">Ваш аккаунт заблокирован</h1>
-        <div style="background: rgba(239,68,68,0.2); padding: 15px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #EF4444;">
-            <p id="block-reason-text" style="color: white; margin: 0;">Нарушение правил сообщества</p>
-        </div>
-        <p style="margin: 20px 0; color: #D8B4FE; font-size: 14px;">
-            Если вы считаете, что блокировка ошибочна,<br>свяжитесь с администратором
-        </p>
-        <button onclick="contactAdmin()" style="padding: 15px 25px; border-radius: 12px; background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); border: 2px solid rgba(255,255,255,0.3); color: white; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; margin-top: 20px; font-size: 16px;">
-            <i class="fab fa-telegram"></i>
-            Связаться с @nukm0
-        </button>
     </div>
-</div>
 
-<script>
-// Функция связи с админом
-function contactAdmin() {
-    const tg = window.Telegram?.WebApp;
-    const message = encodeURIComponent('Запрос на разблокировку аккаунта в Vape Market');
-    const telegramUrl = `https://t.me/nukm0?text=${message}`;
-    
-    if (tg && tg.openTelegramLink) {
-        tg.openTelegramLink(telegramUrl);
-    } else {
-        alert('Для связи напишите @nukm0 в Telegram');
+    <script>
+    // Функция связи с админом
+    function contactAdmin() {
+        const tg = window.Telegram?.WebApp;
+        const message = encodeURIComponent('Запрос на разблокировку аккаунта в Vape Market');
+        const telegramUrl = `https://t.me/nukm0?text=${message}`;
+        
+        if (tg && tg.openTelegramLink) {
+            tg.openTelegramLink(telegramUrl);
+        } else {
+            alert('Для связи напишите @nukm0 в Telegram');
+        }
     }
-}
-</script>
+    </script>
 </body>
 </html>
