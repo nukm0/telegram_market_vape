@@ -2035,40 +2035,83 @@
     
     // Проверка Telegram и инициализация пользователя
     function checkTelegramAndInit() {
-        if (!tg) {
-            console.warn('Telegram Web App не доступен. Используем тестовые данные.');
-            appData.currentUserId = 'test_user_' + Date.now();
-            appData.currentUserData = {
-                id: appData.currentUserId,
-                first_name: 'Тестовый',
-                username: 'testuser'
-            };
-            initApp();
-            return;
-        }
+    console.log('🔍 Начинаем инициализацию...');
+    
+    // Пробуем получить Telegram Web App
+    const tg = window.Telegram?.WebApp;
+    
+    if (tg) {
+        console.log('✅ Telegram Web App обнаружен');
         
+        // Расширяем на весь экран
+        tg.expand();
+        tg.ready();
+        
+        // Показываем кнопку "Назад"
+        tg.BackButton.show();
+        tg.BackButton.onClick(function() {
+            tg.close();
+        });
+        
+        // Получаем данные пользователя
         const user = tg.initDataUnsafe?.user;
-        if (!user || !user.id) {
-            console.warn('Данные пользователя не получены из Telegram');
-            showNotification('Ошибка авторизации', 'error');
-            return;
-        }
+        console.log('Данные пользователя из Telegram:', user);
         
-        // Инициализируем пользователя
-        appData.currentUserId = user.id.toString();
+        if (user && user.id) {
+            console.log('✅ Пользователь Telegram получен');
+            appData.currentUserId = user.id.toString();
+            appData.currentUserData = {
+                id: user.id,
+                first_name: user.first_name || 'Пользователь',
+                last_name: user.last_name || '',
+                username: user.username || '',
+                photo_url: user.photo_url || null
+            };
+            
+            // Регистрируем в Firebase и запускаем приложение
+            FirebaseMarketServer.registerUser(appData.currentUserData)
+                .then(success => {
+                    console.log('Регистрация в Firebase:', success ? '✅ Успешно' : '❌ Ошибка');
+                    initApp();
+                })
+                .catch(error => {
+                    console.error('Ошибка регистрации в Firebase:', error);
+                    initApp(); // Все равно запускаем приложение
+                });
+        } else {
+            console.warn('⚠️ Нет данных пользователя в Telegram');
+            // Создаем тестового пользователя для этого случая
+            createTestUser();
+        }
+    } else {
+        console.warn('⚠️ Telegram Web App не найден (открыто в браузере)');
+        // Создаем тестового пользователя
+        createTestUser();
+    }
+    
+    // Функция создания тестового пользователя
+    function createTestUser() {
+        appData.currentUserId = 'test_user_' + Date.now();
         appData.currentUserData = {
-            id: user.id,
-            first_name: user.first_name || 'Пользователь',
-            last_name: user.last_name || '',
-            username: user.username || '',
-            photo_url: user.photo_url || null
+            id: appData.currentUserId,
+            first_name: 'Тестовый',
+            username: 'testuser_' + Math.floor(Math.random() * 1000),
+            photo_url: null
         };
         
-        // Регистрируем пользователя в Firebase
-        FirebaseMarketServer.registerUser(appData.currentUserData);
+        console.log('🔄 Создан тестовый пользователь:', appData.currentUserData);
         
-        initApp();
+        FirebaseMarketServer.registerUser(appData.currentUserData)
+            .then(success => {
+                console.log('Регистрация тестового пользователя:', success ? '✅ Успешно' : '❌ Ошибка');
+                initApp();
+            })
+            .catch(error => {
+                console.error('Ошибка регистрации тестового пользователя:', error);
+                initApp(); // Все равно запускаем
+            });
     }
+}
     
     // Загрузить данные с Firebase
     async function loadFromServer() {
