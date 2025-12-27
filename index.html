@@ -7592,9 +7592,6 @@ function filterCategory(category) {
     renderAds();
 }
 
-// Рассчитать рейтинг
-function calculateRating(sellerId) {
-    if (!appData.userRatings[sellerId]) return
     // Рассчитать рейтинг
         function calculateRating(sellerId) {
             if (!appData.userRatings[sellerId]) return 0.1;
