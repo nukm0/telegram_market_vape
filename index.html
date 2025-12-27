@@ -2348,8 +2348,6 @@
         }
     }
     
-    // Остальной существующий код функции оставьте без изменений
-        
         // Сначала обновляем профиль с базовыми данными
         updateUserProfile();
         
@@ -2370,16 +2368,16 @@
         });
         
         // Инициализация FAQ
-        for (let i = 1; i <= 6; i++) {
-            const answer = document.getElementById(`faq-answer-${i}`);
-            if (answer) answer.style.display = 'none';
-        }
-        
-        // Обновляем статус каждую минуту
-        setInterval(updateSyncStatus, 60000);
-        
-        showNotification(`Добро пожаловать, ${appData.currentUserData?.first_name || 'Пользователь'}!`, 'success');
+    for (let i = 1; i <= 6; i++) {
+        const answer = document.getElementById(`faq-answer-${i}`);
+        if (answer) answer.style.display = 'none';
     }
+    
+    // Обновляем статус каждую минуту
+    setInterval(updateSyncStatus, 60000);
+    
+    showNotification(`Добро пожаловать, ${appData.currentUserData?.first_name || 'Пользователь'}!`, 'success');
+}
         
         // Обновить профиль пользователя в UI
         function updateUserProfile() {
