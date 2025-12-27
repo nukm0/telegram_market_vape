@@ -2863,7 +2863,6 @@
                     <div style="text-align: center; width: 100%; color: #A78BFA; padding: 20px;">
                         <i class="fas fa-images" style="font-size: 48px; opacity: 0.5; margin-bottom: 10px;"></i>
                         <div>Нажмите "Загрузить фотографии"</div>
-                    </div>
                 `;
             }
         }
@@ -2925,7 +2924,17 @@
                     ad.category = category;
                     ad.price = price;
                     ad.description = description || 'Без описания';
-                    ad.photoUrls = appData.uploadedPhotos.map(p => p.url);
+                    
+                    // 🔥 ИСПРАВЛЕНИЕ ДЛЯ FIREBASE 🔥
+                    ad.photoUrls = appData.uploadedPhotos.slice(0, 3).map((p, i) => {
+                        // Ограничиваем размер для Firebase
+                        if (p.url && p.url.length > 200000) {
+                            // Если фото >200KB, используем заглушку
+                            return `https://via.placeholder.com/150/8B5CF6/FFFFFF?text=Фото${i+1}`;
+                        }
+                        return p.url || `https://via.placeholder.com/150/7C3AED/FFFFFF?text=Фото${i+1}`;
+                    });
+                    
                     ad.photos = appData.uploadedPhotos.length;
                     
                     // Сохраняем на Firebase
@@ -2959,7 +2968,19 @@
                 price: price,
                 description: description || 'Без описания',
                 photos: appData.uploadedPhotos.length,
-                photoUrls: appData.uploadedPhotos.map(p => p.url),
+                
+                // 🔥 ИСПРАВЛЕНИЕ ДЛЯ FIREBASE 🔥
+                photoUrls: appData.uploadedPhotos.slice(0, 3).map((p, i) => {
+                    // Ограничиваем размер фото для Firebase
+                    const maxSize = 100000; // 100KB максимум
+                    if (p.url && p.url.length > maxSize) {
+                        // Если фото слишком большое, сжимаем или используем заглушку
+                        console.log(`Фото ${i+1} слишком большое: ${Math.round(p.url.length/1024)}KB`);
+                        return `https://via.placeholder.com/150/8B5CF6/FFFFFF?text=Фото${i+1}`;
+                    }
+                    return p.url || `https://via.placeholder.com/150/7C3AED/FFFFFF?text=Фото${i+1}`;
+                }),
+                
                 likes: 0,
                 dislikes: 0
             };
