@@ -3291,5 +3291,962 @@
             }
         });
     </script>
+    <!-- НИЖЕ ВАШЕГО СУЩЕСТВУЮЩЕГО КОДА, перед закрывающим тегом </body> -->
+
+<!-- Добавить ЭТО в конец вашего HTML (перед </body>) -->
+<div id="blocked-screen" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--gradient-primary); z-index: 10000; padding: 20px; display: flex; align-items: center; justify-content: center;">
+    <div style="background: rgba(0,0,0,0.8); border-radius: 20px; padding: 40px; text-align: center; max-width: 400px; border: 2px solid #EF4444;">
+        <div style="font-size: 60px; color: #EF4444; margin-bottom: 20px;">
+            <i class="fas fa-ban"></i>
+        </div>
+        <h1 style="color: #EF4444; margin-bottom: 15px;">Ваш аккаунт заблокирован</h1>
+        <div style="background: rgba(239,68,68,0.1); padding: 15px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #EF4444;">
+            <p id="block-reason-text" style="color: white;">Нарушение правил сообщества</p>
+        </div>
+        <p style="margin: 20px 0; color: #D8B4FE;">
+            Если вы считаете, что блокировка ошибочна, свяжитесь с администратором
+        </p>
+        <button onclick="contactAdmin()" style="padding: 15px 25px; border-radius: 12px; background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); border: 2px solid rgba(255, 255, 255, 0.3); color: white; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; margin-top: 20px;">
+            <i class="fab fa-telegram"></i>
+            Связаться с @nukm0
+        </button>
+    </div>
+</div>
+
+<!-- Модальное окно жалобы (простое) -->
+<div id="complaintModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 10001; padding: 20px; align-items: center; justify-content: center;">
+    <div style="background: rgba(30,27,75,0.95); border-radius: 20px; padding: 25px; width: 100%; max-width: 400px; border: 2px solid rgba(124,58,237,0.5);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <div style="font-size: 18px; font-weight: 700; color: white;">Подать жалобу</div>
+            <button onclick="closeComplaintModal()" style="background: rgba(255,255,255,0.1); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; color: #D8B4FE; font-size: 14px; font-weight: 600;">Тип жалобы:</label>
+            <select id="complaintType" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white;">
+                <option value="scam">Мошенничество</option>
+                <option value="spam">Спам</option>
+                <option value="offensive">Оскорбления</option>
+                <option value="inappropriate">Неуместный контент</option>
+                <option value="fake">Фейковое объявление</option>
+            </select>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; color: #D8B4FE; font-size: 14px; font-weight: 600;">Описание проблемы:</label>
+            <textarea id="complaintDescription" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; min-height: 100px;" placeholder="Опишите подробно проблему..."></textarea>
+        </div>
+        
+        <button onclick="submitComplaintForm()" style="width: 100%; padding: 15px; border-radius: 12px; background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); border: 2px solid rgba(255,255,255,0.3); color: white; font-weight: 600; cursor: pointer;">
+            <i class="fas fa-paper-plane"></i> Отправить жалобу
+        </button>
+    </div>
+</div>
+
+<script>
+// ==================== ДОБАВИТЬ В НАЧАЛО ВАШЕГО СУЩЕСТВУЮЩЕГО JS ====================
+
+// Расширяем объект appData
+appData.userRights = 0;
+appData.isBlocked = false;
+appData.blockReason = '';
+appData.currentComplaintTarget = null;
+
+// ==================== ШАГ 1: ПРОВЕРКА ПРАВ И БЛОКИРОВКИ ====================
+async function checkUserStatus() {
+    if (!appData.currentUserId) return;
+    
+    try {
+        // Проверяем блокировку
+        const blockSnapshot = await database.ref(`blockedUsers/${appData.currentUserId}`).once('value');
+        
+        if (blockSnapshot.exists()) {
+            const blockData = blockSnapshot.val();
+            appData.isBlocked = true;
+            appData.blockReason = blockData.reason || 'Нарушение правил сообщества';
+            
+            // Показываем экран блокировки
+            document.getElementById('blocked-screen').style.display = 'flex';
+            document.getElementById('app-container').style.display = 'none';
+            document.getElementById('block-reason-text').textContent = appData.blockReason;
+            return;
+        }
+        
+        // Проверяем права
+        const userSnapshot = await database.ref(`users/${appData.currentUserId}`).once('value');
+        if (userSnapshot.exists()) {
+            const userData = userSnapshot.val();
+            appData.userRights = userData.rights || 0;
+            
+            // Добавляем иконку админа если есть права
+            if (appData.userRights > 0) {
+                const bottomNav = document.querySelector('.bottom-nav');
+                if (bottomNav) {
+                    const adminNav = document.createElement('button');
+                    adminNav.className = 'nav-item';
+                    adminNav.setAttribute('data-page', 'admin');
+                    adminNav.innerHTML = `
+                        <div class="nav-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <span class="nav-label">Админ</span>
+                    `;
+                    adminNav.onclick = () => showAdminPanel();
+                    
+                    // Вставляем перед кнопкой профиля
+                    const profileBtn = document.querySelector('[data-page="profile"]');
+                    bottomNav.insertBefore(adminNav, profileBtn);
+                }
+            }
+        }
+        
+    } catch (error) {
+        console.error('Ошибка проверки статуса:', error);
+    }
+}
+
+// Связаться с админом
+function contactAdmin() {
+    const message = encodeURIComponent(`Разблокировка аккаунта Vape Market\nID: ${appData.currentUserId}\nПричина: ${appData.blockReason}`);
+    const telegramUrl = `https://t.me/nukm0?text=${message}`;
+    
+    if (tg) {
+        tg.openTelegramLink(telegramUrl);
+    } else {
+        alert('Напишите @nukm0 в Telegram');
+    }
+}
+
+// ==================== ШАГ 3: СИСТЕМА ЖАЛОБ ====================
+
+// Модифицируем renderAds чтобы добавить кнопку жалобы
+const originalRenderAds = renderAds;
+renderAds = function() {
+    originalRenderAds();
+    
+    // Добавляем кнопки жалоб к существующим карточкам
+    setTimeout(() => {
+        document.querySelectorAll('.advertisement-card').forEach(card => {
+            const sellerHeader = card.querySelector('.seller-header');
+            if (sellerHeader && !sellerHeader.querySelector('.report-btn')) {
+                const reportBtn = document.createElement('button');
+                reportBtn.className = 'report-btn';
+                reportBtn.innerHTML = '<i class="fas fa-flag" style="color: #EF4444;"></i>';
+                reportBtn.style.cssText = 'position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; z-index: 10;';
+                reportBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    const sellerName = card.querySelector('.seller-name')?.textContent || 'Продавец';
+                    const sellerId = card.id.replace('ad-', '').split('-')[0];
+                    openComplaintModal(sellerId, sellerName);
+                };
+                sellerHeader.style.position = 'relative';
+                sellerHeader.appendChild(reportBtn);
+            }
+        });
+    }, 100);
+};
+
+// Открыть жалобу
+function openComplaintModal(sellerId, sellerName) {
+    appData.currentComplaintTarget = { sellerId, sellerName };
+    document.getElementById('complaintModal').style.display = 'flex';
+}
+
+// Закрыть жалобу
+function closeComplaintModal() {
+    document.getElementById('complaintModal').style.display = 'none';
+    appData.currentComplaintTarget = null;
+}
+
+// Отправить жалобу
+async function submitComplaintForm() {
+    if (!appData.currentComplaintTarget) return;
+    
+    const type = document.getElementById('complaintType').value;
+    const description = document.getElementById('complaintDescription').value.trim();
+    
+    if (!description) {
+        showNotification('Введите описание проблемы', 'error');
+        return;
+    }
+    
+    try {
+        const complaintRef = database.ref('complaints').push();
+        await complaintRef.set({
+            id: complaintRef.key,
+            reporterId: appData.currentUserId,
+            reporterName: appData.currentUserData?.first_name || 'Пользователь',
+            targetId: appData.currentComplaintTarget.sellerId,
+            targetName: appData.currentComplaintTarget.sellerName,
+            type: type,
+            description: description,
+            status: 'new',
+            createdAt: firebase.database.ServerValue.TIMESTAMP
+        });
+        
+        showNotification('Жалоба отправлена', 'success');
+        closeComplaintModal();
+    } catch (error) {
+        showNotification('Ошибка отправки жалобы', 'error');
+    }
+}
+
+// ==================== ШАГ 4: ПРОСТАЯ АДМИН-ПАНЕЛЬ ====================
+
+function showAdminPanel() {
+    // Создаем простую админ-панель
+    const adminHTML = `
+        <div class="page active" id="page-admin">
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar" style="background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="profile-info">
+                        <h2>Админ-панель</h2>
+                        <p id="admin-role">Роль: ${appData.userRights === 1 ? 'Модератор' : appData.userRights === 2 ? 'Администратор' : 'Супер-админ'}</p>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <button class="filter-btn" onclick="loadComplaintsForAdmin()" style="background: rgba(59,130,246,0.3);">
+                        <i class="fas fa-flag"></i> Жалобы
+                    </button>
+                    <button class="filter-btn" onclick="loadUsersForAdmin()" style="background: rgba(16,185,129,0.3);">
+                        <i class="fas fa-users"></i> Пользователи
+                    </button>
+                    <button class="filter-btn" onclick="loadAnalytics()" style="background: rgba(139,92,246,0.3);">
+                        <i class="fas fa-chart-bar"></i> Статистика
+                    </button>
+                </div>
+                
+                <div id="admin-content" style="min-height: 300px;">
+                    <!-- Контент будет здесь -->
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Заменяем контент
+    const mainContent = document.querySelector('.main-content');
+    if (mainContent) {
+        mainContent.innerHTML = adminHTML;
+    }
+    
+    // Обновляем навигацию
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    document.querySelector('[data-page="admin"]')?.classList.add('active');
+}
+
+async function loadComplaintsForAdmin() {
+    const snapshot = await database.ref('complaints').limitToLast(20).once('value');
+    let html = '<h3 style="margin-bottom: 15px;">Последние жалобы</h3>';
+    
+    snapshot.forEach(child => {
+        const complaint = child.val();
+        html += `
+            <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <strong>${complaint.targetName || 'Пользователь'}</strong>
+                    <span style="font-size: 12px; color: #D8B4FE;">${new Date(complaint.createdAt).toLocaleDateString()}</span>
+                </div>
+                <div style="margin-top: 5px; font-size: 14px;">${complaint.description}</div>
+                <button onclick="resolveComplaint('${complaint.id}')" style="margin-top: 10px; padding: 5px 10px; background: rgba(16,185,129,0.3); border: none; border-radius: 6px; color: white; cursor: pointer;">
+                    Решено
+                </button>
+            </div>
+        `;
+    });
+    
+    document.getElementById('admin-content').innerHTML = html;
+}
+
+async function resolveComplaint(complaintId) {
+    await database.ref(`complaints/${complaintId}/status`).set('resolved');
+    showNotification('Жалоба помечена как решенная', 'success');
+    loadComplaintsForAdmin();
+}
+
+// ==================== ИНТЕГРАЦИЯ С ВАШИМ КОДОМ ====================
+
+// Модифицируем checkTelegramAndInit
+const originalCheckTelegramAndInit = checkTelegramAndInit;
+checkTelegramAndInit = function() {
+    originalCheckTelegramAndInit();
+    
+    // После инициализации проверяем статус
+    setTimeout(() => {
+        if (appData.currentUserId) {
+            checkUserStatus();
+        }
+    }, 1000);
+};
+
+// Модифицируем registerUser чтобы добавлять поле rights
+const originalRegisterUser = FirebaseMarketServer.registerUser;
+FirebaseMarketServer.registerUser = async function(userData) {
+    const result = await originalRegisterUser(userData);
+    
+    // Добавляем поле rights если его нет
+    const userRef = database.ref(`users/${userData.id}`);
+    const snapshot = await userRef.once('value');
+    if (snapshot.exists()) {
+        const user = snapshot.val();
+        if (user.rights === undefined) {
+            await userRef.update({ rights: 0 });
+        }
+    }
+    
+    return result;
+};
+<!-- НИЖЕ ВАШЕГО СУЩЕСТВУЮЩЕГО КОДА, перед закрывающим тегом </body> -->
+
+<!-- Добавить ЭТО в конец вашего HTML (перед </body>) -->
+<div id="blocked-screen" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--gradient-primary); z-index: 10000; padding: 20px; display: flex; align-items: center; justify-content: center;">
+    <div style="background: rgba(0,0,0,0.8); border-radius: 20px; padding: 40px; text-align: center; max-width: 400px; border: 2px solid #EF4444;">
+        <div style="font-size: 60px; color: #EF4444; margin-bottom: 20px;">
+            <i class="fas fa-ban"></i>
+        </div>
+        <h1 style="color: #EF4444; margin-bottom: 15px;">Ваш аккаунт заблокирован</h1>
+        <div style="background: rgba(239,68,68,0.1); padding: 15px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #EF4444;">
+            <p id="block-reason-text" style="color: white;">Нарушение правил сообщества</p>
+        </div>
+        <p style="margin: 20px 0; color: #D8B4FE;">
+            Если вы считаете, что блокировка ошибочна, свяжитесь с администратором
+        </p>
+        <button onclick="contactAdmin()" style="padding: 15px 25px; border-radius: 12px; background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); border: 2px solid rgba(255, 255, 255, 0.3); color: white; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; margin-top: 20px;">
+            <i class="fab fa-telegram"></i>
+            Связаться с @nukm0
+        </button>
+    </div>
+</div>
+
+<!-- Модальное окно жалобы (простое) -->
+<div id="complaintModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 10001; padding: 20px; align-items: center; justify-content: center;">
+    <div style="background: rgba(30,27,75,0.95); border-radius: 20px; padding: 25px; width: 100%; max-width: 400px; border: 2px solid rgba(124,58,237,0.5);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <div style="font-size: 18px; font-weight: 700; color: white;">Подать жалобу</div>
+            <button onclick="closeComplaintModal()" style="background: rgba(255,255,255,0.1); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; color: #D8B4FE; font-size: 14px; font-weight: 600;">Тип жалобы:</label>
+            <select id="complaintType" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white;">
+                <option value="scam">Мошенничество</option>
+                <option value="spam">Спам</option>
+                <option value="offensive">Оскорбления</option>
+                <option value="inappropriate">Неуместный контент</option>
+                <option value="fake">Фейковое объявление</option>
+            </select>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; color: #D8B4FE; font-size: 14px; font-weight: 600;">Описание проблемы:</label>
+            <textarea id="complaintDescription" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; min-height: 100px;" placeholder="Опишите подробно проблему..."></textarea>
+        </div>
+        
+        <button onclick="submitComplaintForm()" style="width: 100%; padding: 15px; border-radius: 12px; background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); border: 2px solid rgba(255,255,255,0.3); color: white; font-weight: 600; cursor: pointer;">
+            <i class="fas fa-paper-plane"></i> Отправить жалобу
+        </button>
+    </div>
+</div>
+
+<script>
+// ==================== ДОБАВИТЬ В НАЧАЛО ВАШЕГО СУЩЕСТВУЮЩЕГО JS ====================
+
+// Расширяем объект appData
+appData.userRights = 0;
+appData.isBlocked = false;
+appData.blockReason = '';
+appData.currentComplaintTarget = null;
+
+// ==================== ШАГ 1: ПРОВЕРКА ПРАВ И БЛОКИРОВКИ ====================
+async function checkUserStatus() {
+    if (!appData.currentUserId) return;
+    
+    try {
+        // Проверяем блокировку
+        const blockSnapshot = await database.ref(`blockedUsers/${appData.currentUserId}`).once('value');
+        
+        if (blockSnapshot.exists()) {
+            const blockData = blockSnapshot.val();
+            appData.isBlocked = true;
+            appData.blockReason = blockData.reason || 'Нарушение правил сообщества';
+            
+            // Показываем экран блокировки
+            document.getElementById('blocked-screen').style.display = 'flex';
+            document.getElementById('app-container').style.display = 'none';
+            document.getElementById('block-reason-text').textContent = appData.blockReason;
+            return;
+        }
+        
+        // Проверяем права
+        const userSnapshot = await database.ref(`users/${appData.currentUserId}`).once('value');
+        if (userSnapshot.exists()) {
+            const userData = userSnapshot.val();
+            appData.userRights = userData.rights || 0;
+            
+            // Добавляем иконку админа если есть права
+            if (appData.userRights > 0) {
+                const bottomNav = document.querySelector('.bottom-nav');
+                if (bottomNav) {
+                    const adminNav = document.createElement('button');
+                    adminNav.className = 'nav-item';
+                    adminNav.setAttribute('data-page', 'admin');
+                    adminNav.innerHTML = `
+                        <div class="nav-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <span class="nav-label">Админ</span>
+                    `;
+                    adminNav.onclick = () => showAdminPanel();
+                    
+                    // Вставляем перед кнопкой профиля
+                    const profileBtn = document.querySelector('[data-page="profile"]');
+                    bottomNav.insertBefore(adminNav, profileBtn);
+                }
+            }
+        }
+        
+    } catch (error) {
+        console.error('Ошибка проверки статуса:', error);
+    }
+}
+
+// Связаться с админом
+function contactAdmin() {
+    const message = encodeURIComponent(`Разблокировка аккаунта Vape Market\nID: ${appData.currentUserId}\nПричина: ${appData.blockReason}`);
+    const telegramUrl = `https://t.me/nukm0?text=${message}`;
+    
+    if (tg) {
+        tg.openTelegramLink(telegramUrl);
+    } else {
+        alert('Напишите @nukm0 в Telegram');
+    }
+}
+
+// ==================== ШАГ 3: СИСТЕМА ЖАЛОБ ====================
+
+// Модифицируем renderAds чтобы добавить кнопку жалобы
+const originalRenderAds = renderAds;
+renderAds = function() {
+    originalRenderAds();
+    
+    // Добавляем кнопки жалоб к существующим карточкам
+    setTimeout(() => {
+        document.querySelectorAll('.advertisement-card').forEach(card => {
+            const sellerHeader = card.querySelector('.seller-header');
+            if (sellerHeader && !sellerHeader.querySelector('.report-btn')) {
+                const reportBtn = document.createElement('button');
+                reportBtn.className = 'report-btn';
+                reportBtn.innerHTML = '<i class="fas fa-flag" style="color: #EF4444;"></i>';
+                reportBtn.style.cssText = 'position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; z-index: 10;';
+                reportBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    const sellerName = card.querySelector('.seller-name')?.textContent || 'Продавец';
+                    const sellerId = card.id.replace('ad-', '').split('-')[0];
+                    openComplaintModal(sellerId, sellerName);
+                };
+                sellerHeader.style.position = 'relative';
+                sellerHeader.appendChild(reportBtn);
+            }
+        });
+    }, 100);
+};
+
+// Открыть жалобу
+function openComplaintModal(sellerId, sellerName) {
+    appData.currentComplaintTarget = { sellerId, sellerName };
+    document.getElementById('complaintModal').style.display = 'flex';
+}
+
+// Закрыть жалобу
+function closeComplaintModal() {
+    document.getElementById('complaintModal').style.display = 'none';
+    appData.currentComplaintTarget = null;
+}
+
+// Отправить жалобу
+async function submitComplaintForm() {
+    if (!appData.currentComplaintTarget) return;
+    
+    const type = document.getElementById('complaintType').value;
+    const description = document.getElementById('complaintDescription').value.trim();
+    
+    if (!description) {
+        showNotification('Введите описание проблемы', 'error');
+        return;
+    }
+    
+    try {
+        const complaintRef = database.ref('complaints').push();
+        await complaintRef.set({
+            id: complaintRef.key,
+            reporterId: appData.currentUserId,
+            reporterName: appData.currentUserData?.first_name || 'Пользователь',
+            targetId: appData.currentComplaintTarget.sellerId,
+            targetName: appData.currentComplaintTarget.sellerName,
+            type: type,
+            description: description,
+            status: 'new',
+            createdAt: firebase.database.ServerValue.TIMESTAMP
+        });
+        
+        showNotification('Жалоба отправлена', 'success');
+        closeComplaintModal();
+    } catch (error) {
+        showNotification('Ошибка отправки жалобы', 'error');
+    }
+}
+
+// ==================== ШАГ 4: ПРОСТАЯ АДМИН-ПАНЕЛЬ ====================
+
+function showAdminPanel() {
+    // Создаем простую админ-панель
+    const adminHTML = `
+        <div class="page active" id="page-admin">
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar" style="background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="profile-info">
+                        <h2>Админ-панель</h2>
+                        <p id="admin-role">Роль: ${appData.userRights === 1 ? 'Модератор' : appData.userRights === 2 ? 'Администратор' : 'Супер-админ'}</p>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <button class="filter-btn" onclick="loadComplaintsForAdmin()" style="background: rgba(59,130,246,0.3);">
+                        <i class="fas fa-flag"></i> Жалобы
+                    </button>
+                    <button class="filter-btn" onclick="loadUsersForAdmin()" style="background: rgba(16,185,129,0.3);">
+                        <i class="fas fa-users"></i> Пользователи
+                    </button>
+                    <button class="filter-btn" onclick="loadAnalytics()" style="background: rgba(139,92,246,0.3);">
+                        <i class="fas fa-chart-bar"></i> Статистика
+                    </button>
+                </div>
+                
+                <div id="admin-content" style="min-height: 300px;">
+                    <!-- Контент будет здесь -->
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Заменяем контент
+    const mainContent = document.querySelector('.main-content');
+    if (mainContent) {
+        mainContent.innerHTML = adminHTML;
+    }
+    
+    // Обновляем навигацию
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    document.querySelector('[data-page="admin"]')?.classList.add('active');
+}
+
+async function loadComplaintsForAdmin() {
+    const snapshot = await database.ref('complaints').limitToLast(20).once('value');
+    let html = '<h3 style="margin-bottom: 15px;">Последние жалобы</h3>';
+    
+    snapshot.forEach(child => {
+        const complaint = child.val();
+        html += `
+            <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <strong>${complaint.targetName || 'Пользователь'}</strong>
+                    <span style="font-size: 12px; color: #D8B4FE;">${new Date(complaint.createdAt).toLocaleDateString()}</span>
+                </div>
+                <div style="margin-top: 5px; font-size: 14px;">${complaint.description}</div>
+                <button onclick="resolveComplaint('${complaint.id}')" style="margin-top: 10px; padding: 5px 10px; background: rgba(16,185,129,0.3); border: none; border-radius: 6px; color: white; cursor: pointer;">
+                    Решено
+                </button>
+            </div>
+        `;
+    });
+    
+    document.getElementById('admin-content').innerHTML = html;
+}
+
+async function resolveComplaint(complaintId) {
+    await database.ref(`complaints/${complaintId}/status`).set('resolved');
+    showNotification('Жалоба помечена как решенная', 'success');
+    loadComplaintsForAdmin();
+}
+
+// ==================== ИНТЕГРАЦИЯ С ВАШИМ КОДОМ ====================
+
+// Модифицируем checkTelegramAndInit
+const originalCheckTelegramAndInit = checkTelegramAndInit;
+checkTelegramAndInit = function() {
+    originalCheckTelegramAndInit();
+    
+    // После инициализации проверяем статус
+    setTimeout(() => {
+        if (appData.currentUserId) {
+            checkUserStatus();
+        }
+    }, 1000);
+};
+
+// Модифицируем registerUser чтобы добавлять поле rights
+const originalRegisterUser = FirebaseMarketServer.registerUser;
+FirebaseMarketServer.registerUser = async function(userData) {
+    const result = await originalRegisterUser(userData);
+    
+    // Добавляем поле rights если его нет
+    const userRef = database.ref(`users/${userData.id}`);
+    const snapshot = await userRef.once('value');
+    if (snapshot.exists()) {
+        const user = snapshot.val();
+        if (user.rights === undefined) {
+            await userRef.update({ rights: 0 });
+        }
+    }
+    
+    return result;
+};
+
+<!-- Добавить ЭТО в конец вашего HTML (перед </body>) -->
+<div id="blocked-screen" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--gradient-primary); z-index: 10000; padding: 20px; display: flex; align-items: center; justify-content: center;">
+    <div style="background: rgba(0,0,0,0.8); border-radius: 20px; padding: 40px; text-align: center; max-width: 400px; border: 2px solid #EF4444;">
+        <div style="font-size: 60px; color: #EF4444; margin-bottom: 20px;">
+            <i class="fas fa-ban"></i>
+        </div>
+        <h1 style="color: #EF4444; margin-bottom: 15px;">Ваш аккаунт заблокирован</h1>
+        <div style="background: rgba(239,68,68,0.1); padding: 15px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #EF4444;">
+            <p id="block-reason-text" style="color: white;">Нарушение правил сообщества</p>
+        </div>
+        <p style="margin: 20px 0; color: #D8B4FE;">
+            Если вы считаете, что блокировка ошибочна, свяжитесь с администратором
+        </p>
+        <button onclick="contactAdmin()" style="padding: 15px 25px; border-radius: 12px; background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); border: 2px solid rgba(255, 255, 255, 0.3); color: white; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; margin-top: 20px;">
+            <i class="fab fa-telegram"></i>
+            Связаться с @nukm0
+        </button>
+    </div>
+</div>
+
+<!-- Модальное окно жалобы (простое) -->
+<div id="complaintModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 10001; padding: 20px; align-items: center; justify-content: center;">
+    <div style="background: rgba(30,27,75,0.95); border-radius: 20px; padding: 25px; width: 100%; max-width: 400px; border: 2px solid rgba(124,58,237,0.5);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <div style="font-size: 18px; font-weight: 700; color: white;">Подать жалобу</div>
+            <button onclick="closeComplaintModal()" style="background: rgba(255,255,255,0.1); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; color: #D8B4FE; font-size: 14px; font-weight: 600;">Тип жалобы:</label>
+            <select id="complaintType" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white;">
+                <option value="scam">Мошенничество</option>
+                <option value="spam">Спам</option>
+                <option value="offensive">Оскорбления</option>
+                <option value="inappropriate">Неуместный контент</option>
+                <option value="fake">Фейковое объявление</option>
+            </select>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; color: #D8B4FE; font-size: 14px; font-weight: 600;">Описание проблемы:</label>
+            <textarea id="complaintDescription" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; min-height: 100px;" placeholder="Опишите подробно проблему..."></textarea>
+        </div>
+        
+        <button onclick="submitComplaintForm()" style="width: 100%; padding: 15px; border-radius: 12px; background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); border: 2px solid rgba(255,255,255,0.3); color: white; font-weight: 600; cursor: pointer;">
+            <i class="fas fa-paper-plane"></i> Отправить жалобу
+        </button>
+    </div>
+</div>
+
+<script>
+// ==================== ДОБАВИТЬ В НАЧАЛО ВАШЕГО СУЩЕСТВУЮЩЕГО JS ====================
+
+// Расширяем объект appData
+appData.userRights = 0;
+appData.isBlocked = false;
+appData.blockReason = '';
+appData.currentComplaintTarget = null;
+
+// ==================== ШАГ 1: ПРОВЕРКА ПРАВ И БЛОКИРОВКИ ====================
+async function checkUserStatus() {
+    if (!appData.currentUserId) return;
+    
+    try {
+        // Проверяем блокировку
+        const blockSnapshot = await database.ref(`blockedUsers/${appData.currentUserId}`).once('value');
+        
+        if (blockSnapshot.exists()) {
+            const blockData = blockSnapshot.val();
+            appData.isBlocked = true;
+            appData.blockReason = blockData.reason || 'Нарушение правил сообщества';
+            
+            // Показываем экран блокировки
+            document.getElementById('blocked-screen').style.display = 'flex';
+            document.getElementById('app-container').style.display = 'none';
+            document.getElementById('block-reason-text').textContent = appData.blockReason;
+            return;
+        }
+        
+        // Проверяем права
+        const userSnapshot = await database.ref(`users/${appData.currentUserId}`).once('value');
+        if (userSnapshot.exists()) {
+            const userData = userSnapshot.val();
+            appData.userRights = userData.rights || 0;
+            
+            // Добавляем иконку админа если есть права
+            if (appData.userRights > 0) {
+                const bottomNav = document.querySelector('.bottom-nav');
+                if (bottomNav) {
+                    const adminNav = document.createElement('button');
+                    adminNav.className = 'nav-item';
+                    adminNav.setAttribute('data-page', 'admin');
+                    adminNav.innerHTML = `
+                        <div class="nav-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <span class="nav-label">Админ</span>
+                    `;
+                    adminNav.onclick = () => showAdminPanel();
+                    
+                    // Вставляем перед кнопкой профиля
+                    const profileBtn = document.querySelector('[data-page="profile"]');
+                    bottomNav.insertBefore(adminNav, profileBtn);
+                }
+            }
+        }
+        
+    } catch (error) {
+        console.error('Ошибка проверки статуса:', error);
+    }
+}
+
+// Связаться с админом
+function contactAdmin() {
+    const message = encodeURIComponent(`Разблокировка аккаунта Vape Market\nID: ${appData.currentUserId}\nПричина: ${appData.blockReason}`);
+    const telegramUrl = `https://t.me/nukm0?text=${message}`;
+    
+    if (tg) {
+        tg.openTelegramLink(telegramUrl);
+    } else {
+        alert('Напишите @nukm0 в Telegram');
+    }
+}
+
+// ==================== ШАГ 3: СИСТЕМА ЖАЛОБ ====================
+
+// Модифицируем renderAds чтобы добавить кнопку жалобы
+const originalRenderAds = renderAds;
+renderAds = function() {
+    originalRenderAds();
+    
+    // Добавляем кнопки жалоб к существующим карточкам
+    setTimeout(() => {
+        document.querySelectorAll('.advertisement-card').forEach(card => {
+            const sellerHeader = card.querySelector('.seller-header');
+            if (sellerHeader && !sellerHeader.querySelector('.report-btn')) {
+                const reportBtn = document.createElement('button');
+                reportBtn.className = 'report-btn';
+                reportBtn.innerHTML = '<i class="fas fa-flag" style="color: #EF4444;"></i>';
+                reportBtn.style.cssText = 'position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; z-index: 10;';
+                reportBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    const sellerName = card.querySelector('.seller-name')?.textContent || 'Продавец';
+                    const sellerId = card.id.replace('ad-', '').split('-')[0];
+                    openComplaintModal(sellerId, sellerName);
+                };
+                sellerHeader.style.position = 'relative';
+                sellerHeader.appendChild(reportBtn);
+            }
+        });
+    }, 100);
+};
+
+// Открыть жалобу
+function openComplaintModal(sellerId, sellerName) {
+    appData.currentComplaintTarget = { sellerId, sellerName };
+    document.getElementById('complaintModal').style.display = 'flex';
+}
+
+// Закрыть жалобу
+function closeComplaintModal() {
+    document.getElementById('complaintModal').style.display = 'none';
+    appData.currentComplaintTarget = null;
+}
+
+// Отправить жалобу
+async function submitComplaintForm() {
+    if (!appData.currentComplaintTarget) return;
+    
+    const type = document.getElementById('complaintType').value;
+    const description = document.getElementById('complaintDescription').value.trim();
+    
+    if (!description) {
+        showNotification('Введите описание проблемы', 'error');
+        return;
+    }
+    
+    try {
+        const complaintRef = database.ref('complaints').push();
+        await complaintRef.set({
+            id: complaintRef.key,
+            reporterId: appData.currentUserId,
+            reporterName: appData.currentUserData?.first_name || 'Пользователь',
+            targetId: appData.currentComplaintTarget.sellerId,
+            targetName: appData.currentComplaintTarget.sellerName,
+            type: type,
+            description: description,
+            status: 'new',
+            createdAt: firebase.database.ServerValue.TIMESTAMP
+        });
+        
+        showNotification('Жалоба отправлена', 'success');
+        closeComplaintModal();
+    } catch (error) {
+        showNotification('Ошибка отправки жалобы', 'error');
+    }
+}
+
+// ==================== ШАГ 4: ПРОСТАЯ АДМИН-ПАНЕЛЬ ====================
+
+function showAdminPanel() {
+    // Создаем простую админ-панель
+    const adminHTML = `
+        <div class="page active" id="page-admin">
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar" style="background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="profile-info">
+                        <h2>Админ-панель</h2>
+                        <p id="admin-role">Роль: ${appData.userRights === 1 ? 'Модератор' : appData.userRights === 2 ? 'Администратор' : 'Супер-админ'}</p>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <button class="filter-btn" onclick="loadComplaintsForAdmin()" style="background: rgba(59,130,246,0.3);">
+                        <i class="fas fa-flag"></i> Жалобы
+                    </button>
+                    <button class="filter-btn" onclick="loadUsersForAdmin()" style="background: rgba(16,185,129,0.3);">
+                        <i class="fas fa-users"></i> Пользователи
+                    </button>
+                    <button class="filter-btn" onclick="loadAnalytics()" style="background: rgba(139,92,246,0.3);">
+                        <i class="fas fa-chart-bar"></i> Статистика
+                    </button>
+                </div>
+                
+                <div id="admin-content" style="min-height: 300px;">
+                    <!-- Контент будет здесь -->
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Заменяем контент
+    const mainContent = document.querySelector('.main-content');
+    if (mainContent) {
+        mainContent.innerHTML = adminHTML;
+    }
+    
+    // Обновляем навигацию
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    document.querySelector('[data-page="admin"]')?.classList.add('active');
+}
+
+async function loadComplaintsForAdmin() {
+    const snapshot = await database.ref('complaints').limitToLast(20).once('value');
+    let html = '<h3 style="margin-bottom: 15px;">Последние жалобы</h3>';
+    
+    snapshot.forEach(child => {
+        const complaint = child.val();
+        html += `
+            <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <strong>${complaint.targetName || 'Пользователь'}</strong>
+                    <span style="font-size: 12px; color: #D8B4FE;">${new Date(complaint.createdAt).toLocaleDateString()}</span>
+                </div>
+                <div style="margin-top: 5px; font-size: 14px;">${complaint.description}</div>
+                <button onclick="resolveComplaint('${complaint.id}')" style="margin-top: 10px; padding: 5px 10px; background: rgba(16,185,129,0.3); border: none; border-radius: 6px; color: white; cursor: pointer;">
+                    Решено
+                </button>
+            </div>
+        `;
+    });
+    
+    document.getElementById('admin-content').innerHTML = html;
+}
+
+async function resolveComplaint(complaintId) {
+    await database.ref(`complaints/${complaintId}/status`).set('resolved');
+    showNotification('Жалоба помечена как решенная', 'success');
+    loadComplaintsForAdmin();
+}
+
+// ==================== ИНТЕГРАЦИЯ С ВАШИМ КОДОМ ====================
+
+// Модифицируем checkTelegramAndInit
+const originalCheckTelegramAndInit = checkTelegramAndInit;
+checkTelegramAndInit = function() {
+    originalCheckTelegramAndInit();
+    
+    // После инициализации проверяем статус
+    setTimeout(() => {
+        if (appData.currentUserId) {
+            checkUserStatus();
+        }
+    }, 1000);
+};
+
+// Модифицируем registerUser чтобы добавлять поле rights
+const originalRegisterUser = FirebaseMarketServer.registerUser;
+FirebaseMarketServer.registerUser = async function(userData) {
+    const result = await originalRegisterUser(userData);
+    
+    // Добавляем поле rights если его нет
+    const userRef = database.ref(`users/${userData.id}`);
+    const snapshot = await userRef.once('value');
+    if (snapshot.exists()) {
+        const user = snapshot.val();
+        if (user.rights === undefined) {
+            await userRef.update({ rights: 0 });
+        }
+    }
+    
+    return result;
+};
+
+// ==================== ДОБАВИТЬ В КОНЕЦ ВАШЕГО КОДА ====================
+
+// Слушаем изменения жалоб для админов
+database.ref('complaints').on('value', (snapshot) => {
+    if (appData.userRights > 0) {
+        // Можно добавить уведомление о новых жалобах
+        const newComplaints = [];
+        snapshot.forEach(child => {
+            const complaint = child.val();
+            if (complaint.status === 'new') {
+                newComplaints.push(complaint);
+            }
+        });
+        
+        if (newComplaints.length > 0 && document.querySelector('[data-page="admin"]')) {
+            // Обновляем счетчик
+            const adminBtn = document.querySelector('[data-page="admin"]');
+            const badge = adminBtn.querySelector('.badge') || document.createElement('span');
+            badge.className = 'badge';
+            badge.textContent = newComplaints.length;
+            badge.style.cssText = 'position: absolute; top: 5px; right: 5px; background: #EF4444; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center;';
+            adminBtn.style.position = 'relative';
+            adminBtn.appendChild(badge);
+        }
+    }
+});
+</script>
 </body>
 </html>
