@@ -3443,63 +3443,6 @@ async function publishAd() {
         showNotification('Ошибка при публикации объявления', 'error');
     }
 }
-            
-            // Создаем новое объявление
-            const newAd = {
-                sellerId: appData.currentUserId,
-                sellerName: appData.currentUserData.first_name + 
-                           (appData.currentUserData.last_name ? ' ' + appData.currentUserData.last_name : ''),
-                sellerUsername: appData.currentUserData.username ? '@' + appData.currentUserData.username : 'Без username',
-                sellerAvatar: appData.currentUserData.photo_url || null,
-                title: title,
-                category: category,
-                price: price,
-                description: description || 'Без описания',
-                photos: appData.uploadedPhotos.length,
-                
-                // 🔥 ИСПРАВЛЕНИЕ ДЛЯ FIREBASE 🔥
-                photoUrls: appData.uploadedPhotos.slice(0, 3).map((p, i) => {
-                    // Ограничиваем размер фото для Firebase
-                    const maxSize = 100000; // 100KB максимум
-                    if (p.url && p.url.length > maxSize) {
-                        // Если фото слишком большое, сжимаем или используем заглушку
-                        console.log(`Фото ${i+1} слишком большое: ${Math.round(p.url.length/1024)}KB`);
-                        return `https://via.placeholder.com/150/8B5CF6/FFFFFF?text=Фото${i+1}`;
-                    }
-                    return p.url || `https://via.placeholder.com/150/7C3AED/FFFFFF?text=Фото${i+1}`;
-                }),
-                
-                likes: 0,
-                dislikes: 0
-            };
-            
-            try {
-                // Сохраняем в Firebase
-                const adId = await FirebaseMarketServer.addAd(newAd);
-                
-                // Добавляем в локальный список
-                newAd.id = adId;
-                newAd.createdAt = new Date().toISOString();
-                appData.ads.unshift(newAd);
-                
-                // Обновляем статистику
-                appData.serverStats = await FirebaseMarketServer.getStats();
-                updateServerStatsUI();
-                
-                // Обновляем статистику профиля
-                updateProfileStats();
-                updateMyAdsList();
-                
-                // Обновляем отображение
-                renderAds();
-                hideAddForm();
-                
-                showNotification('Объявление успешно опубликовано!', 'success');
-            } catch (error) {
-                console.error('Ошибка публикации:', error);
-                showNotification('Ошибка при публикации объявления', 'error');
-            }
-        }
         
         // Обновить статистику профиля
         function updateProfileStats() {
