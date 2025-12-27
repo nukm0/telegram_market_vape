@@ -3161,15 +3161,29 @@ function getPlaceholderUrl(index) {
                     ad.price = price;
                     ad.description = description || 'Без описания';
                     
-                    // 🔥 ИСПРАВЛЕНИЕ ДЛЯ FIREBASE 🔥
-                    ad.photoUrls = appData.uploadedPhotos.slice(0, 3).map((p, i) => {
-                        // Ограничиваем размер для Firebase
-                        if (p.url && p.url.length > 200000) {
-                            // Если фото >200KB, используем заглушку
-                            return `https://via.placeholder.com/150/8B5CF6/FFFFFF?text=Фото${i+1}`;
-                        }
-                        return p.url || `https://via.placeholder.com/150/7C3AED/FFFFFF?text=Фото${i+1}`;
-                    });
+                    // 🔥 ИСПРАВЛЕНИЕ: Загружаем фото в Firebase Storage 🔥
+photoUrls: await Promise.all(
+    appData.uploadedPhotos.slice(0, 3).map(async (p, i) => {
+        try {
+            // Если есть файл, загружаем в Storage
+            if (p.file) {
+                const downloadURL = await uploadPhotoToStorage(p.file, adId, i);
+                return downloadURL;
+            }
+            // Если нет файла, но есть URL (при редактировании)
+            else if (p.url && p.url.startsWith('http')) {
+                return p.url; // Возвращаем существующий URL
+            }
+            // Во всех остальных случаях - placeholder
+            else {
+                return getPlaceholderUrl(i);
+            }
+        } catch (error) {
+            console.error(`Ошибка загрузки фото ${i}:`, error);
+            return getPlaceholderUrl(i);
+        }
+    })
+),
                     
                     ad.photos = appData.uploadedPhotos.length;
                     
