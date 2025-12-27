@@ -3341,7 +3341,7 @@ async function publishAd() {
                 const storageRef = storage.ref(fileName);
                 
                 // Сжимаем изображение
-                const compressedFile = await compressImage(photo.file);
+                const compressedFile = photo.file;
                 
                 await storageRef.put(compressedFile);
                 const downloadUrl = await storageRef.getDownloadURL();
