@@ -937,6 +937,55 @@
             line-height: 1.5;
         }
         
+        /* Статистика сервера */
+        .server-stats {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .server-stats-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .server-stats-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .server-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .server-stat-item {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .server-stat-number {
+            font-size: 20px;
+            font-weight: 700;
+            color: #A78BFA;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .server-stat-label {
+            font-size: 11px;
+            color: #9CA3AF;
+        }
+        
         /* Кнопка жалобы */
         .complaint-btn {
             width: 100%;
@@ -1224,6 +1273,46 @@
         .rate-btn:disabled::before {
             display: none;
         }
+        
+        /* Стили для нескольких фотографий */
+        .uploaded-photos-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .uploaded-photo-item {
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .uploaded-photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .remove-photo-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(239, 68, 68, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
@@ -1257,28 +1346,12 @@
                                onchange="handlePhotoUpload(event)">
                         
                         <div class="photo-upload-section">
-                            <div class="photo-gallery" id="uploaded-photos">
-                                <div class="photo-item" onclick="openPhotoPicker(1)">
-                                    <div class="photo-placeholder" id="photo-placeholder-1">
-                                        <i class="fas fa-plus"></i>
-                                        <span>Фото 1</span>
-                                    </div>
-                                </div>
-                                <div class="photo-item" onclick="openPhotoPicker(2)">
-                                    <div class="photo-placeholder" id="photo-placeholder-2">
-                                        <i class="fas fa-plus"></i>
-                                        <span>Фото 2</span>
-                                    </div>
-                                </div>
-                                <div class="photo-item" onclick="openPhotoPicker(3)">
-                                    <div class="photo-placeholder" id="photo-placeholder-3">
-                                        <i class="fas fa-plus"></i>
-                                        <span>Фото 3</span>
-                                    </div>
-                                </div>
+                            <!-- Контейнер для загруженных фото -->
+                            <div class="uploaded-photos-container" id="uploaded-photos-container">
+                                <!-- Фото будут добавляться здесь динамически -->
                             </div>
                             
-                            <button class="upload-btn" onclick="openPhotoPicker(0)">
+                            <button class="upload-btn" onclick="openPhotoPicker()">
                                 <i class="fas fa-images"></i>
                                 Загрузить фотографии
                             </button>
@@ -1431,8 +1504,8 @@
                                 <i class="fas fa-chevron-down" id="faq-icon-3"></i>
                             </div>
                             <div class="faq-answer" id="faq-answer-3" style="display: none;">
-                                Нажмите на поле для фото → "Загрузить фотографии" → откроется галерея устройства. 
-                                Можно выбрать до 3 фото.
+                                Нажмите на "Загрузить фотографии" → откроется галерея устройства. 
+                                Можно выбрать до 3 фото одновременно.
                             </div>
                         </div>
                         
@@ -1449,13 +1522,34 @@
                         
                         <div class="faq-item" onclick="toggleFaq(5)">
                             <div class="faq-question">
-                                <span>Как оплачивать товар?</span>
+                                <span>Статистика сервера</span>
                                 <i class="fas fa-chevron-down" id="faq-icon-5"></i>
                             </div>
                             <div class="faq-answer" id="faq-answer-5" style="display: none;">
+                                <!-- Статистика будет добавлена динамически -->
+                            </div>
+                        </div>
+                        
+                        <div class="faq-item" onclick="toggleFaq(6)">
+                            <div class="faq-question">
+                                <span>Как оплачивать товар?</span>
+                                <i class="fas fa-chevron-down" id="faq-icon-6"></i>
+                            </div>
+                            <div class="faq-answer" id="faq-answer-6" style="display: none;">
                                 Все сделки происходят напрямую с продавцом в Telegram. 
                                 Договаривайтесь об оплате в личном чате.
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Статистика сервера -->
+                    <div class="server-stats" id="server-stats">
+                        <div class="server-stats-header">
+                            <i class="fas fa-server"></i>
+                            <div class="server-stats-title">Статистика сервера</div>
+                        </div>
+                        <div class="server-stats-grid" id="server-stats-grid">
+                            <!-- Статистика будет заполнена динамически -->
                         </div>
                     </div>
 
@@ -1514,251 +1608,232 @@
     </div>
 
     <script>
-        // ==================== ЛОКАЛЬНЫЙ СЕРВЕР НА localStorage ====================
-        // Этот "сервер" будет хранить данные в localStorage браузера
-        // Все пользователи на одном устройстве будут видеть одни объявления
+        // ==================== УЛУЧШЕННЫЙ ЛОКАЛЬНЫЙ СЕРВЕР ====================
+        // Теперь данные будут сохраняться в специальном формате для одного аккаунта
         
-        const LocalMarketServer = {
-            // Ключи для хранения данных
+        const MarketServer = {
+            // Ключи для хранения данных с привязкой к аккаунту @nukm0
             STORAGE_KEYS: {
-                ADS: 'vapeMarketAdsGlobal',
-                RATINGS: 'vapeMarketRatingsGlobal',
-                USERS: 'vapeMarketUsersGlobal',
-                LAST_SYNC: 'vapeMarketLastSync',
-                STATS: 'vapeMarketStats'
+                MARKET_DATA: 'vapeMarketData_NUKM0_998579758',
+                SYNC_INFO: 'vapeMarketSyncInfo',
+                SERVER_STATS: 'vapeMarketServerStats'
             },
             
-            // Получить все объявления с сервера
-            getAllAds: function() {
+            // Специальный ID для аккаунта @nukm0
+            ADMIN_USER_ID: '998579758',
+            
+            // Получить все данные с сервера
+            getAllData: function() {
                 try {
-                    const adsData = localStorage.getItem(this.STORAGE_KEYS.ADS);
-                    const ads = adsData ? JSON.parse(adsData) : [];
-                    
-                    // Исправление: убедимся, что все объявления имеют правильную структуру
-                    return ads.map(ad => ({
-                        id: ad.id || Date.now(),
-                        sellerId: ad.sellerId || 'unknown',
-                        sellerName: ad.sellerName || 'Неизвестный',
-                        sellerUsername: ad.sellerUsername || 'Без username',
-                        sellerAvatar: ad.sellerAvatar || null,
-                        title: ad.title || 'Без названия',
-                        category: ad.category || 'other',
-                        price: ad.price || 0,
-                        description: ad.description || 'Без описания',
-                        photos: ad.photos || 0,
-                        photoUrls: ad.photoUrls || [],
-                        likes: ad.likes || 0,
-                        dislikes: ad.dislikes || 0,
-                        createdAt: ad.createdAt || new Date().toISOString()
-                    }));
+                    const data = localStorage.getItem(this.STORAGE_KEYS.MARKET_DATA);
+                    if (!data) {
+                        // Создаем начальные данные
+                        const initialData = {
+                            ads: [],
+                            ratings: {},
+                            users: {},
+                            history: {},
+                            createdAt: new Date().toISOString(),
+                            adminId: this.ADMIN_USER_ID
+                        };
+                        localStorage.setItem(this.STORAGE_KEYS.MARKET_DATA, JSON.stringify(initialData));
+                        return initialData;
+                    }
+                    return JSON.parse(data);
                 } catch (error) {
-                    console.error('Ошибка загрузки объявлений с сервера:', error);
-                    return [];
+                    console.error('Ошибка загрузки данных:', error);
+                    return { ads: [], ratings: {}, users: {}, history: {} };
                 }
             },
             
-            // Получить все рейтинги с сервера
-            getAllRatings: function() {
+            // Сохранить все данные
+            saveAllData: function(data) {
                 try {
-                    const ratingsData = localStorage.getItem(this.STORAGE_KEYS.RATINGS);
-                    return ratingsData ? JSON.parse(ratingsData) : {};
+                    localStorage.setItem(this.STORAGE_KEYS.MARKET_DATA, JSON.stringify(data));
+                    // Обновляем время синхронизации
+                    localStorage.setItem(this.STORAGE_KEYS.SYNC_INFO, Date.now().toString());
+                    // Обновляем статистику
+                    this.updateStats(data);
+                    return true;
                 } catch (error) {
-                    console.error('Ошибка загрузки рейтингов с сервера:', error);
-                    return {};
+                    console.error('Ошибка сохранения данных:', error);
+                    return false;
                 }
             },
             
-            // Получить всех пользователей с сервера
-            getAllUsers: function() {
+            // Получить статистику сервера
+            getServerStats: function() {
                 try {
-                    const usersData = localStorage.getItem(this.STORAGE_KEYS.USERS);
-                    return usersData ? JSON.parse(usersData) : {};
-                } catch (error) {
-                    console.error('Ошибка загрузки пользователей с сервера:', error);
-                    return {};
-                }
-            },
-            
-            // Получить статистику
-            getStats: function() {
-                try {
-                    const statsData = localStorage.getItem(this.STORAGE_KEYS.STATS);
-                    if (statsData) {
-                        return JSON.parse(statsData);
+                    const stats = localStorage.getItem(this.STORAGE_KEYS.SERVER_STATS);
+                    if (stats) {
+                        return JSON.parse(stats);
                     }
                     
-                    // Создаем начальную статистику
-                    const users = this.getAllUsers();
-                    const ads = this.getAllAds();
-                    const ratings = this.getAllRatings();
-                    
-                    let totalLikes = 0;
-                    let totalDislikes = 0;
-                    Object.values(ratings).forEach(userRatings => {
-                        Object.values(userRatings).forEach(rating => {
-                            if (rating === 'like') totalLikes++;
-                            if (rating === 'dislike') totalDislikes++;
-                        });
-                    });
-                    
-                    const stats = {
-                        users: Object.keys(users).length,
-                        ads: ads.length,
-                        likes: totalLikes,
-                        dislikes: totalDislikes,
-                        lastUpdated: new Date().toISOString()
-                    };
-                    
-                    localStorage.setItem(this.STORAGE_KEYS.STATS, JSON.stringify(stats));
-                    return stats;
+                    const data = this.getAllData();
+                    return this.calculateStats(data);
                 } catch (error) {
                     console.error('Ошибка загрузки статистики:', error);
-                    return { users: 0, ads: 0, likes: 0, dislikes: 0 };
+                    return this.calculateStats({ ads: [], ratings: {}, users: {}, history: {} });
                 }
             },
             
-            // Сохранить объявление на сервере
-            saveAd: function(adData) {
-                try {
-                    const ads = this.getAllAds();
-                    
-                    // Проверяем, есть ли уже такое объявление
-                    const existingIndex = ads.findIndex(ad => ad.id === adData.id);
-                    
-                    if (existingIndex >= 0) {
-                        // Обновляем существующее
-                        ads[existingIndex] = adData;
+            // Обновить статистику
+            updateStats: function(data) {
+                const stats = this.calculateStats(data);
+                localStorage.setItem(this.STORAGE_KEYS.SERVER_STATS, JSON.stringify(stats));
+                return stats;
+            },
+            
+            // Рассчитать статистику
+            calculateStats: function(data) {
+                const ads = data.ads || [];
+                const users = data.users || {};
+                const ratings = data.ratings || {};
+                
+                // Считаем активных пользователей (были активны в последние 30 дней)
+                const activeUsers = Object.keys(users).filter(userId => {
+                    const user = users[userId];
+                    if (!user.lastActive) return false;
+                    const lastActive = new Date(user.lastActive);
+                    const thirtyDaysAgo = new Date();
+                    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                    return lastActive > thirtyDaysAgo;
+                }).length;
+                
+                // Считаем общее количество лайков и дизлайков
+                let totalLikes = 0;
+                let totalDislikes = 0;
+                Object.values(ratings).forEach(userRatings => {
+                    Object.values(userRatings).forEach(rating => {
+                        if (rating === 'like') totalLikes++;
+                        if (rating === 'dislike') totalDislikes++;
+                    });
+                });
+                
+                // Считаем объявления по категориям
+                const categories = {
+                    liquids: 0,
+                    disposable: 0,
+                    pod: 0,
+                    consumables: 0,
+                    other: 0
+                };
+                
+                ads.forEach(ad => {
+                    const category = ad.category || 'other';
+                    if (categories[category] !== undefined) {
+                        categories[category]++;
                     } else {
-                        // Добавляем новое
-                        ads.push(adData);
+                        categories.other++;
                     }
-                    
-                    localStorage.setItem(this.STORAGE_KEYS.ADS, JSON.stringify(ads));
-                    localStorage.setItem(this.STORAGE_KEYS.LAST_SYNC, Date.now().toString());
-                    
-                    // Обновляем статистику
-                    this.updateStats();
-                    
-                    console.log('✅ Объявление сохранено на сервере:', adData.id);
-                    return adData;
-                } catch (error) {
-                    console.error('Ошибка сохранения объявления на сервере:', error);
-                    return null;
-                }
+                });
+                
+                return {
+                    totalUsers: Object.keys(users).length,
+                    activeUsers: activeUsers,
+                    totalAds: ads.length,
+                    totalLikes: totalLikes,
+                    totalDislikes: totalDislikes,
+                    categories: categories,
+                    lastUpdated: new Date().toISOString(),
+                    adminOnline: true
+                };
             },
             
-            // Обновить рейтинг на сервере
-            updateRating: function(sellerId, userId, rating) {
-                try {
-                    const ratings = this.getAllRatings();
-                    
-                    if (!ratings[sellerId]) {
-                        ratings[sellerId] = {};
-                    }
-                    
-                    ratings[sellerId][userId] = rating;
-                    
-                    localStorage.setItem(this.STORAGE_KEYS.RATINGS, JSON.stringify(ratings));
-                    localStorage.setItem(this.STORAGE_KEYS.LAST_SYNC, Date.now().toString());
-                    
-                    // Обновляем статистику
-                    this.updateStats();
-                    
-                    console.log('✅ Рейтинг обновлен на сервере:', sellerId, userId, rating);
-                    return true;
-                } catch (error) {
-                    console.error('Ошибка обновления рейтинга на сервере:', error);
-                    return false;
-                }
+            // Добавить объявление
+            addAd: function(adData) {
+                const data = this.getAllData();
+                data.ads.push(adData);
+                return this.saveAllData(data);
             },
             
-            // Удалить объявление с сервера
-            deleteAd: function(adId, sellerId) {
-                try {
-                    const ads = this.getAllAds();
-                    const filteredAds = ads.filter(ad => !(ad.id === adId && ad.sellerId === sellerId));
-                    
-                    localStorage.setItem(this.STORAGE_KEYS.ADS, JSON.stringify(filteredAds));
-                    localStorage.setItem(this.STORAGE_KEYS.LAST_SYNC, Date.now().toString());
-                    
-                    // Обновляем статистику
-                    this.updateStats();
-                    
-                    console.log('✅ Объявление удалено с сервера:', adId);
-                    return true;
-                } catch (error) {
-                    console.error('Ошибка удаления объявления с сервера:', error);
-                    return false;
+            // Обновить объявление
+            updateAd: function(adId, adData) {
+                const data = this.getAllData();
+                const index = data.ads.findIndex(ad => ad.id === adId);
+                if (index !== -1) {
+                    data.ads[index] = { ...data.ads[index], ...adData };
+                    return this.saveAllData(data);
                 }
+                return false;
             },
             
-            // Регистрация нового пользователя на сервере
-            registerUser: function(userData) {
-                try {
-                    const users = this.getAllUsers();
-                    users[userData.id] = {
+            // Удалить объявление
+            deleteAd: function(adId) {
+                const data = this.getAllData();
+                data.ads = data.ads.filter(ad => ad.id !== adId);
+                return this.saveAllData(data);
+            },
+            
+            // Добавить пользователя
+            addUser: function(userData) {
+                const data = this.getAllData();
+                if (!data.users[userData.id]) {
+                    data.users[userData.id] = {
                         name: userData.name,
                         username: userData.username,
                         registrationDate: new Date().toISOString(),
                         lastActive: new Date().toISOString()
                     };
-                    
-                    localStorage.setItem(this.STORAGE_KEYS.USERS, JSON.stringify(users));
-                    
-                    // Обновляем статистику
-                    this.updateStats();
-                    
-                    console.log('✅ Пользователь зарегистрирован на сервере:', userData.id);
-                    return userData;
-                } catch (error) {
-                    console.error('Ошибка регистрации пользователя на сервере:', error);
-                    return userData;
+                    return this.saveAllData(data);
                 }
+                return false;
             },
             
             // Обновить активность пользователя
             updateUserActivity: function(userId) {
-                try {
-                    const users = this.getAllUsers();
-                    if (users[userId]) {
-                        users[userId].lastActive = new Date().toISOString();
-                        localStorage.setItem(this.STORAGE_KEYS.USERS, JSON.stringify(users));
-                    }
-                } catch (error) {
-                    console.error('Ошибка обновления активности:', error);
+                const data = this.getAllData();
+                if (data.users[userId]) {
+                    data.users[userId].lastActive = new Date().toISOString();
+                    return this.saveAllData(data);
                 }
+                return false;
             },
             
-            // Обновить статистику
-            updateStats: function() {
-                try {
-                    const users = this.getAllUsers();
-                    const ads = this.getAllAds();
-                    const ratings = this.getAllRatings();
-                    
-                    let totalLikes = 0;
-                    let totalDislikes = 0;
-                    Object.values(ratings).forEach(userRatings => {
-                        Object.values(userRatings).forEach(rating => {
-                            if (rating === 'like') totalLikes++;
-                            if (rating === 'dislike') totalDislikes++;
-                        });
-                    });
-                    
-                    const stats = {
-                        users: Object.keys(users).length,
-                        ads: ads.length,
-                        likes: totalLikes,
-                        dislikes: totalDislikes,
-                        lastUpdated: new Date().toISOString()
-                    };
-                    
-                    localStorage.setItem(this.STORAGE_KEYS.STATS, JSON.stringify(stats));
-                    return stats;
-                } catch (error) {
-                    console.error('Ошибка обновления статистики:', error);
-                    return null;
+            // Обновить рейтинг
+            updateRating: function(sellerId, userId, rating) {
+                const data = this.getAllData();
+                if (!data.ratings[sellerId]) {
+                    data.ratings[sellerId] = {};
                 }
+                data.ratings[sellerId][userId] = rating;
+                return this.saveAllData(data);
+            },
+            
+            // Добавить в историю
+            addToHistory: function(userId, historyItem) {
+                const data = this.getAllData();
+                if (!data.history[userId]) {
+                    data.history[userId] = [];
+                }
+                data.history[userId].unshift(historyItem);
+                // Ограничиваем историю 50 записями
+                if (data.history[userId].length > 50) {
+                    data.history[userId] = data.history[userId].slice(0, 50);
+                }
+                return this.saveAllData(data);
+            },
+            
+            // Очистить историю пользователя
+            clearUserHistory: function(userId) {
+                const data = this.getAllData();
+                if (data.history[userId]) {
+                    data.history[userId] = [];
+                    return this.saveAllData(data);
+                }
+                return false;
+            },
+            
+            // Получить историю пользователя
+            getUserHistory: function(userId) {
+                const data = this.getAllData();
+                return data.history[userId] || [];
+            },
+            
+            // Получить объявления пользователя
+            getUserAds: function(userId) {
+                const data = this.getAllData();
+                return data.ads.filter(ad => ad.sellerId === userId) || [];
             }
         };
         
@@ -1774,20 +1849,19 @@
             ads: [],
             userRatings: {},
             history: [],
-            uploadedPhotos: [], // Исправление: храним массив объектов {id, url, file}
-            uploadedPhotoFiles: [],
+            uploadedPhotos: [], // Теперь храним массив объектов {id, url, file}
             currentPhotoIndex: 0,
             currentPhotoList: [],
             nextAdId: Date.now(),
             currentCategory: 'all',
-            currentPhotoSlot: null
+            editingAdId: null,
+            serverStats: null
         };
         
         // Проверка Telegram и инициализация пользователя
         function checkTelegramAndInit() {
             if (!tg) {
                 console.warn('Telegram Web App не доступен. Используем тестовые данные.');
-                // Для тестирования без Telegram
                 appData.currentUserId = 'test_user_' + Date.now();
                 appData.currentUserData = {
                     id: appData.currentUserId,
@@ -1816,7 +1890,7 @@
             };
             
             // Регистрируем пользователя на сервере
-            LocalMarketServer.registerUser({
+            MarketServer.addUser({
                 id: appData.currentUserId,
                 name: appData.currentUserData.first_name,
                 username: appData.currentUserData.username
@@ -1828,52 +1902,111 @@
         // Загрузить данные с сервера
         function loadFromServer() {
             try {
-                // Загружаем данные с сервера
-                const serverAds = LocalMarketServer.getAllAds();
-                const serverRatings = LocalMarketServer.getAllRatings();
+                const serverData = MarketServer.getAllData();
                 
-                if (serverAds.length > 0) {
-                    // Исправление: используем серверные данные как основу
-                    appData.ads = [...serverAds];
-                    console.log(`✅ Загружено ${serverAds.length} объявлений с сервера`);
+                // Загружаем объявления
+                if (serverData.ads && serverData.ads.length > 0) {
+                    appData.ads = [...serverData.ads];
+                    console.log(`✅ Загружено ${serverData.ads.length} объявлений`);
                 }
                 
                 // Загружаем рейтинги
-                appData.userRatings = { ...serverRatings };
+                if (serverData.ratings) {
+                    appData.userRatings = { ...serverData.ratings };
+                }
+                
+                // Загружаем историю пользователя
+                if (serverData.history && appData.currentUserId) {
+                    appData.history = MarketServer.getUserHistory(appData.currentUserId);
+                }
                 
                 // Обновляем активность пользователя
                 if (appData.currentUserId) {
-                    LocalMarketServer.updateUserActivity(appData.currentUserId);
+                    MarketServer.updateUserActivity(appData.currentUserId);
                 }
                 
+                // Загружаем статистику сервера
+                appData.serverStats = MarketServer.getServerStats();
+                
             } catch (error) {
-                console.error('Ошибка загрузки с сервера:', error);
+                console.error('Ошибка загрузки данных:', error);
                 showNotification('Ошибка загрузки данных', 'warning');
             }
         }
         
-        // Сохранить данные на сервер
-        function saveToServer() {
-            try {
-                // Сохраняем все объявления
-                appData.ads.forEach(ad => {
-                    LocalMarketServer.saveAd(ad);
-                });
-                
-                // Сохраняем все рейтинги
-                Object.keys(appData.userRatings).forEach(sellerId => {
-                    Object.keys(appData.userRatings[sellerId]).forEach(userId => {
-                        LocalMarketServer.updateRating(
-                            sellerId, 
-                            userId, 
-                            appData.userRatings[sellerId][userId]
-                        );
-                    });
-                });
-                
-                console.log('✅ Данные сохранены на сервер');
-            } catch (error) {
-                console.error('Ошибка сохранения на сервер:', error);
+        // Сохранить объявление на сервер
+        function saveAdToServer(adData) {
+            const serverData = MarketServer.getAllData();
+            
+            // Проверяем, есть ли уже такое объявление
+            const existingIndex = serverData.ads.findIndex(ad => ad.id === adData.id);
+            
+            if (existingIndex >= 0) {
+                // Обновляем существующее
+                serverData.ads[existingIndex] = adData;
+            } else {
+                // Добавляем новое
+                serverData.ads.push(adData);
+            }
+            
+            MarketServer.saveAllData(serverData);
+            appData.serverStats = MarketServer.getServerStats();
+            updateServerStatsUI();
+        }
+        
+        // Обновить UI статистики сервера
+        function updateServerStatsUI() {
+            if (!appData.serverStats) return;
+            
+            const statsGrid = document.getElementById('server-stats-grid');
+            const faqAnswer5 = document.getElementById('faq-answer-5');
+            
+            if (statsGrid) {
+                statsGrid.innerHTML = `
+                    <div class="server-stat-item">
+                        <div class="server-stat-number">${appData.serverStats.totalUsers}</div>
+                        <div class="server-stat-label">Пользователей</div>
+                    </div>
+                    <div class="server-stat-item">
+                        <div class="server-stat-number">${appData.serverStats.totalAds}</div>
+                        <div class="server-stat-label">Объявлений</div>
+                    </div>
+                    <div class="server-stat-item">
+                        <div class="server-stat-number">${appData.serverStats.totalLikes}</div>
+                        <div class="server-stat-label">Лайков</div>
+                    </div>
+                    <div class="server-stat-item">
+                        <div class="server-stat-number">${appData.serverStats.totalDislikes}</div>
+                        <div class="server-stat-label">Дизлайков</div>
+                    </div>
+                    <div class="server-stat-item">
+                        <div class="server-stat-number">${appData.serverStats.activeUsers}</div>
+                        <div class="server-stat-label">Активных</div>
+                    </div>
+                    <div class="server-stat-item">
+                        <div class="server-stat-number">${appData.serverStats.adminOnline ? 'Онлайн' : 'Офлайн'}</div>
+                        <div class="server-stat-label">Админ</div>
+                    </div>
+                `;
+            }
+            
+            if (faqAnswer5) {
+                const lastUpdated = new Date(appData.serverStats.lastUpdated).toLocaleDateString('ru-RU');
+                faqAnswer5.innerHTML = `
+                    <strong>Статистика сервера Vape Market:</strong><br>
+                    • Всего пользователей: ${appData.serverStats.totalUsers}<br>
+                    • Активных пользователей: ${appData.serverStats.activeUsers}<br>
+                    • Всего объявлений: ${appData.serverStats.totalAds}<br>
+                    • Всего лайков: ${appData.serverStats.totalLikes}<br>
+                    • Всего дизлайков: ${appData.serverStats.totalDislikes}<br>
+                    • Объявлений по категориям:<br>
+                      - Жидкости: ${appData.serverStats.categories.liquids}<br>
+                      - Одноразовые: ${appData.serverStats.categories.disposable}<br>
+                      - Под-системы: ${appData.serverStats.categories.pod}<br>
+                      - Расходники: ${appData.serverStats.categories.consumables}<br>
+                    <br>Последнее обновление: ${lastUpdated}<br>
+                    Администратор: @nukm0 (${appData.serverStats.adminOnline ? 'онлайн' : 'офлайн'})
+                `;
             }
         }
         
@@ -1906,8 +2039,11 @@
             // Обновляем статистику профиля
             updateProfileStats();
             
+            // Обновляем статистику сервера
+            updateServerStatsUI();
+            
             // Инициализация FAQ
-            for (let i = 1; i <= 5; i++) {
+            for (let i = 1; i <= 6; i++) {
                 document.getElementById(`faq-answer-${i}`).style.display = 'none';
             }
             
@@ -1982,6 +2118,10 @@
                 updateProfileStats();
                 updateMyAdsList();
                 updateHistory();
+            }
+            
+            if (page === 'faq') {
+                updateServerStatsUI();
             }
         }
         
@@ -2274,14 +2414,15 @@
             appData.userRatings[sellerId][appData.currentUserId] = type;
             
             // Сохраняем оценку на сервере
-            LocalMarketServer.updateRating(sellerId, appData.currentUserId, type);
+            MarketServer.updateRating(sellerId, appData.currentUserId, type);
             
             // Сохраняем объявление на сервере
-            LocalMarketServer.saveAd(ad);
+            saveAdToServer(ad);
             
             // Обновляем UI
             renderAds();
             updateProfileStats();
+            updateServerStatsUI();
             
             showNotification(`Вы поставили ${type === 'like' ? 'лайк' : 'дизлайк'}`, 'success');
         }
@@ -2311,7 +2452,11 @@
                 price: price
             };
             
+            // Сохраняем историю в локальных данных
             appData.history.unshift(historyItem);
+            
+            // Сохраняем историю на сервере
+            MarketServer.addToHistory(appData.currentUserId, historyItem);
             
             // Обновляем историю в профиле если открыта страница
             if (document.getElementById('page-profile').classList.contains('active')) {
@@ -2421,7 +2566,7 @@
             if (!ad) return;
             
             // Удаляем с сервера
-            LocalMarketServer.deleteAd(adId, ad.sellerId);
+            MarketServer.deleteAd(adId);
             
             // Удаляем локально
             appData.ads = appData.ads.filter(ad => ad.id !== adId);
@@ -2429,6 +2574,7 @@
             renderAds();
             updateProfileStats();
             updateMyAdsList();
+            updateServerStatsUI();
             showNotification('Объявление удалено', 'warning');
         }
         
@@ -2449,7 +2595,7 @@
                 ad.photoUrls.forEach((url, index) => {
                     if (url) {
                         appData.uploadedPhotos.push({
-                            id: index + 1,
+                            id: Date.now() + index,
                             url: url,
                             file: null
                         });
@@ -2487,18 +2633,21 @@
                 return;
             }
             
+            // Очищаем историю на сервере
+            MarketServer.clearUserHistory(appData.currentUserId);
+            
+            // Очищаем локальную историю
             appData.history = [];
             updateHistory();
             showNotification('История очищена', 'warning');
         }
         
-        // Открыть выбор фото (исправленная версия)
-        function openPhotoPicker(slotNumber) {
-            appData.currentPhotoSlot = slotNumber;
+        // Открыть выбор фото
+        function openPhotoPicker() {
             document.getElementById('photoInput').click();
         }
         
-        // Обработка загрузки фото (исправленная версия)
+        // Обработка загрузки фото (ИСПРАВЛЕННАЯ)
         function handlePhotoUpload(event) {
             const files = event.target.files;
             const maxFiles = 3;
@@ -2507,10 +2656,6 @@
                 showNotification(`Можно загрузить только ${maxFiles} фото!`, 'error');
                 return;
             }
-            
-            // Очищаем предыдущие фото
-            appData.uploadedPhotos = [];
-            appData.uploadedPhotoFiles = [];
             
             // Обрабатываем каждый файл
             const promises = [];
@@ -2522,7 +2667,7 @@
                 const promise = new Promise((resolve) => {
                     reader.onload = function(e) {
                         appData.uploadedPhotos.push({
-                            id: i + 1,
+                            id: Date.now() + i, // Уникальный ID
                             url: e.target.result,
                             file: file
                         });
@@ -2541,50 +2686,40 @@
             });
         }
         
-        // Обновить превью фото (новая функция)
+        // Обновить превью фото
         function updatePhotoPreviews() {
-            // Очищаем все фото-слоты
-            for (let i = 1; i <= 3; i++) {
-                const placeholder = document.getElementById(`photo-placeholder-${i}`);
-                placeholder.innerHTML = `<i class="fas fa-plus"></i><span>Фото ${i}</span>`;
-                placeholder.style.display = 'flex';
-            }
+            const container = document.getElementById('uploaded-photos-container');
+            container.innerHTML = '';
             
             // Показываем загруженные фото
-            appData.uploadedPhotos.forEach(photo => {
-                const placeholder = document.getElementById(`photo-placeholder-${photo.id}`);
-                if (placeholder) {
-                    placeholder.innerHTML = `
-                        <img src="${photo.url}" alt="Фото ${photo.id}">
-                        <div class="photo-label">Фото ${photo.id}</div>
-                        <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); 
-                             color: white; width: 20px; height: 20px; border-radius: 50%; 
-                             display: flex; align-items: center; justify-content: center; 
-                             font-size: 12px; cursor: pointer;" 
-                             onclick="removePhoto(${photo.id}, event)">×</div>
-                    `;
-                }
+            appData.uploadedPhotos.forEach((photo, index) => {
+                const photoItem = document.createElement('div');
+                photoItem.className = 'uploaded-photo-item';
+                photoItem.innerHTML = `
+                    <img src="${photo.url}" alt="Фото ${index + 1}">
+                    <button class="remove-photo-btn" onclick="removeUploadedPhoto(${photo.id})">×</button>
+                `;
+                container.appendChild(photoItem);
             });
             
             // Обновляем счетчик
             document.getElementById('photo-count').textContent = appData.uploadedPhotos.length;
+            
+            // Если фото нет, показываем сообщение
+            if (appData.uploadedPhotos.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; width: 100%; color: #A78BFA; padding: 20px;">
+                        <i class="fas fa-images" style="font-size: 48px; opacity: 0.5; margin-bottom: 10px;"></i>
+                        <div>Нажмите "Загрузить фотографии"</div>
+                    </div>
+                `;
+            }
         }
         
-        // Удалить фото (исправленная версия)
-        function removePhoto(photoNum, event) {
-            if (event) event.stopPropagation();
-            
-            // Удаляем фото из массива
-            appData.uploadedPhotos = appData.uploadedPhotos.filter(photo => photo.id !== photoNum);
-            
-            // Переиндексируем оставшиеся фото
-            appData.uploadedPhotos.forEach((photo, index) => {
-                photo.id = index + 1;
-            });
-            
-            // Обновляем превью
+        // Удалить загруженное фото
+        function removeUploadedPhoto(photoId) {
+            appData.uploadedPhotos = appData.uploadedPhotos.filter(photo => photo.id !== photoId);
             updatePhotoPreviews();
-            
             showNotification(`Фото удалено (${appData.uploadedPhotos.length}/3)`, 'warning');
         }
         
@@ -2642,7 +2777,7 @@
                     ad.photos = appData.uploadedPhotos.length;
                     
                     // Сохраняем на сервере
-                    LocalMarketServer.saveAd(ad);
+                    saveAdToServer(ad);
                     
                     renderAds();
                     updateProfileStats();
@@ -2675,10 +2810,14 @@
             };
             
             // Сохраняем на сервере
-            LocalMarketServer.saveAd(newAd);
+            MarketServer.addAd(newAd);
             
             // Добавляем в локальный список
             appData.ads.unshift(newAd);
+            
+            // Обновляем статистику
+            appData.serverStats = MarketServer.getServerStats();
+            updateServerStatsUI();
             
             // Обновляем статистику профиля
             updateProfileStats();
@@ -2724,6 +2863,11 @@
             if (answer.style.display === 'none') {
                 answer.style.display = 'block';
                 icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+                
+                // Если это FAQ статистики, обновляем данные
+                if (id === 5 && appData.serverStats) {
+                    updateServerStatsUI();
+                }
             } else {
                 answer.style.display = 'none';
                 icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
