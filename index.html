@@ -2921,18 +2921,18 @@ const storage = firebase.storage(); // ДОБАВЬТЕ ЭТУ СТРОКУ
             document.getElementById('adDescription').value = ad.description;
             
             // Загружаем фото
-            appData.uploadedPhotos = [];
-            if (ad.photoUrls && ad.photoUrls.length > 0) {
-                ad.photoUrls.forEach((url, index) => {
-                    if (url) {
-                        appData.uploadedPhotos.push({
-                            id: Date.now() + index,
-                            url: url,
-                            file: null
-                        });
-                    }
-                });
-            }
+appData.uploadedPhotos = [];
+if (ad.photoUrls && ad.photoUrls.length > 0) {
+    ad.photoUrls.forEach((url, index) => {
+        if (url && url.startsWith('http')) {
+            appData.uploadedPhotos.push({
+                id: Date.now() + index,
+                url: url,
+                file: null
+            });
+        }
+    });
+}
             
             // Обновляем превью фото
             updatePhotoPreviews();
