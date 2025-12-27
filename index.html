@@ -2033,100 +2033,110 @@
         isDataLoaded: false // Флаг загрузки данных
     };
     
-    function checkTelegramAndInit() {
-    console.log('🔍 Начинаем инициализацию...');
-    
-    const tg = window.Telegram?.WebApp;
-    
-    if (tg) {
-        console.log('✅ Telegram Web App обнаружен');
-        
-        tg.expand();
-        tg.ready();
-        
-        // Получаем данные пользователя через initData
-        const initData = tg.initData || '';
-        let userData = null;
-        
-        // Пробуем разные способы получить пользователя
-        if (tg.initDataUnsafe?.user) {
-            userData = tg.initDataUnsafe.user;
-        } else if (initData) {
-            // Парсим initData вручную
-            const params = new URLSearchParams(initData);
-            const userParam = params.get('user');
-            if (userParam) {
-                try {
-                    userData = JSON.parse(decodeURIComponent(userParam));
-                } catch (e) {
-                    console.log('Не удалось распарсить user:', e);
-                }
-            }
-        }
-        
-        console.log('Данные пользователя:', userData);
-        
-        if (userData && userData.id) {
-            console.log('✅ Пользователь Telegram получен');
-            appData.currentUserId = userData.id.toString();
-            appData.currentUserData = {
-                id: userData.id,
-                first_name: userData.first_name || 'Пользователь',
-                last_name: userData.last_name || '',
-                username: userData.username || '',
-                photo_url: userData.photo_url || null
-            };
+            function checkTelegramAndInit() {
+            console.log('🔍 Начинаем инициализацию...');
             
-            // Сначала проверяем статус пользователя
-            checkUserStatus().then(() => {
-                if (!appData.isBlocked) {
-                    FirebaseMarketServer.registerUser(appData.currentUserData)
-                        .then(success => {
-                            console.log('Регистрация в Firebase:', success ? '✅ Успешно' : '❌ Ошибка');
-                            initApp();
-                        })
-                        .catch(error => {
-                            console.error('Ошибка регистрации в Firebase:', error);
-                            initApp();
-                        });
-                }
-            });
+            const tg = window.Telegram?.WebApp;
             
-        } else {
-            console.warn('⚠️ Нет данных пользователя в Telegram');
-            createTestUser();
-        }
-    } else {
-        console.warn('⚠️ Telegram Web App не найден (открыто в браузере)');
-        createTestUser();
-    }
-    
-    function createTestUser() {
-        appData.currentUserId = 'test_user_' + Date.now();
-        appData.currentUserData = {
-            id: appData.currentUserId,
-            first_name: 'Тестовый',
-            username: 'testuser_' + Math.floor(Math.random() * 1000),
-            photo_url: null
-        };
-        
-        console.log('🔄 Создан тестовый пользователь:', appData.currentUserData);
-        
-        checkUserStatus().then(() => {
-            if (!appData.isBlocked) {
-                FirebaseMarketServer.registerUser(appData.currentUserData)
-                    .then(success => {
-                        console.log('Регистрация тестового пользователя:', success ? '✅ Успешно' : '❌ Ошибка');
-                        initApp();
-                    })
-                    .catch(error => {
-                        console.error('Ошибка регистрации тестового пользователя:', error);
-                        initApp();
+            if (tg) {
+                console.log('✅ Telegram Web App обнаружен');
+                
+                // ТОЛЬКО ЭТИ ФУНКЦИИ РАБОТАЮТ В 6.0:
+                tg.expand();
+                tg.ready();
+                
+                // УДАЛИТЕ ЭТИ СТРОКИ (не работают в 6.0):
+                // tg.BackButton.show();
+                // tg.BackButton.onClick(function() {
+                //     tg.close();
+                // });
+                
+                // Получаем данные пользователя
+                let userData = null;
+                
+                // Способ 1
+                if (tg.initDataUnsafe?.user) {
+                    userData = tg.initDataUnsafe.user;
+                    console.log('Пользователь из initDataUnsafe:', userData);
+                } 
+                // Способ 2 для старых версий
+                else if (tg.initData) {
+                    try {
+                        const params = new URLSearchParams(tg.initData);
+                        const userStr = params.get('user');
+                        if (userStr) {
+                            userData = JSON.parse(decodeURIComponent(userStr));
+                            console.log('Пользователь из initData:', userData);
+                        }
+                    } catch (e) {
+                        console.log('Ошибка парсинга initData:', e);
+                    }
+                }
+                
+                console.log('Данные пользователя:', userData);
+                
+                if (userData && userData.id) {
+                    console.log('✅ Пользователь Telegram получен');
+                    appData.currentUserId = userData.id.toString();
+                    appData.currentUserData = {
+                        id: userData.id,
+                        first_name: userData.first_name || 'Пользователь',
+                        last_name: userData.last_name || '',
+                        username: userData.username || '',
+                        photo_url: userData.photo_url || null
+                    };
+                    
+                    // Сначала проверяем статус пользователя
+                    checkUserStatus().then(() => {
+                        if (!appData.isBlocked) {
+                            FirebaseMarketServer.registerUser(appData.currentUserData)
+                                .then(success => {
+                                    console.log('Регистрация в Firebase:', success ? '✅ Успешно' : '❌ Ошибка');
+                                    initApp();
+                                })
+                                .catch(error => {
+                                    console.error('Ошибка регистрации в Firebase:', error);
+                                    initApp();
+                                });
+                        }
                     });
+                    
+                } else {
+                    console.warn('⚠️ Нет данных пользователя в Telegram');
+                    createTestUser();
+                }
+            } else {
+                console.warn('⚠️ Telegram Web App не найден (открыто в браузере)');
+                createTestUser();
             }
-        });
-    }
-}
+            
+            function createTestUser() {
+                appData.currentUserId = 'test_user_' + Date.now();
+                appData.currentUserData = {
+                    id: appData.currentUserId,
+                    first_name: 'Тестовый',
+                    username: 'testuser_' + Math.floor(Math.random() * 1000),
+                    photo_url: null
+                };
+                
+                console.log('🔄 Создан тестовый пользователь:', appData.currentUserData);
+                
+                // Сначала проверяем статус
+                checkUserStatus().then(() => {
+                    if (!appData.isBlocked) {
+                        FirebaseMarketServer.registerUser(appData.currentUserData)
+                            .then(success => {
+                                console.log('Регистрация тестового пользователя:', success ? '✅ Успешно' : '❌ Ошибка');
+                                initApp();
+                            })
+                            .catch(error => {
+                                console.error('Ошибка регистрации тестового пользователя:', error);
+                                initApp();
+                            });
+                    }
+                });
+            }
+        }
     
     // Загрузить данные с Firebase
     async function loadFromServer() {
