@@ -10,7 +10,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        /* [Ваш CSS код остается полностью без изменений] */
         /* Фиолетовые градиенты для фона */
         :root {
             --gradient-primary: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 50%, #6D28D9 100%);
@@ -241,6 +240,7 @@
             margin-bottom: 20px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: transform 0.3s ease;
+            position: relative;
         }
         
         .advertisement-card:hover {
@@ -1708,6 +1708,290 @@
         .blocked-contact a:hover {
             text-decoration: underline;
         }
+        
+        /* ============ ДОПОЛНЕНИЕ: СТИЛИ ДЛЯ СИСТЕМЫ ЖАЛОБ ============ */
+        
+        /* Кнопка жалобы в карточке объявления */
+        .complaint-btn-small {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(239, 68, 68, 0.3);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            color: #EF4444;
+            border-radius: 10px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+        
+        .complaint-btn-small:hover {
+            background: rgba(239, 68, 68, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        /* Индикатор жалоб в карточке объявления */
+        .complaint-indicator {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(239, 68, 68, 0.8);
+            color: white;
+            border-radius: 10px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        /* Модальное окно для жалобы */
+        .complaint-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 20000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .complaint-modal.active {
+            display: flex;
+        }
+        
+        .complaint-modal-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            max-width: 400px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+        }
+        
+        .complaint-modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .complaint-modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .complaint-type-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .complaint-type-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-align: center;
+        }
+        
+        .complaint-type-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .complaint-type-btn.active {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.5);
+        }
+        
+        .complaint-type-icon {
+            font-size: 24px;
+        }
+        
+        .complaint-type-text {
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .complaint-textarea {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            font-size: 14px;
+            margin-bottom: 15px;
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .complaint-textarea::placeholder {
+            color: #A78BFA;
+        }
+        
+        .complaint-evidence {
+            margin-bottom: 20px;
+        }
+        
+        .complaint-evidence-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: white;
+        }
+        
+        .complaint-evidence-btns {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .complaint-evidence-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .complaint-evidence-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .complaint-modal-footer {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .complaint-submit-btn {
+            flex: 2;
+            padding: 15px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .complaint-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+        }
+        
+        .complaint-cancel-btn {
+            flex: 1;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .complaint-cancel-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        /* Бейдж в админ-панели для жалоб */
+        .complaint-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+        
+        /* Статистика жалоб в профиле */
+        .complaint-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .complaint-stat-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .complaint-stat-number {
+            font-size: 18px;
+            font-weight: 700;
+            color: #EF4444;
+            display: block;
+            margin-bottom: 3px;
+        }
+        
+        .complaint-stat-label {
+            font-size: 11px;
+            color: #9CA3AF;
+        }
     </style>
 </head>
 <body>
@@ -1760,7 +2044,6 @@
         <main class="main-content" id="main-content">
             <!-- Страница 1: Объявления -->
             <div class="page active" id="page-ads">
-                <!-- [Ваш существующий контент страницы объявлений] -->
                 <div class="add-ad-section">
                     <div class="add-ad-header">
                         <div class="add-ad-title">Разместить объявление</div>
@@ -1839,7 +2122,6 @@
 
             <!-- Страница 2: Личный кабинет -->
             <div class="page" id="page-profile">
-                <!-- [Ваш существующий контент личного кабинета] -->
                 <div class="profile-card">
                     <div class="profile-header">
                         <div class="profile-avatar" id="profileAvatar">
@@ -1903,7 +2185,6 @@
 
             <!-- Страница 3: FAQ -->
             <div class="page" id="page-faq">
-                <!-- [Ваш существующий контент FAQ] -->
                 <div class="profile-card">
                     <div class="profile-header">
                         <div class="profile-avatar" style="background: var(--gradient-primary);">
@@ -2401,6 +2682,55 @@
 
         <!-- Уведомление -->
         <div class="notification" id="notification"></div>
+
+        <!-- МОДАЛЬНОЕ ОКНО ДЛЯ ЖАЛОБЫ (НОВОЕ) -->
+        <div class="complaint-modal" id="complaintModal">
+            <div class="complaint-modal-content">
+                <button class="complaint-modal-close" onclick="closeComplaintModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+                
+                <div class="complaint-modal-title">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Пожаловаться на объявление
+                </div>
+                
+                <div style="font-size: 14px; color: #D8B4FE; margin-bottom: 20px;" id="complaintTargetInfo">
+                    <!-- Информация о цели жалобы -->
+                </div>
+                
+                <div class="complaint-type-grid" id="complaintTypes">
+                    <!-- Типы жалоб будут загружены динамически -->
+                </div>
+                
+                <textarea class="complaint-textarea" placeholder="Опишите проблему подробно..." id="complaintDescription"></textarea>
+                
+                <div class="complaint-evidence">
+                    <div class="complaint-evidence-title">
+                        <i class="fas fa-paperclip"></i> Доказательства (опционально)
+                    </div>
+                    <div class="complaint-evidence-btns">
+                        <button class="complaint-evidence-btn" onclick="attachScreenshot()">
+                            <i class="fas fa-camera"></i> Скриншот
+                        </button>
+                        <button class="complaint-evidence-btn" onclick="attachPhoto()">
+                            <i class="fas fa-image"></i> Фото
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="complaint-modal-footer">
+                    <button class="complaint-submit-btn" onclick="submitComplaintToServer()">
+                        <i class="fas fa-paper-plane"></i>
+                        Отправить жалобу
+                    </button>
+                    <button class="complaint-cancel-btn" onclick="closeComplaintModal()">
+                        <i class="fas fa-times"></i>
+                        Отмена
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -2449,10 +2779,10 @@
                         photos: adData.photoUrls?.length || 0,
                         likes: 0,
                         dislikes: 0,
+                        complaints: 0,
                         createdAt: firebase.database.ServerValue.TIMESTAMP,
                         updatedAt: firebase.database.ServerValue.TIMESTAMP,
                         verified: false,
-                        complaints: 0,
                         status: 'active'
                     };
                     
@@ -3022,6 +3352,107 @@
                     console.error('❌ Ошибка проверки блокировки:', error);
                     return { isBlocked: false };
                 }
+            },
+            
+            // ==================== ДОПОЛНЕНИЕ: СИСТЕМА ЖАЛОБ ====================
+            
+            // Добавить жалобу на объявление
+            addComplaintToAd: async function(complaintData) {
+                try {
+                    console.log('🔄 Добавляю жалобу в Firebase...', complaintData);
+                    
+                    // Добавляем жалобу в общую коллекцию
+                    const complaintRef = database.ref('complaints').push();
+                    const complaintId = complaintRef.key;
+                    
+                    await complaintRef.set({
+                        ...complaintData,
+                        id: complaintId,
+                        status: 'new',
+                        createdAt: firebase.database.ServerValue.TIMESTAMP,
+                        updatedAt: firebase.database.ServerValue.TIMESTAMP
+                    });
+                    
+                    // Увеличиваем счетчик жалоб на объявлении
+                    await database.ref(`ads/${complaintData.targetAdId}/complaints`).transaction((current) => {
+                        return (current || 0) + 1;
+                    });
+                    
+                    // Увеличиваем счетчик жалоб у пользователя
+                    await database.ref(`users/${complaintData.targetUserId}/complaintsCount`).transaction((current) => {
+                        return (current || 0) + 1;
+                    });
+                    
+                    console.log('✅ Жалоба добавлена, ID:', complaintId);
+                    return complaintId;
+                    
+                } catch (error) {
+                    console.error('❌ Ошибка добавления жалобы:', error);
+                    throw error;
+                }
+            },
+            
+            // Проверить, жаловался ли пользователь уже на это объявление
+            checkIfUserComplained: async function(userId, adId) {
+                try {
+                    const snapshot = await database.ref('complaints')
+                        .orderByChild('reporterId')
+                        .equalTo(userId)
+                        .once('value');
+                    
+                    let hasComplaint = false;
+                    snapshot.forEach((child) => {
+                        const complaint = child.val();
+                        if (complaint.targetAdId === adId) {
+                            hasComplaint = true;
+                        }
+                    });
+                    
+                    return hasComplaint;
+                } catch (error) {
+                    console.error('❌ Ошибка проверки жалобы:', error);
+                    return false;
+                }
+            },
+            
+            // Получить жалобы на объявление
+            getAdComplaints: async function(adId) {
+                try {
+                    const snapshot = await database.ref('complaints')
+                        .orderByChild('targetAdId')
+                        .equalTo(adId)
+                        .once('value');
+                    
+                    const complaints = [];
+                    snapshot.forEach((child) => {
+                        complaints.push(child.val());
+                    });
+                    
+                    return complaints;
+                } catch (error) {
+                    console.error('❌ Ошибка получения жалоб:', error);
+                    return [];
+                }
+            },
+            
+            // Получить все жалобы пользователя
+            getUserComplaints: async function(userId) {
+                try {
+                    const snapshot = await database.ref('complaints')
+                        .orderByChild('reporterId')
+                        .equalTo(userId)
+                        .once('value');
+                    
+                    const complaints = [];
+                    snapshot.forEach((child) => {
+                        complaints.push(child.val());
+                    });
+                    
+                    return complaints;
+                } catch (error) {
+                    console.error('❌ Ошибка получения жалоб пользователя:', error);
+                    return [];
+                }
             }
         };
         // ==================== КОНЕЦ FIREBASE СЕРВЕРА ====================
@@ -3069,7 +3500,545 @@
             }
         };
         
-        // ==================== СИСТЕМА БЛОКИРОВКИ ====================
+        // Типы жалоб
+        const COMPLAINT_TYPES = [
+            {
+                id: 'fraud',
+                icon: 'fas fa-user-secret',
+                text: 'Мошенничество',
+                description: 'Продавец пытается обмануть'
+            },
+            {
+                id: 'wrong_category',
+                icon: 'fas fa-tag',
+                text: 'Неправильная категория',
+                description: 'Товар в неверной категории'
+            },
+            {
+                id: 'prohibited',
+                icon: 'fas fa-ban',
+                text: 'Запрещенные товары',
+                description: 'Продажа запрещенных товаров'
+            },
+            {
+                id: 'spam',
+                icon: 'fas fa-flag',
+                text: 'Спам',
+                description: 'Спам или навязчивая реклама'
+            },
+            {
+                id: 'insult',
+                icon: 'fas fa-comment-slash',
+                text: 'Оскорбления',
+                description: 'Грубость или оскорбления'
+            },
+            {
+                id: 'other',
+                icon: 'fas fa-ellipsis-h',
+                text: 'Другое',
+                description: 'Другая причина'
+            }
+        ];
+        
+        // Данные для текущей жалобы
+        const complaintData = {
+            targetAdId: null,
+            targetUserId: null,
+            targetUsername: null,
+            adTitle: null,
+            selectedType: null,
+            description: '',
+            evidence: null,
+            hasComplainedBefore: false
+        };
+        
+        // ==================== ФУНКЦИИ ДЛЯ ЖАЛОБ ====================
+        
+        // Открыть модальное окно для жалобы
+        async function openComplaintModal(adId) {
+            // Проверяем блокировку
+            if (!checkBlockBeforeAction('подача жалобы')) return;
+            
+            const ad = appData.ads.find(a => a.id === adId);
+            if (!ad) {
+                showNotification('Объявление не найдено', 'error');
+                return;
+            }
+            
+            // Проверяем, не на свое ли объявление жалуется
+            if (ad.sellerId === appData.currentUserId) {
+                showNotification('Нельзя жаловаться на собственное объявление', 'warning');
+                return;
+            }
+            
+            // Проверяем, жаловался ли уже пользователь
+            const hasComplained = await FirebaseMarketServer.checkIfUserComplained(
+                appData.currentUserId, 
+                adId
+            );
+            
+            if (hasComplained) {
+                showNotification('Вы уже жаловались на это объявление', 'warning');
+                return;
+            }
+            
+            // Заполняем данные
+            complaintData.targetAdId = adId;
+            complaintData.targetUserId = ad.sellerId;
+            complaintData.targetUsername = ad.sellerUsername;
+            complaintData.adTitle = ad.title;
+            complaintData.selectedType = null;
+            complaintData.description = '';
+            complaintData.evidence = null;
+            complaintData.hasComplainedBefore = hasComplained;
+            
+            // Заполняем информацию о цели
+            document.getElementById('complaintTargetInfo').innerHTML = `
+                <strong>Объявление:</strong> ${ad.title}<br>
+                <strong>Продавец:</strong> ${ad.sellerUsername || 'Без username'}<br>
+                <strong>Категория:</strong> ${getCategoryName(ad.category)}<br>
+                <strong>Цена:</strong> ${ad.price.toLocaleString()} ₽
+            `;
+            
+            // Загружаем типы жалоб
+            const typesContainer = document.getElementById('complaintTypes');
+            typesContainer.innerHTML = COMPLAINT_TYPES.map(type => `
+                <div class="complaint-type-btn" onclick="selectComplaintType('${type.id}')" id="complaint-type-${type.id}">
+                    <div class="complaint-type-icon">
+                        <i class="${type.icon}"></i>
+                    </div>
+                    <div class="complaint-type-text">${type.text}</div>
+                    <div style="font-size: 10px; color: #D8B4FE; margin-top: 5px;">${type.description}</div>
+                </div>
+            `).join('');
+            
+            // Очищаем описание
+            document.getElementById('complaintDescription').value = '';
+            
+            // Показываем модальное окно
+            document.getElementById('complaintModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Закрыть модальное окно для жалобы
+        function closeComplaintModal() {
+            document.getElementById('complaintModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+            
+            // Сбрасываем выбранный тип
+            if (complaintData.selectedType) {
+                document.getElementById(`complaint-type-${complaintData.selectedType}`).classList.remove('active');
+            }
+            
+            complaintData.selectedType = null;
+        }
+        
+        // Выбрать тип жалобы
+        function selectComplaintType(typeId) {
+            // Снимаем выделение с предыдущего типа
+            if (complaintData.selectedType) {
+                document.getElementById(`complaint-type-${complaintData.selectedType}`).classList.remove('active');
+            }
+            
+            // Выделяем новый тип
+            complaintData.selectedType = typeId;
+            document.getElementById(`complaint-type-${typeId}`).classList.add('active');
+        }
+        
+        // Прикрепить скриншот
+        function attachScreenshot() {
+            showNotification('В реальном приложении здесь будет возможность сделать скриншот', 'info');
+        }
+        
+        // Прикрепить фото
+        function attachPhoto() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        complaintData.evidence = {
+                            type: 'photo',
+                            data: e.target.result,
+                            filename: file.name
+                        };
+                        showNotification('Фото прикреплено', 'success');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            input.click();
+        }
+        
+        // Отправить жалобу на сервер
+        async function submitComplaintToServer() {
+            // Проверяем блокировку
+            if (!checkBlockBeforeAction('отправка жалобы')) return;
+            
+            if (!complaintData.selectedType) {
+                showNotification('Выберите тип жалобы', 'error');
+                return;
+            }
+            
+            const description = document.getElementById('complaintDescription').value.trim();
+            if (!description) {
+                showNotification('Опишите проблему', 'error');
+                return;
+            }
+            
+            if (description.length < 10) {
+                showNotification('Описание должно содержать минимум 10 символов', 'error');
+                return;
+            }
+            
+            // Получаем данные объявления
+            const ad = appData.ads.find(a => a.id === complaintData.targetAdId);
+            if (!ad) {
+                showNotification('Объявление не найдено', 'error');
+                return;
+            }
+            
+            // Подготавливаем данные жалобы
+            const complaintToSave = {
+                reporterId: appData.currentUserId,
+                reporterUsername: appData.currentUserData.username ? 
+                    '@' + appData.currentUserData.username : 'Без username',
+                reporterName: appData.currentUserData.first_name,
+                targetAdId: complaintData.targetAdId,
+                targetUserId: complaintData.targetUserId,
+                targetUsername: complaintData.targetUsername,
+                targetAdTitle: complaintData.adTitle,
+                type: complaintData.selectedType,
+                description: description,
+                evidence: complaintData.evidence,
+                status: 'new',
+                createdAt: new Date().toISOString()
+            };
+            
+            try {
+                // Показываем загрузку
+                showNotification('Отправка жалобы...', 'info');
+                
+                // Отправляем жалобу
+                const complaintId = await FirebaseMarketServer.addComplaintToAd(complaintToSave);
+                
+                if (complaintId) {
+                    // Обновляем счетчик жалоб в интерфейсе
+                    updateComplaintCount(ad.id, 'increment');
+                    
+                    // Добавляем в историю пользователя
+                    await FirebaseMarketServer.addToHistory(appData.currentUserId, {
+                        type: 'complaint',
+                        action: 'submitted',
+                        target: ad.title,
+                        targetId: ad.id,
+                        date: new Date().toLocaleDateString('ru-RU')
+                    });
+                    
+                    // Закрываем модальное окно
+                    closeComplaintModal();
+                    
+                    // Показываем уведомление
+                    showNotification('Жалоба успешно отправлена! Администратор рассмотрит её в ближайшее время.', 'success');
+                    
+                    // Если пользователь админ, обновляем данные
+                    if (appData.isAdmin) {
+                        loadAdminData();
+                    }
+                } else {
+                    showNotification('Ошибка при отправке жалобы', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Ошибка отправки жалобы:', error);
+                showNotification('Ошибка при отправке жалобы', 'error');
+            }
+        }
+        
+        // Обновить счетчик жалоб в интерфейсе
+        function updateComplaintCount(adId, action = 'increment') {
+            const ad = appData.ads.find(a => a.id === adId);
+            if (ad) {
+                if (action === 'increment') {
+                    ad.complaints = (ad.complaints || 0) + 1;
+                } else if (action === 'decrement') {
+                    ad.complaints = Math.max(0, (ad.complaints || 1) - 1);
+                }
+                
+                // Обновляем отображение
+                renderAds();
+            }
+        }
+        
+        // Добавить кнопку жалобы в карточку объявления
+        function addComplaintButtonToAd(adElement, ad) {
+            // Проверяем, не свое ли это объявление
+            if (ad.sellerId === appData.currentUserId) return;
+            
+            // Создаем кнопку жалобы
+            const complaintBtn = document.createElement('button');
+            complaintBtn.className = 'complaint-btn-small';
+            complaintBtn.innerHTML = '<i class="fas fa-flag"></i> Жалоба';
+            complaintBtn.onclick = (e) => {
+                e.stopPropagation();
+                openComplaintModal(ad.id);
+            };
+            
+            adElement.style.position = 'relative';
+            adElement.appendChild(complaintBtn);
+            
+            // Добавляем индикатор жалоб, если они есть
+            if (ad.complaints > 0) {
+                const complaintIndicator = document.createElement('div');
+                complaintIndicator.className = 'complaint-indicator';
+                complaintIndicator.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${ad.complaints}`;
+                complaintIndicator.title = `На это объявление подано ${ad.complaints} жалоб`;
+                adElement.appendChild(complaintIndicator);
+            }
+        }
+        
+        // Обновить рендер объявлений с добавлением кнопок жалоб
+        function renderAdsWithComplaints() {
+            const container = document.getElementById('ads-container');
+            
+            if (!appData.isDataLoaded) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 48px; margin-bottom: 20px;"></i>
+                        <h3 style="margin-bottom: 10px;">Загрузка объявлений...</h3>
+                        <p>Пожалуйста, подождите</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            const filteredAds = appData.currentCategory === 'all' 
+                ? appData.ads 
+                : appData.ads.filter(ad => ad.category === appData.currentCategory);
+            
+            // Фильтруем только активные объявления
+            const activeAds = filteredAds.filter(ad => ad.status !== 'deleted');
+            
+            activeAds.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            if (activeAds.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
+                        <i class="fas fa-box-open" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
+                        <h3 style="margin-bottom: 10px;">Нет объявлений</h3>
+                        <p>В этой категории пока нет объявлений</p>
+                        <p style="font-size: 12px; margin-top: 10px; color: rgba(255,255,255,0.5);">
+                            Будьте первым - создайте объявление!
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+            
+            activeAds.forEach(ad => {
+                const rating = calculateRating(ad.sellerId);
+                const userRating = appData.userRatings[ad.sellerId]?.[appData.currentUserId];
+                const isOwnAd = ad.sellerId === appData.currentUserId;
+                
+                const adElement = document.createElement('div');
+                adElement.className = 'advertisement-card';
+                adElement.id = `ad-${ad.id}`;
+                
+                // Отображение фото
+                const photoElements = [];
+                
+                if (ad.photoUrls && ad.photoUrls.length > 0 && ad.photoUrls[0] !== null) {
+                    // Есть реальные фото
+                    ad.photoUrls.forEach((photoUrl, index) => {
+                        if (photoUrl && photoUrl !== 'null') {
+                            photoElements.push(`
+                                <div class="photo-item" onclick="openPhotoViewer('${ad.id}', ${index})">
+                                    <img src="${photoUrl}" alt="Фото ${index + 1}" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxMjAiIHJ4PSIxNSIgZmlsbD0iIzgzNUFGOSIvPjxwYXRoIGQ9Ik03NSA2MEw1NSA3NUw0NSA2MEw2MCA0NUw3NSA2MFoiIGZpbGw9IndoaXRlIi8+PHRleHQgeD0iNjAiIHk9Ijg1IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5GJmFtcDsjeDQ0Mzt0byAxPC90ZXh0Pjwvc3ZnPg=='">
+                                    <div class="photo-label">Фото ${index + 1}</div>
+                                </div>
+                            `);
+                        }
+                    });
+                }
+                
+                // Если нет фото или не удалось загрузить, показываем заглушки
+                if (photoElements.length === 0) {
+                    const numPhotos = Math.min(ad.photos || 1, 3);
+                    for (let i = 0; i < numPhotos; i++) {
+                        const colors = ['#835AF9', '#7C3AED', '#6D28D9'];
+                        const color = colors[i % colors.length];
+                        photoElements.push(`
+                            <div class="photo-item">
+                                <div class="photo-placeholder" style="background: ${color};">
+                                    <i class="fas fa-image"></i>
+                                    <span>Фото ${i + 1}</span>
+                                </div>
+                                <div class="photo-label">Фото ${i + 1}</div>
+                            </div>
+                        `);
+                    }
+                }
+                
+                // Проверяем, является ли продавец проверенным
+                const sellerUser = appData.adminData.users?.find(u => u.id === ad.sellerId);
+                const verifiedBadge = sellerUser?.verified ? '<span style="color: #10B981; margin-left: 5px;">✓</span>' : '';
+                
+                adElement.innerHTML = `
+                    <div class="seller-header">
+                        <div class="seller-avatar">
+                            ${ad.sellerAvatar ? `<img src="${ad.sellerAvatar}" alt="Аватар">` : 
+                              `<span style="font-size: 18px; font-weight: bold;">${ad.sellerName?.charAt(0) || 'П'}</span>`}
+                        </div>
+                        <div class="seller-info">
+                            <div class="seller-name">${ad.sellerName || 'Неизвестный'} ${verifiedBadge}</div>
+                            <div class="seller-username">${ad.sellerUsername || 'Без username'}</div>
+                            <div class="seller-stats">
+                                <div class="seller-stat stat-rating">
+                                    <i class="fas fa-star"></i>
+                                    <span id="rating-${ad.sellerId}">${calculateRating(ad.sellerId).toFixed(1)}</span>
+                                </div>
+                                <div class="seller-stat stat-likes">
+                                    <i class="fas fa-thumbs-up"></i>
+                                    <span id="ad${ad.id}-likes">${ad.likes || 0}</span>
+                                </div>
+                                <div class="seller-stat stat-dislikes">
+                                    <i class="fas fa-thumbs-down"></i>
+                                    <span id="ad${ad.id}-dislikes">${ad.dislikes || 0}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="photo-gallery">
+                        ${photoElements.join('')}
+                    </div>
+
+                    <div class="product-info">
+                        <div class="product-title">${ad.title || 'Без названия'}</div>
+                        <div class="product-category">${getCategoryName(ad.category)}</div>
+                        <div class="product-price">${(ad.price || 0).toLocaleString()} ₽</div>
+                        <div class="product-description">${ad.description || 'Без описания'}</div>
+                    </div>
+
+                    <div class="action-grid">
+                        <button class="rate-btn like-btn ${userRating === 'like' ? 'active' : ''} ${isOwnAd ? 'disabled' : ''}" 
+                                onclick="rateSeller('${ad.sellerId}', 'like', '${ad.id}')"
+                                ${isOwnAd ? 'disabled' : ''}>
+                            <i class="fas fa-thumbs-up"></i>
+                        </button>
+                        
+                        <button class="contact-btn" onclick="contactSeller('${ad.sellerUsername || 'Без username'}', '${ad.id}', '${ad.title || 'Без названия'}', '${ad.category || 'other'}', ${ad.price || 0})">
+                            <i class="fas fa-paper-plane"></i>
+                            Написать продавцу
+                        </button>
+                        
+                        <button class="rate-btn dislike-btn ${userRating === 'dislike' ? 'active' : ''} ${isOwnAd ? 'disabled' : ''}" 
+                                onclick="rateSeller('${ad.sellerId}', 'dislike', '${ad.id}')"
+                                ${isOwnAd ? 'disabled' : ''}>
+                            <i class="fas fa-thumbs-down"></i>
+                        </button>
+                    </div>
+                `;
+                
+                // Добавляем кнопку жалобы
+                addComplaintButtonToAd(adElement, ad);
+                
+                container.appendChild(adElement);
+            });
+        }
+        
+        // Переопределяем функцию renderAds
+        function renderAds() {
+            renderAdsWithComplaints();
+        }
+        
+        // Обновляем статистику профиля с информацией о жалобах
+        function updateProfileStatsWithComplaints() {
+            if (!appData.isDataLoaded) {
+                document.getElementById('myAdsCount').textContent = '0';
+                document.getElementById('myLikesCount').textContent = '0';
+                document.getElementById('myDislikesCount').textContent = '0';
+                document.getElementById('myRating').textContent = '0.0';
+                return;
+            }
+            
+            const myAds = appData.ads.filter(ad => ad.sellerId === appData.currentUserId && ad.status !== 'deleted').length;
+            document.getElementById('myAdsCount').textContent = myAds;
+            
+            let myLikes = 0;
+            let myDislikes = 0;
+            let myComplaints = 0;
+            
+            appData.ads.forEach(ad => {
+                if (ad.sellerId === appData.currentUserId) {
+                    myLikes += ad.likes || 0;
+                    myDislikes += ad.dislikes || 0;
+                    myComplaints += ad.complaints || 0;
+                }
+            });
+            
+            document.getElementById('myLikesCount').textContent = myLikes;
+            document.getElementById('myDislikesCount').textContent = myDislikes;
+            
+            const myRating = calculateRating(appData.currentUserId);
+            document.getElementById('myRating').textContent = myRating.toFixed(1);
+            
+            // Добавляем статистику жалоб в профиль, если есть место
+            const profileCard = document.querySelector('.profile-card');
+            if (profileCard && !document.getElementById('complaint-stats')) {
+                const complaintStats = document.createElement('div');
+                complaintStats.className = 'complaint-stats';
+                complaintStats.id = 'complaint-stats';
+                complaintStats.innerHTML = `
+                    <div class="complaint-stat-item">
+                        <div class="complaint-stat-number">${myComplaints}</div>
+                        <div class="complaint-stat-label">Жалоб на вас</div>
+                    </div>
+                    <div class="complaint-stat-item">
+                        <div class="complaint-stat-number" id="mySubmittedComplaints">0</div>
+                        <div class="complaint-stat-label">Ваших жалоб</div>
+                    </div>
+                `;
+                
+                // Вставляем после существующей статистики
+                const existingStats = document.querySelector('.profile-stats');
+                if (existingStats) {
+                    existingStats.parentNode.insertBefore(complaintStats, existingStats.nextSibling);
+                }
+            }
+            
+            // Загружаем количество отправленных жалоб
+            loadSubmittedComplaintsCount();
+        }
+        
+        // Загрузить количество отправленных жалоб
+        async function loadSubmittedComplaintsCount() {
+            if (!appData.currentUserId) return;
+            
+            try {
+                const complaints = await FirebaseMarketServer.getUserComplaints(appData.currentUserId);
+                const submittedComplaints = complaints.length;
+                
+                const element = document.getElementById('mySubmittedComplaints');
+                if (element) {
+                    element.textContent = submittedComplaints;
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки жалоб пользователя:', error);
+            }
+        }
+        
+        // Переопределяем функцию updateProfileStats
+        function updateProfileStats() {
+            updateProfileStatsWithComplaints();
+        }
+        
+        // ==================== ОСТАЛЬНОЙ КОД ОСТАЕТСЯ БЕЗ ИЗМЕНЕНИЙ ====================
         
         // Проверить блокировку пользователя
         async function checkUserBlocked() {
@@ -3344,7 +4313,7 @@
             try {
                 console.log('🔄 Загрузка админ-данных...');
                 
-                // Загружаем пользователей
+                // Загружаем пользователи
                 const usersSnapshot = await database.ref('users').once('value');
                 appData.adminData.users = [];
                 usersSnapshot.forEach((child) => {
@@ -4568,156 +5537,2065 @@
             renderAds();
         }
         
-        // Рендер объявлений
-        function renderAds() {
-            const container = document.getElementById('ads-container');
+        // Рассчитать рейтинг
+        function calculateRating(sellerId) {
+            if (!appData.userRatings[sellerId]) return 0.1;
             
-            if (!appData.isDataLoaded) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
-                        <i class="fas fa-spinner fa-spin" style="font-size: 48px; margin-bottom: 20px;"></i>
-                        <h3 style="margin-bottom: 10px;">Загрузка объявлений...</h3>
-                        <p>Пожалуйста, подождите</p>
-                    </div>
-                `;
-                return;
-            }
+            const ratings = Object.values(appData.userRatings[sellerId]);
+            if (ratings.length === 0) return 0.1;
             
-            container.innerHTML = '';
+            const likes = ratings.filter(r => r === 'like').length;
+            const dislikes = ratings.filter(r => r === 'dislike').length;
+            const total = likes + dislikes;
             
-            const filteredAds = appData.currentCategory === 'all' 
-                ? appData.ads 
-                : appData.ads.filter(ad => ad.category === appData.currentCategory);
-            
-            // Фильтруем только активные объявления
-            const activeAds = filteredAds.filter(ad => ad.status !== 'deleted');
-            
-            activeAds.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            
-            if (activeAds.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
-                        <i class="fas fa-box-open" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
-                        <h3 style="margin-bottom: 10px;">Нет объявлений</h3>
-                        <p>В этой категории пока нет объявлений</p>
-                        <p style="font-size: 12px; margin-top: 10px; color: rgba(255,255,255,0.5);">
-                            Будьте первым - создайте объявление!
-                        </p>
-                    </div>
-                `;
-                return;
-            }
-            
-            activeAds.forEach(ad => {
-                const rating = calculateRating(ad.sellerId);
-                const userRating = appData.userRatings[ad.sellerId]?.[appData.currentUserId];
-                const isOwnAd = ad.sellerId === appData.currentUserId;
-                
-                const adElement = document.createElement('div');
-                adElement.className = 'advertisement-card';
-                adElement.id = `ad-${ad.id}`;
-                
-                // Отображение фото
-                const photoElements = [];
-                
-                if (ad.photoUrls && ad.photoUrls.length > 0 && ad.photoUrls[0] !== null) {
-                    // Есть реальные фото
-                    ad.photoUrls.forEach((photoUrl, index) => {
-                        if (photoUrl && photoUrl !== 'null') {
-                            photoElements.push(`
-                                <div class="photo-item" onclick="openPhotoViewer('${ad.id}', ${index})">
-                                    <img src="${photoUrl}" alt="Фото ${index + 1}" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxMjAiIHJ4PSIxNSIgZmlsbD0iIzgzNUFGOSIvPjxwYXRoIGQ9Ik03NSA2MEw1NSA3NUw0NSA2MEw2MCA0NUw3NSA2MFoiIGZpbGw9IndoaXRlIi8+PHRleHQgeD0iNjAiIHk9Ijg1IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5GJmFtcDsjeDQ0Mzt0byAxPC90ZXh0Pjwvc3ZnPg=='">
-                                    <div class="photo-label">Фото ${index + 1}</div>
-                                </div>
-                            `);
-                        }
-                    });
-                }
-                
-                // Если нет фото или не удалось загрузить, показываем заглушки
-                if (photoElements.length === 0) {
-                    const numPhotos = Math.min(ad.photos || 1, 3);
-                    for (let i = 0; i < numPhotos; i++) {
-                        const colors = ['#835AF9', '#7C3AED', '#6D28D9'];
-                        const color = colors[i % colors.length];
-                        photoElements.push(`
-                            <div class="photo-item">
-                                <div class="photo-placeholder" style="background: ${color};">
-                                    <i class="fas fa-image"></i>
-                                    <span>Фото ${i + 1}</span>
-                                </div>
-                                <div class="photo-label">Фото ${i + 1}</div>
-                            </div>
-                        `);
-                    }
-                }
-                
-                // Проверяем, является ли продавец проверенным
-                const sellerUser = appData.adminData.users?.find(u => u.id === ad.sellerId);
-                const verifiedBadge = sellerUser?.verified ? '<span style="color: #10B981; margin-left: 5px;">✓</span>' : '';
-                
-                adElement.innerHTML = `
-                    <div class="seller-header">
-                        <div class="seller-avatar">
-                            ${ad.sellerAvatar ? `<img src="${ad.sellerAvatar}" alt="Аватар">` : 
-                              `<span style="font-size: 18px; font-weight: bold;">${ad.sellerName?.charAt(0) || 'П'}</span>`}
-                        </div>
-                        <div class="seller-info">
-                            <div class="seller-name">${ad.sellerName || 'Неизвестный'} ${verifiedBadge}</div>
-                            <div class="seller-username">${ad.sellerUsername || 'Без username'}</div>
-                            <div class="seller-stats">
-                                <div class="seller-stat stat-rating">
-                                    <i class="fas fa-star"></i>
-                                    <span id="rating-${ad.sellerId}">${calculateRating(ad.sellerId).toFixed(1)}</span>
-                                </div>
-                                <div class="seller-stat stat-likes">
-                                    <i class="fas fa-thumbs-up"></i>
-                                    <span id="ad${ad.id}-likes">${ad.likes || 0}</span>
-                                </div>
-                                <div class="seller-stat stat-dislikes">
-                                    <i class="fas fa-thumbs-down"></i>
-                                    <span id="ad${ad.id}-dislikes">${ad.dislikes || 0}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="photo-gallery">
-                        ${photoElements.join('')}
-                    </div>
-
-                    <div class="product-info">
-                        <div class="product-title">${ad.title || 'Без названия'}</div>
-                        <div class="product-category">${getCategoryName(ad.category)}</div>
-                        <div class="product-price">${(ad.price || 0).toLocaleString()} ₽</div>
-                        <div class="product-description">${ad.description || 'Без описания'}</div>
-                    </div>
-
-                    <div class="action-grid">
-                        <button class="rate-btn like-btn ${userRating === 'like' ? 'active' : ''} ${isOwnAd ? 'disabled' : ''}" 
-                                onclick="rateSeller('${ad.sellerId}', 'like', '${ad.id}')"
-                                ${isOwnAd ? 'disabled' : ''}>
-                            <i class="fas fa-thumbs-up"></i>
-                        </button>
-                        
-                        <button class="contact-btn" onclick="contactSeller('${ad.sellerUsername || 'Без username'}', '${ad.id}', '${ad.title || 'Без названия'}', '${ad.category || 'other'}', ${ad.price || 0})">
-                            <i class="fas fa-paper-plane"></i>
-                            Написать продавцу
-                        </button>
-                        
-                        <button class="rate-btn dislike-btn ${userRating === 'dislike' ? 'active' : ''} ${isOwnAd ? 'disabled' : ''}" 
-                                onclick="rateSeller('${ad.sellerId}', 'dislike', '${ad.id}')"
-                                ${isOwnAd ? 'disabled' : ''}>
-                            <i class="fas fa-thumbs-down"></i>
-                        </button>
-                    </div>
-                `;
-                
-                container.appendChild(adElement);
-            });
+            if (total === 0) return 0.1;
+            return 0.1 + (likes / total) * 4.9;
         }
         
-        // Рассчитать рейтинг
+        // Открыть просмотр фото
+        function openPhotoViewer(adId, photoIndex = 0) {
+            // Проверяем блокировку перед просмотром
+            if (!checkBlockBeforeAction('просмотр фото')) return;
+            
+            const ad = appData.ads.find(a => a.id === adId);
+            if (!ad || !ad.photoUrls || ad.photoUrls.length === 0 || ad.photoUrls[0] === null) {
+                showNotification('Фотографии не найдены', 'error');
+                return;
+            }
+            
+            // Фильтруем только существующие фото
+            const validPhotoUrls = ad.photoUrls.filter(url => url && url !== 'null');
+            if (validPhotoUrls.length === 0) {
+                showNotification('Фотографии не найдены', 'error');
+                return;
+            }
+            
+            appData.currentPhotoList = validPhotoUrls;
+            appData.currentPhotoIndex = Math.min(photoIndex, validPhotoUrls.length - 1);
+            
+            const modal = document.getElementById('photoModal');
+            const modalImg = document.getElementById('modalPhoto');
+            const counter = document.getElementById('photoCounter');
+            
+           modalImg.src = validPhotoUrls[appData.currentPhotoIndex];
+modalImg.onerror = function() {
+    this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDQwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiM4MzVBRjkiLz48cGF0aCBkPSJNMTYwIDE5MEwyNDAgMjQwTDE4MCAxOTBMMjIwIDE0MEwxNjAgMTkwWiIgZmlsbD0id2hpdGUiLz48dGV4dCB4PSIyMDAiIHk9IjI4MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNp6%8&%lt';
+};
+
+counter.textContent = `${appData.currentPhotoIndex + 1} / ${validPhotoUrls.length}`;
+
+modal.classList.add('active');
+document.body.style.overflow = 'hidden';
+}
+
+// Закрыть просмотр фото
+function closePhotoModal() {
+const modal = document.getElementById('photoModal');
+modal.classList.remove('active');
+document.body.style.overflow = 'auto';
+}
+
+// Следующее фото
+function nextPhoto() {
+if (appData.currentPhotoList.length === 0) return;
+
+appData.currentPhotoIndex = (appData.currentPhotoIndex + 1) % appData.currentPhotoList.length;
+const modalImg = document.getElementById('modalPhoto');
+modalImg.src = appData.currentPhotoList[appData.currentPhotoIndex];
+modalImg.onerror = function() {
+    this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDQwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiM4MzVBRjkiLz48cGF0aCBkPSJNMTYwIDE5MEwyNDAgMjQwTDE4MCAxOTBMMjIwIDE0MEwxNjAgMTkwWiIgZmlsbD0id2hpdGUiLz48dGV4dCB4PSIyMDAiIHk9IjI4MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNp6%8&%lt';
+};
+document.getElementById('photoCounter').textContent = 
+    `${appData.currentPhotoIndex + 1} / ${appData.currentPhotoList.length}`;
+}
+
+// Предыдущее фото
+function prevPhoto() {
+if (appData.currentPhotoList.length === 0) return;
+
+appData.currentPhotoIndex = appData.currentPhotoIndex === 0 
+    ? appData.currentPhotoList.length - 1 
+    : appData.currentPhotoIndex - 1;
+
+const modalImg = document.getElementById('modalPhoto');
+modalImg.src = appData.currentPhotoList[appData.currentPhotoIndex];
+modalImg.onerror = function() {
+    this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDQwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiM4MzVBRjkiLz48cGF0aCBkPSJNMTYwIDE5MEwyNDAgMjQwTDE4MCAxOTBMMjIwIDE0MEwxNjAgMTkwWiIgZmlsbD0id2hpdGUiLz48dGV4dCB4PSIyMDAiIHk9IjI4MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNp6%8&%lt';
+};
+document.getElementById('photoCounter').textContent = 
+    `${appData.currentPhotoIndex + 1} / ${appData.currentPhotoList.length}`;
+}
+
+// Оценить продавца
+async function rateSeller(sellerId, type, adId) {
+// Проверяем блокировку перед оценкой
+if (!checkBlockBeforeAction('оценка продавца')) return;
+
+if (!appData.isDataLoaded) {
+    showNotification('Данные еще загружаются', 'warning');
+    return;
+}
+
+const ad = appData.ads.find(a => a.id === adId);
+if (!ad) return;
+
+if (ad.sellerId === appData.currentUserId) {
+    showNotification('Нельзя оценивать собственное объявление', 'warning');
+    return;
+}
+
+const userRating = appData.userRatings[sellerId]?.[appData.currentUserId];
+
+if (userRating === type) {
+    showNotification('Вы уже поставили эту оценку', 'warning');
+    return;
+}
+
+const success = await FirebaseMarketServer.updateRating(sellerId, appData.currentUserId, type);
+
+if (success) {
+    if (!appData.userRatings[sellerId]) {
+        appData.userRatings[sellerId] = {};
+    }
+    appData.userRatings[sellerId][appData.currentUserId] = type;
+    
+    appData.userRatings = await FirebaseMarketServer.getRatings();
+    
+    renderAds();
+    updateProfileStats();
+    updateServerStatsUI();
+    
+    if (appData.isAdmin) {
+        updateAdminStats();
+    }
+    
+    showNotification(`Вы поставили ${type === 'like' ? 'лайк' : 'дизлайк'}`, 'success');
+} else {
+    showNotification('Ошибка при оценке', 'error');
+}
+}
+
+// Написать продавцу
+async function contactSeller(username, adId, adTitle, category, price) {
+// Проверяем блокировку перед контактом
+if (!checkBlockBeforeAction('контакт с продавцом')) return;
+
+if (!appData.isDataLoaded) {
+    showNotification('Данные еще загружаются', 'warning');
+    return;
+}
+
+const ad = appData.ads.find(a => a.id === adId);
+if (!ad) return;
+
+const categoryName = getCategoryName(category);
+const message = `Привет! Вижу твое объявление в Vape Market:\n\n` +
+               `📦 Товар: ${adTitle}\n` +
+               `🏷️ Категория: ${categoryName}\n` +
+               `💰 Цена: ${price.toLocaleString()} ₽\n\n` +
+               `Можешь рассказать подробнее о товаре?`;
+
+const historyItem = {
+    id: Date.now(),
+    adId: adId,
+    title: adTitle,
+    sellerUsername: username,
+    date: new Date().toLocaleDateString('ru-RU'),
+    category: categoryName,
+    price: price
+};
+
+await FirebaseMarketServer.addToHistory(appData.currentUserId, historyItem);
+
+appData.history = await FirebaseMarketServer.getUserHistory(appData.currentUserId);
+
+if (document.getElementById('page-profile').classList.contains('active')) {
+    updateHistory();
+}
+
+if (tg) {
+    try {
+        const cleanUsername = username.replace('@', '');
+        const encodedMessage = encodeURIComponent(message);
+        const telegramUrl = `https://t.me/${cleanUsername}?text=${encodedMessage}`;
+        
+        tg.openTelegramLink(telegramUrl);
+        showNotification(`Открывается чат с ${username}`, 'success');
+    } catch (error) {
+        tg.showAlert(`Для связи с продавцом напишите ${username} в Telegram`);
+    }
+} else {
+    alert(`Сообщение для ${username}:\n\n${message}`);
+    showNotification(`Сообщение для ${username} отправлено`, 'info');
+}
+}
+
+// Обновить историю просмотров
+function updateHistory() {
+const historyList = document.getElementById('historyList');
+
+if (!appData.isDataLoaded) {
+    historyList.innerHTML = '<div style="text-align: center; color: #D8B4FE; padding: 20px;">Загрузка истории...</div>';
+    return;
+}
+
+historyList.innerHTML = '';
+
+if (appData.history.length === 0) {
+    historyList.innerHTML = '<div style="text-align: center; color: #D8B4FE; padding: 20px;">История пуста</div>';
+    return;
+}
+
+appData.history.forEach(item => {
+    const historyItem = document.createElement('div');
+    historyItem.className = 'history-item';
+    historyItem.innerHTML = `
+        <div class="history-info">
+            <h4>${item.title}</h4>
+            <p>${item.sellerUsername} • ${item.category} • ${item.price.toLocaleString()} ₽ • ${item.date}</p>
+        </div>
+        <button class="remove-history-btn" onclick="removeFromHistory('${item.id}')">
+            Удалить
+        </button>
+    `;
+    historyList.appendChild(historyItem);
+});
+}
+
+// Обновить список моих объявлений
+function updateMyAdsList() {
+const myAdsList = document.getElementById('myAdsList');
+
+if (!appData.isDataLoaded) {
+    myAdsList.innerHTML = '<div style="text-align: center; color: #D8B4FE; padding: 20px;">Загрузка объявлений...</div>';
+    return;
+}
+
+const myAds = appData.ads.filter(ad => ad.sellerId === appData.currentUserId && ad.status !== 'deleted');
+
+if (myAds.length === 0) {
+    myAdsList.innerHTML = '<div style="text-align: center; color: #D8B4FE; padding: 20px;">У вас пока нет объявлений</div>';
+    return;
+}
+
+myAdsList.innerHTML = '';
+
+myAds.forEach(ad => {
+    const rating = calculateRating(appData.currentUserId);
+    
+    const adElement = document.createElement('div');
+    adElement.className = 'my-ad-item';
+    
+    adElement.innerHTML = `
+        <div class="my-ad-header">
+            <div class="my-ad-title">${ad.title}</div>
+            <div class="my-ad-price">${ad.price.toLocaleString()} ₽</div>
+        </div>
+        <div class="product-category" style="display: inline-block; margin-bottom: 10px;">
+            ${getCategoryName(ad.category)}
+        </div>
+        <div class="my-ad-description">${ad.description}</div>
+        <div style="display: flex; gap: 15px; font-size: 12px; color: #D8B4FE;">
+            <div><i class="fas fa-thumbs-up"></i> ${ad.likes || 0}</div>
+            <div><i class="fas fa-thumbs-down"></i> ${ad.dislikes || 0}</div>
+            <div><i class="fas fa-star"></i> ${rating.toFixed(1)}</div>
+            ${ad.complaints > 0 ? `<div><i class="fas fa-flag"></i> ${ad.complaints} жалоб</div>` : ''}
+        </div>
+        <div class="my-ad-actions">
+            <button class="edit-ad-btn" onclick="editAd('${ad.id}')">
+                <i class="fas fa-edit"></i> Редактировать
+            </button>
+            <button class="delete-ad-btn" onclick="deleteAd('${ad.id}')">
+                <i class="fas fa-trash"></i> Удалить
+            </button>
+        </div>
+    `;
+    myAdsList.appendChild(adElement);
+});
+}
+
+// Удалить объявление
+async function deleteAd(adId) {
+// Проверяем блокировку перед удалением
+if (!checkBlockBeforeAction('удаление объявления')) return;
+
+if (!confirm('Вы уверены, что хотите удалить это объявление?')) {
+    return;
+}
+
+const ad = appData.ads.find(a => a.id === adId);
+if (!ad) return;
+
+const success = await FirebaseMarketServer.deleteAd(adId, ad.sellerId);
+
+if (success) {
+    appData.ads = appData.ads.filter(ad => ad.id !== adId);
+    
+    renderAds();
+    updateProfileStats();
+    updateMyAdsList();
+    updateServerStatsUI();
+    if (appData.isAdmin) {
+        updateAdminStats();
+    }
+    showNotification('Объявление удалено', 'warning');
+} else {
+    showNotification('Ошибка при удалении', 'error');
+}
+}
+
+// Редактировать объявление
+function editAd(adId) {
+// Проверяем блокировку перед редактированием
+if (!checkBlockBeforeAction('редактирование объявления')) return;
+
+const ad = appData.ads.find(a => a.id === adId);
+if (!ad) return;
+
+document.getElementById('adTitle').value = ad.title;
+document.getElementById('adCategory').value = ad.category;
+document.getElementById('adPrice').value = ad.price;
+document.getElementById('adDescription').value = ad.description;
+
+appData.uploadedPhotos = [];
+if (ad.photoUrls && ad.photoUrls.length > 0) {
+    ad.photoUrls.forEach((url, index) => {
+        if (url && url !== 'null') {
+            appData.uploadedPhotos.push({
+                id: Date.now() + index,
+                url: url,
+                file: null
+            });
+        }
+    });
+}
+
+updatePhotoPreviews();
+
+appData.editingAdId = adId;
+
+toggleAddForm();
+
+showNotification('Редактирование объявления', 'info');
+}
+
+// Удалить из истории
+async function removeFromHistory(id) {
+// Проверяем блокировку перед удалением из истории
+if (!checkBlockBeforeAction('удаление из истории')) return;
+
+appData.history = appData.history.filter(item => item.id !== id);
+updateHistory();
+showNotification('Удалено из истории', 'warning');
+}
+
+// Очистить историю
+async function clearHistory() {
+// Проверяем блокировку перед очисткой истории
+if (!checkBlockBeforeAction('очистка истории')) return;
+
+if (!appData.isDataLoaded || appData.history.length === 0) {
+    showNotification('История уже пуста', 'info');
+    return;
+}
+
+if (!confirm('Вы уверены, что хотите очистить всю историю?')) {
+    return;
+}
+
+const success = await FirebaseMarketServer.clearUserHistory(appData.currentUserId);
+
+if (success) {
+    appData.history = [];
+    updateHistory();
+    showNotification('История очищена', 'warning');
+} else {
+    showNotification('Ошибка при очистки истории', 'error');
+}
+}
+
+// Открыть выбор фото
+function openPhotoPicker() {
+// Проверяем блокировку перед загрузкой фото
+if (!checkBlockBeforeAction('загрузка фото')) return;
+
+document.getElementById('photoInput').click();
+}
+
+// Обработка загрузки фото
+function handlePhotoUpload(event) {
+// Проверяем блокировку перед обработкой фото
+if (!checkBlockBeforeAction('обработка фото')) return;
+
+const files = event.target.files;
+const maxFiles = 3;
+
+if (files.length > maxFiles) {
+    showNotification(`Можно загрузить только ${maxFiles} фото!`, 'error');
+    return;
+}
+
+if (appData.uploadedPhotos.length + files.length > maxFiles) {
+    showNotification(`Максимум ${maxFiles} фото!`, 'error');
+    return;
+}
+
+const promises = [];
+
+for (let i = 0; i < Math.min(files.length, maxFiles - appData.uploadedPhotos.length); i++) {
+    const file = files[i];
+    const reader = new FileReader();
+    
+    const promise = new Promise((resolve) => {
+        reader.onload = function(e) {
+            appData.uploadedPhotos.push({
+                id: Date.now() + i,
+                url: e.target.result,
+                file: file
+            });
+            resolve();
+        };
+        reader.onerror = function() {
+            showNotification(`Ошибка загрузки фото ${i + 1}`, 'error');
+            resolve();
+        };
+        reader.readAsDataURL(file);
+    });
+    
+    promises.push(promise);
+}
+
+Promise.all(promises).then(() => {
+    updatePhotoPreviews();
+    event.target.value = '';
+});
+}
+
+// Обновить превью фото
+function updatePhotoPreviews() {
+const container = document.getElementById('uploaded-photos-container');
+container.innerHTML = '';
+
+appData.uploadedPhotos.forEach((photo, index) => {
+    const photoItem = document.createElement('div');
+    photoItem.className = 'uploaded-photo-item';
+    photoItem.innerHTML = `
+        <img src="${photo.url}" alt="Фото ${index + 1}">
+        <button class="remove-photo-btn" onclick="removeUploadedPhoto(${photo.id})">×</button>
+    `;
+    container.appendChild(photoItem);
+});
+
+document.getElementById('photo-count').textContent = appData.uploadedPhotos.length;
+
+if (appData.uploadedPhotos.length === 0) {
+    container.innerHTML = `
+        <div style="text-align: center; width: 100%; color: #A78BFA; padding: 20px;">
+            <i class="fas fa-images" style="font-size: 48px; opacity: 0.5; margin-bottom: 10px;"></i>
+            <div>Нажмите "Загрузить фотографии"</div>
+        </div>
+    `;
+}
+}
+
+// Удалить загруженное фото
+function removeUploadedPhoto(photoId) {
+// Проверяем блокировку перед удалением фото
+if (!checkBlockBeforeAction('удаление фото')) return;
+
+appData.uploadedPhotos = appData.uploadedPhotos.filter(photo => photo.id !== photoId);
+updatePhotoPreviews();
+showNotification(`Фото удалено (${appData.uploadedPhotos.length}/3)`, 'warning');
+}
+
+// Очистить форму
+function clearAddForm() {
+document.getElementById('adTitle').value = '';
+document.getElementById('adCategory').value = '';
+document.getElementById('adPrice').value = '';
+document.getElementById('adDescription').value = '';
+
+appData.uploadedPhotos = [];
+updatePhotoPreviews();
+
+appData.editingAdId = null;
+}
+
+// Опубликовать объявление
+async function publishAd() {
+// Проверяем блокировку перед публикацией
+if (!checkBlockBeforeAction('публикация объявления')) return;
+
+const title = document.getElementById('adTitle').value.trim();
+const category = document.getElementById('adCategory').value;
+const price = parseInt(document.getElementById('adPrice').value);
+const description = document.getElementById('adDescription').value.trim();
+
+if (!title) {
+    showNotification('Введите название товара!', 'error');
+    return;
+}
+
+if (!category) {
+    showNotification('Выберите категорию!', 'error');
+    return;
+}
+
+if (!price || isNaN(price) || price <= 0) {
+    showNotification('Введите корректную цену!', 'error');
+    return;
+}
+
+if (appData.uploadedPhotos.length === 0) {
+    showNotification('Добавьте хотя бы одну фотографию!', 'error');
+    return;
+}
+
+// Если редактируем существующее объявление
+if (appData.editingAdId) {
+    const ad = appData.ads.find(a => a.id === appData.editingAdId);
+    if (ad) {
+        ad.title = title;
+        ad.category = category;
+        ad.price = price;
+        ad.description = description || 'Без описания';
+        
+        ad.photoUrls = appData.uploadedPhotos.map(p => p.url);
+        ad.photos = appData.uploadedPhotos.length;
+        
+        const success = await FirebaseMarketServer.updateAd(ad.id, {
+            title: ad.title,
+            category: ad.category,
+            price: ad.price,
+            description: ad.description,
+            photoUrls: ad.photoUrls,
+            photos: ad.photos,
+            updatedAt: firebase.database.ServerValue.TIMESTAMP
+        });
+        
+        if (success) {
+            renderAds();
+            updateProfileStats();
+            updateMyAdsList();
+            updateServerStatsUI();
+            if (appData.isAdmin) {
+                updateAdminStats();
+            }
+            hideAddForm();
+            
+            appData.editingAdId = null;
+            showNotification('Объявление обновлено!', 'success');
+        } else {
+            showNotification('Ошибка при обновлении', 'error');
+        }
+    }
+    return;
+}
+
+// Создаем новое объявление
+const newAd = {
+    sellerId: appData.currentUserId,
+    sellerName: appData.currentUserData.first_name + 
+               (appData.currentUserData.last_name ? ' ' + appData.currentUserData.last_name : ''),
+    sellerUsername: appData.currentUserData.username ? '@' + appData.currentUserData.username : 'Без username',
+    sellerAvatar: appData.currentUserData.photo_url || null,
+    title: title,
+    category: category,
+    price: price,
+    description: description || 'Без описания',
+    photos: appData.uploadedPhotos.length,
+    photoUrls: appData.uploadedPhotos.map(p => p.url),
+    likes: 0,
+    dislikes: 0,
+    complaints: 0,
+    verified: false,
+    status: 'active'
+};
+
+try {
+    const adId = await FirebaseMarketServer.addAd(newAd);
+    
+    newAd.id = adId;
+    newAd.createdAt = new Date().toISOString();
+    appData.ads.unshift(newAd);
+    
+    appData.serverStats = await FirebaseMarketServer.getStats();
+    updateServerStatsUI();
+    if (appData.isAdmin) {
+        updateAdminStats();
+    }
+    
+    updateProfileStats();
+    updateMyAdsList();
+    
+    renderAds();
+    hideAddForm();
+    
+    showNotification('Объявление успешно опубликовано!', 'success');
+} catch (error) {
+    console.error('Ошибка публикации:', error);
+    showNotification('Ошибка при публикации объявления', 'error');
+}
+}
+
+// Обновить статистику профиля
+function updateProfileStats() {
+if (!appData.isDataLoaded) {
+    document.getElementById('myAdsCount').textContent = '0';
+    document.getElementById('myLikesCount').textContent = '0';
+    document.getElementById('myDislikesCount').textContent = '0';
+    document.getElementById('myRating').textContent = '0.0';
+    return;
+}
+
+const myAds = appData.ads.filter(ad => ad.sellerId === appData.currentUserId && ad.status !== 'deleted').length;
+document.getElementById('myAdsCount').textContent = myAds;
+
+let myLikes = 0;
+let myDislikes = 0;
+
+appData.ads.forEach(ad => {
+    if (ad.sellerId === appData.currentUserId) {
+        myLikes += ad.likes || 0;
+        myDislikes += ad.dislikes || 0;
+    }
+});
+
+document.getElementById('myLikesCount').textContent = myLikes;
+document.getElementById('myDislikesCount').textContent = myDislikes;
+
+const myRating = calculateRating(appData.currentUserId);
+document.getElementById('myRating').textContent = myRating.toFixed(1);
+}
+
+// Переключение FAQ
+function toggleFaq(id) {
+// Проверяем блокировку перед просмотром FAQ
+if (!checkBlockBeforeAction('просмотр FAQ')) return;
+
+const answer = document.getElementById(`faq-answer-${id}`);
+const icon = document.getElementById(`faq-icon-${id}`);
+
+if (answer.style.display === 'none') {
+    answer.style.display = 'block';
+    icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+    
+    if (id === 5 && appData.serverStats) {
+        updateServerStatsUI();
+    }
+} else {
+    answer.style.display = 'none';
+    icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+}
+}
+
+// Подать жалобу
+function submitComplaint() {
+// Проверяем блокировку перед подачей жалобы
+if (!checkBlockBeforeAction('подача жалобы')) return;
+
+const message = encodeURIComponent('Хочу подать жалобу в Vape Market!');
+const telegramUrl = `https://t.me/nukm0?text=${message}`;
+
+if (tg) {
+    try {
+        tg.openTelegramLink(telegramUrl);
+        showNotification('Открывается чат для подачи жалобы', 'info');
+    } catch (error) {
+        tg.showAlert(`Для подачи жалобы напишите @nukm0 в Telegram`);
+    }
+} else {
+    alert('Для подачи жалобы напишите @nukm0 в Telegram');
+    showNotification('Напишите @nukm0 в Telegram', 'info');
+}
+}
+
+// Получить название категории
+function getCategoryName(category) {
+const categories = {
+    'liquids': 'Жидкости',
+    'disposable': 'Одноразовые устройства',
+    'pod': 'Под-системы',
+    'consumables': 'Расходники'
+};
+return categories[category] || category;
+}
+
+// Запуск при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+checkTelegramAndInit();
+});
+
+// Закрытие модального окна по клику на фон
+document.getElementById('photoModal').addEventListener('click', function(event) {
+if (event.target === this) {
+    closePhotoModal();
+}
+});
+        // ==================== ФУНКЦИИ ДЛЯ ЖАЛОБ ====================
+
+// Открыть модальное окно для жалобы
+async function openComplaintModal(adId) {
+// Проверяем блокировку
+if (!checkBlockBeforeAction('подача жалобы')) return;
+
+const ad = appData.ads.find(a => a.id === adId);
+if (!ad) {
+    showNotification('Объявление не найдено', 'error');
+    return;
+}
+
+// Проверяем, не на свое ли объявление жалуется
+if (ad.sellerId === appData.currentUserId) {
+    showNotification('Нельзя жаловаться на собственное объявление', 'warning');
+    return;
+}
+
+// Проверяем, жаловался ли уже пользователь
+const hasComplained = await FirebaseMarketServer.checkIfUserComplained(
+    appData.currentUserId, 
+    adId
+);
+
+if (hasComplained) {
+    showNotification('Вы уже жаловались на это объявление', 'warning');
+    return;
+}
+
+// Заполняем данные
+complaintData.targetAdId = adId;
+complaintData.targetUserId = ad.sellerId;
+complaintData.targetUsername = ad.sellerUsername;
+complaintData.adTitle = ad.title;
+complaintData.selectedType = null;
+complaintData.description = '';
+complaintData.evidence = null;
+complaintData.hasComplainedBefore = hasComplained;
+
+// Заполняем информацию о цели
+document.getElementById('complaintTargetInfo').innerHTML = `
+    <strong>Объявление:</strong> ${ad.title}<br>
+    <strong>Продавец:</strong> ${ad.sellerUsername || 'Без username'}<br>
+    <strong>Категория:</strong> ${getCategoryName(ad.category)}<br>
+    <strong>Цена:</strong> ${ad.price.toLocaleString()} ₽
+`;
+
+// Загружаем типы жалоб
+const typesContainer = document.getElementById('complaintTypes');
+typesContainer.innerHTML = COMPLAINT_TYPES.map(type => `
+    <div class="complaint-type-btn" onclick="selectComplaintType('${type.id}')" id="complaint-type-${type.id}">
+        <div class="complaint-type-icon">
+            <i class="${type.icon}"></i>
+        </div>
+        <div class="complaint-type-text">${type.text}</div>
+        <div style="font-size: 10px; color: #D8B4FE; margin-top: 5px;">${type.description}</div>
+    </div>
+`).join('');
+
+// Очищаем описание
+document.getElementById('complaintDescription').value = '';
+
+// Показываем модальное окно
+document.getElementById('complaintModal').classList.add('active');
+document.body.style.overflow = 'hidden';
+}
+
+// Закрыть модальное окно для жалобы
+function closeComplaintModal() {
+document.getElementById('complaintModal').classList.remove('active');
+document.body.style.overflow = 'auto';
+
+// Сбрасываем выбранный тип
+if (complaintData.selectedType) {
+    document.getElementById(`complaint-type-${complaintData.selectedType}`).classList.remove('active');
+}
+
+complaintData.selectedType = null;
+}
+
+// Выбрать тип жалобы
+function selectComplaintType(typeId) {
+// Снимаем выделение с предыдущего типа
+if (complaintData.selectedType) {
+    document.getElementById(`complaint-type-${complaintData.selectedType}`).classList.remove('active');
+}
+
+// Выделяем новый тип
+complaintData.selectedType = typeId;
+document.getElementById(`complaint-type-${typeId}`).classList.add('active');
+}
+
+// Прикрепить скриншот
+function attachScreenshot() {
+// В реальном приложении здесь будет логика для создания скриншота
+showNotification('В реальном приложении здесь будет возможность сделать скриншот', 'info');
+}
+
+// Прикрепить фото
+function attachPhoto() {
+const input = document.createElement('input');
+input.type = 'file';
+input.accept = 'image/*';
+input.onchange = function(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            complaintData.evidence = {
+                type: 'photo',
+                data: e.target.result,
+                filename: file.name
+            };
+            showNotification('Фото прикреплено', 'success');
+        };
+        reader.readAsDataURL(file);
+    }
+};
+input.click();
+}
+
+// Отправить жалобу на сервер
+async function submitComplaintToServer() {
+// Проверяем блокировку
+if (!checkBlockBeforeAction('отправка жалобы')) return;
+
+if (!complaintData.selectedType) {
+    showNotification('Выберите тип жалобы', 'error');
+    return;
+}
+
+const description = document.getElementById('complaintDescription').value.trim();
+if (!description) {
+    showNotification('Опишите проблему', 'error');
+    return;
+}
+
+if (description.length < 10) {
+    showNotification('Описание должно содержать минимум 10 символов', 'error');
+    return;
+}
+
+// Получаем данные объявления
+const ad = appData.ads.find(a => a.id === complaintData.targetAdId);
+if (!ad) {
+    showNotification('Объявление не найдено', 'error');
+    return;
+}
+
+// Подготавливаем данные жалобы
+const complaintToSave = {
+    reporterId: appData.currentUserId,
+    reporterUsername: appData.currentUserData.username ? 
+        '@' + appData.currentUserData.username : 'Без username',
+    reporterName: appData.currentUserData.first_name,
+    targetAdId: complaintData.targetAdId,
+    targetUserId: complaintData.targetUserId,
+    targetUsername: complaintData.targetUsername,
+    targetAdTitle: complaintData.adTitle,
+    type: complaintData.selectedType,
+    description: description,
+    evidence: complaintData.evidence,
+    status: 'new',
+    createdAt: new Date().toISOString()
+};
+
+try {
+    // Показываем загрузку
+    showNotification('Отправка жалобы...', 'info');
+    
+    // Отправляем жалобу
+    const complaintId = await FirebaseMarketServer.addComplaintToAd(complaintToSave);
+    
+    if (complaintId) {
+        // Обновляем счетчик жалоб в интерфейсе
+        updateComplaintCount(ad.id, 'increment');
+        
+        // Добавляем в историю пользователя
+        await FirebaseMarketServer.addToHistory(appData.currentUserId, {
+            type: 'complaint',
+            action: 'submitted',
+            target: ad.title,
+            targetId: ad.id,
+            date: new Date().toLocaleDateString('ru-RU')
+        });
+        
+        // Закрываем модальное окно
+        closeComplaintModal();
+        
+        // Показываем уведомление
+        showNotification('Жалоба успешно отправлена! Администратор рассмотрит её в ближайшее время.', 'success');
+        
+        // Если пользователь админ, обновляем данные
+        if (appData.isAdmin) {
+            loadAdminData();
+        }
+    } else {
+        showNotification('Ошибка при отправке жалобы', 'error');
+    }
+    
+} catch (error) {
+    console.error('Ошибка отправки жалобы:', error);
+    showNotification('Ошибка при отправке жалобы', 'error');
+}
+}
+
+// Обновить счетчик жалоб в интерфейсе
+function updateComplaintCount(adId, action = 'increment') {
+const ad = appData.ads.find(a => a.id === adId);
+if (ad) {
+    if (action === 'increment') {
+        ad.complaints = (ad.complaints || 0) + 1;
+    } else if (action === 'decrement') {
+        ad.complaints = Math.max(0, (ad.complaints || 1) - 1);
+    }
+    
+    // Обновляем отображение
+    renderAds();
+}
+}
+
+// Добавить кнопку жалобы в карточку объявления
+function addComplaintButtonToAd(adElement, ad) {
+// Проверяем, не свое ли это объявление
+if (ad.sellerId === appData.currentUserId) return;
+
+// Создаем кнопку жалобы
+const complaintBtn = document.createElement('button');
+complaintBtn.className = 'complaint-btn-small';
+complaintBtn.innerHTML = '<i class="fas fa-flag"></i> Жалоба';
+complaintBtn.onclick = (e) => {
+    e.stopPropagation();
+    openComplaintModal(ad.id);
+};
+
+adElement.style.position = 'relative';
+adElement.appendChild(complaintBtn);
+
+// Добавляем индикатор жалоб, если они есть
+if (ad.complaints > 0) {
+    const complaintIndicator = document.createElement('div');
+    complaintIndicator.className = 'complaint-indicator';
+    complaintIndicator.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${ad.complaints}`;
+    complaintIndicator.title = `На это объявление подано ${ad.complaints} жалоб`;
+    adElement.appendChild(complaintIndicator);
+}
+}
+
+// Обновить рендер объявлений с добавлением кнопок жалоб
+function renderAdsWithComplaints() {
+const container = document.getElementById('ads-container');
+
+if (!appData.isDataLoaded) {
+    container.innerHTML = `
+        <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
+            <i class="fas fa-spinner fa-spin" style="font-size: 48px; margin-bottom: 20px;"></i>
+            <h3 style="margin-bottom: 10px;">Загрузка объявлений...</h3>
+            <p>Пожалуйста, подождите</p>
+        </div>
+    `;
+    return;
+}
+
+container.innerHTML = '';
+
+const filteredAds = appData.currentCategory === 'all' 
+    ? appData.ads 
+    : appData.ads.filter(ad => ad.category === appData.currentCategory);
+
+// Фильтруем только активные объявления
+const activeAds = filteredAds.filter(ad => ad.status !== 'deleted');
+
+activeAds.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+if (activeAds.length === 0) {
+    container.innerHTML = `
+        <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
+            <i class="fas fa-box-open" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
+            <h3 style="margin-bottom: 10px;">Нет объявлений</h3>
+            <p>В этой категории пока нет объявлений</p>
+            <p style="font-size: 12px; margin-top: 10px; color: rgba(255,255,255,0.5);">
+                Будьте первым - создайте объявление!
+            </p>
+        </div>
+    `;
+    return;
+}
+
+activeAds.forEach(ad => {
+    const rating = calculateRating(ad.sellerId);
+    const userRating = appData.userRatings[ad.sellerId]?.[appData.currentUserId];
+    const isOwnAd = ad.sellerId === appData.currentUserId;
+    
+    const adElement = document.createElement('div');
+    adElement.className = 'advertisement-card';
+    adElement.id = `ad-${ad.id}`;
+    
+    // Отображение фото
+    const photoElements = [];
+    
+    if (ad.photoUrls && ad.photoUrls.length > 0 && ad.photoUrls[0] !== null) {
+        // Есть реальные фото
+        ad.photoUrls.forEach((photoUrl, index) => {
+            if (photoUrl && photoUrl !== 'null') {
+                photoElements.push(`
+                    <div class="photo-item" onclick="openPhotoViewer('${ad.id}', ${index})">
+                        <img src="${photoUrl}" alt="Фото ${index + 1}" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxMjAiIHJ4PSIxNSIgZmlsbD0iIzgzNUFGOSIvPjxwYXRoIGQ9Ik03NSA2MEw1NSA3NUw0NSA2MEw2MCA0NUw3NSA2MFoiIGZpbGw9IndoaXRlIi8+PHRleHQgeD0iNjAiIHk9Ijg1IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5GJmFtcDsjeDQ0Mzt0byAxPC90ZXh0Pjwvc3ZnPg=='">
+                        <div class="photo-label">Фото ${index + 1}</div>
+                    </div>
+                `);
+            }
+        });
+    }
+    
+    // Если нет фото или не удалось загрузить, показываем заглушки
+    if (photoElements.length === 0) {
+        const numPhotos = Math.min(ad.photos || 1, 3);
+        for (let i = 0; i < numPhotos; i++) {
+            const colors = ['#835AF9', '#7C3AED', '#6D28D9'];
+            const color = colors[i % colors.length];
+            photoElements.push(`
+                <div class="photo-item">
+                    <div class="photo-placeholder" style="background: ${color};">
+                        <i class="fas fa-image"></i>
+                        <span>Фото ${i + 1}</span>
+                    </div>
+                    <div class="photo-label">Фото ${i + 1}</div>
+                </div>
+            `);
+        }
+    }
+    
+    // Проверяем, является ли продавец проверенным
+    const sellerUser = appData.adminData.users?.find(u => u.id === ad.sellerId);
+    const verifiedBadge = sellerUser?.verified ? '<span style="color: #10B981; margin-left: 5px;">✓</span>' : '';
+    
+    adElement.innerHTML = `
+        <div class="seller-header">
+            <div class="seller-avatar">
+                ${ad.sellerAvatar ? `<img src="${ad.sellerAvatar}" alt="Аватар">` : 
+                  `<span style="font-size: 18px; font-weight: bold;">${ad.sellerName?.charAt(0) || 'П'}</span>`}
+            </div>
+            <div class="seller-info">
+                <div class="seller-name">${ad.sellerName || 'Неизвестный'} ${verifiedBadge}</div>
+                <div class="seller-username">${ad.sellerUsername || 'Без username'}</div>
+                <div class="seller-stats">
+                    <div class="seller-stat stat-rating">
+                        <i class="fas fa-star"></i>
+                        <span id="rating-${ad.sellerId}">${calculateRating(ad.sellerId).toFixed(1)}</span>
+                    </div>
+                    <div class="seller-stat stat-likes">
+                        <i class="fas fa-thumbs-up"></i>
+                        <span id="ad${ad.id}-likes">${ad.likes || 0}</span>
+                    </div>
+                    <div class="seller-stat stat-dislikes">
+                        <i class="fas fa-thumbs-down"></i>
+                        <span id="ad${ad.id}-dislikes">${ad.dislikes || 0}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="photo-gallery">
+            ${photoElements.join('')}
+        </div>
+
+        <div class="product-info">
+            <div class="product-title">${ad.title || 'Без названия'}</div>
+            <div class="product-category">${getCategoryName(ad.category)}</div>
+            <div class="product-price">${(ad.price || 0).toLocaleString()} ₽</div>
+            <div class="product-description">${ad.description || 'Без описания'}</div>
+        </div>
+
+        <div class="action-grid">
+            <button class="rate-btn like-btn ${userRating === 'like' ? 'active' : ''} ${isOwnAd ? 'disabled' : ''}" 
+                    onclick="rateSeller('${ad.sellerId}', 'like', '${ad.id}')"
+                    ${isOwnAd ? 'disabled' : ''}>
+                <i class="fas fa-thumbs-up"></i>
+            </button>
+            
+            <button class="contact-btn" onclick="contactSeller('${ad.sellerUsername || 'Без username'}', '${ad.id}', '${ad.title || 'Без названия'}', '${ad.category || 'other'}', ${ad.price || 0})">
+                <i class="fas fa-paper-plane"></i>
+                Написать продавцу
+            </button>
+            
+            <button class="rate-btn dislike-btn ${userRating === 'dislike' ? 'active' : ''} ${isOwnAd ? 'disabled' : ''}" 
+                    onclick="rateSeller('${ad.sellerId}', 'dislike', '${ad.id}')"
+                    ${isOwnAd ? 'disabled' : ''}>
+                <i class="fas fa-thumbs-down"></i>
+            </button>
+        </div>
+    `;
+    
+    // Добавляем кнопку жалобы
+    addComplaintButtonToAd(adElement, ad);
+    
+    container.appendChild(adElement);
+});
+}
+
+// Переопределяем функцию renderAds
+function renderAds() {
+renderAdsWithComplaints();
+}
+
+// Обновляем статистику профиля с информацией о жалобах
+function updateProfileStatsWithComplaints() {
+if (!appData.isDataLoaded) {
+    document.getElementById('myAdsCount').textContent = '0';
+    document.getElementById('myLikesCount').textContent = '0';
+    document.getElementById('myDislikesCount').textContent = '0';
+    document.getElementById('myRating').textContent = '0.0';
+    return;
+}
+
+const myAds = appData.ads.filter(ad => ad.sellerId === appData.currentUserId && ad.status !== 'deleted').length;
+document.getElementById('myAdsCount').textContent = myAds;
+
+let myLikes = 0;
+let myDislikes = 0;
+let myComplaints = 0;
+
+appData.ads.forEach(ad => {
+    if (ad.sellerId === appData.currentUserId) {
+        myLikes += ad.likes || 0;
+        myDislikes += ad.dislikes || 0;
+        myComplaints += ad.complaints || 0;
+    }
+});
+
+document.getElementById('myLikesCount').textContent = myLikes;
+document.getElementById('myDislikesCount').textContent = myDislikes;
+
+const myRating = calculateRating(appData.currentUserId);
+document.getElementById('myRating').textContent = myRating.toFixed(1);
+
+// Добавляем статистику жалоб в профиль, если есть место
+const profileCard = document.querySelector('.profile-card');
+if (profileCard && !document.getElementById('complaint-stats')) {
+    const complaintStats = document.createElement('div');
+    complaintStats.className = 'complaint-stats';
+    complaintStats.id = 'complaint-stats';
+    complaintStats.innerHTML = `
+        <div class="complaint-stat-item">
+            <div class="complaint-stat-number">${myComplaints}</div>
+            <div class="complaint-stat-label">Жалоб на вас</div>
+        </div>
+        <div class="complaint-stat-item">
+            <div class="complaint-stat-number" id="mySubmittedComplaints">0</div>
+            <div class="complaint-stat-label">Ваших жалоб</div>
+        </div>
+    `;
+    
+    // Вставляем после существующей статистики
+    const existingStats = document.querySelector('.profile-stats');
+    if (existingStats) {
+        existingStats.parentNode.insertBefore(complaintStats, existingStats.nextSibling);
+    }
+}
+
+// Загружаем количество отправленных жалоб
+loadSubmittedComplaintsCount();
+}
+
+// Загрузить количество отправленных жалоб
+async function loadSubmittedComplaintsCount() {
+if (!appData.currentUserId) return;
+
+try {
+    const complaints = await FirebaseMarketServer.getUserComplaints(appData.currentUserId);
+    const submittedComplaints = complaints.length;
+    
+    const element = document.getElementById('mySubmittedComplaints');
+    if (element) {
+        element.textContent = submittedComplaints;
+    }
+} catch (error) {
+    console.error('Ошибка загрузки жалоб пользователя:', error);
+}
+}
+
+// Переопределяем функцию updateProfileStats
+function updateProfileStats() {
+    updateProfileStatsWithComplaints();
+}
+
+// ==================== АДМИН-ФУНКЦИИ ====================
+
+// Переключение разделов админ-панели
+function switchAdminSection(section) {
+    // Скрываем все подразделы
+    document.querySelectorAll('.admin-subsection').forEach(sub => {
+        sub.classList.remove('active');
+    });
+    
+    // Показываем выбранный подраздел
+    document.getElementById(`admin-${section}`).classList.add('active');
+    appData.currentAdminSection = section;
+    
+    // Обновляем содержимое раздела
+    updateCurrentAdminSection();
+}
+
+// Обновить текущий раздел админ-панели
+function updateCurrentAdminSection() {
+    if (!appData.isAdmin) return;
+    
+    switch (appData.currentAdminSection) {
+        case 'moderation':
+            updateAdminAdsList();
+            break;
+        case 'users':
+            updateAdminUsersList();
+            break;
+        case 'complaints':
+            updateAdminComplaintsList();
+            break;
+        case 'analytics':
+            updateCategoriesAnalytics();
+            break;
+        case 'main':
+            updateAdminStats();
+            break;
+    }
+}
+
+// Обновить список объявлений для модерации
+function updateAdminAdsList() {
+    const container = document.getElementById('admin-ads-list');
+    if (!container) return;
+    
+    let filteredAds = [...appData.ads];
+    
+    // Применяем фильтры
+    switch (appData.currentAdminFilter) {
+        case 'new':
+            // Объявления за последние 24 часа
+            const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
+            filteredAds = filteredAds.filter(ad => 
+                ad.createdAt && new Date(ad.createdAt) > dayAgo
+            );
+            break;
+        case 'complained':
+            filteredAds = filteredAds.filter(ad => ad.complaints && ad.complaints > 0);
+            break;
+        case 'unverified':
+            filteredAds = filteredAds.filter(ad => !ad.verified);
+            break;
+    }
+    
+    if (filteredAds.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
+                <i class="fas fa-box-open" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
+                <h3 style="margin-bottom: 10px;">Нет объявлений</h3>
+                <p>В этом разделе пока нет объявлений</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    filteredAds.forEach(ad => {
+        const date = ad.createdAt ? new Date(ad.createdAt).toLocaleDateString('ru-RU') : 'Неизвестно';
+        const verifiedBadge = ad.verified ? '<span class="status-badge" style="background: rgba(16, 185, 129, 0.3); color: #10B981;">✓</span>' : '';
+        const complaintsBadge = ad.complaints > 0 ? `<span class="status-badge" style="background: rgba(239, 68, 68, 0.3); color: #EF4444;">${ad.complaints}</span>` : '';
+        
+        html += `
+            <div class="admin-list-item">
+                <div class="admin-item-info">
+                    <h4>${ad.title || 'Без названия'} ${verifiedBadge} ${complaintsBadge}</h4>
+                    <p>${ad.sellerUsername || 'Без username'} • ${getCategoryName(ad.category)} • ${ad.price ? ad.price.toLocaleString() + ' ₽' : 'Цена не указана'} • ${date}</p>
+                </div>
+                <div class="admin-item-actions">
+                    <button class="admin-small-btn view" onclick="viewAdDetails('${ad.id}')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="admin-small-btn edit" onclick="editAdminAd('${ad.id}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="admin-small-btn delete" onclick="deleteAdminAd('${ad.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Фильтрация объявлений в админ-панели
+function filterAdminAds(filter) {
+    appData.currentAdminFilter = filter;
+    
+    // Обновляем активные кнопки фильтров
+    document.querySelectorAll('.admin-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    updateAdminAdsList();
+}
+
+// Обновить список пользователей в админ-панели
+function updateAdminUsersList() {
+    const container = document.getElementById('admin-users-list');
+    if (!container || !appData.adminData.users) return;
+    
+    let filteredUsers = [...appData.adminData.users];
+    
+    // Применяем фильтры
+    switch (appData.currentAdminFilter) {
+        case 'active':
+            // Пользователи активные за последние 7 дней
+            const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+            filteredUsers = filteredUsers.filter(user => 
+                user.lastActive && new Date(user.lastActive) > weekAgo
+            );
+            break;
+        case 'blocked':
+            filteredUsers = filteredUsers.filter(user => user.blocked);
+            break;
+        case 'verified':
+            filteredUsers = filteredUsers.filter(user => user.verified);
+            break;
+    }
+    
+    if (filteredUsers.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
+                <i class="fas fa-users" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
+                <h3 style="margin-bottom: 10px;">Нет пользователей</h3>
+                <p>В этом разделе пока нет пользователей</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    filteredUsers.forEach(user => {
+        const regDate = user.registrationDate ? new Date(user.registrationDate).toLocaleDateString('ru-RU') : 'Неизвестно';
+        
+        const verifiedBadge = user.verified ? '<span class="status-badge" style="background: rgba(16, 185, 129, 0.3); color: #10B981;">✓</span>' : '';
+        const blockedBadge = user.blocked ? '<span class="status-badge" style="background: rgba(239, 68, 68, 0.3); color: #EF4444;">🚫</span>' : '';
+        
+        html += `
+            <div class="admin-list-item">
+                <div class="admin-item-info">
+                    <h4>${user.name || 'Без имени'} ${user.id === appData.currentUserId ? '(Вы)' : ''} ${verifiedBadge} ${blockedBadge}</h4>
+                    <p>${user.username || 'Без username'} • ID: ${user.id} • Регистрация: ${regDate}</p>
+                </div>
+                <div class="admin-item-actions">
+                    <button class="admin-small-btn view" onclick="viewUserDetails('${user.id}')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    ${user.id !== appData.currentUserId ? `
+                        ${user.blocked ? `
+                            <button class="admin-small-btn edit" onclick="unblockUser('${user.id}')">
+                                <i class="fas fa-unlock"></i>
+                            </button>
+                        ` : `
+                            <button class="admin-small-btn delete" onclick="blockUserModal('${user.id}')">
+                                <i class="fas fa-lock"></i>
+                            </button>
+                        `}
+                        ${!user.verified ? `
+                            <button class="admin-small-btn view" onclick="verifyUser('${user.id}')">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        ` : ''}
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Фильтрация пользователей в админ-панели
+function filterAdminUsers(filter) {
+    appData.currentAdminFilter = filter;
+    
+    // Обновляем активные кнопки фильтров
+    document.querySelectorAll('.admin-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    updateAdminUsersList();
+}
+
+// Поиск пользователей
+function searchAdminUsers() {
+    const searchTerm = document.getElementById('admin-users-search').value.toLowerCase();
+    const container = document.getElementById('admin-users-list');
+    
+    if (!searchTerm) {
+        updateAdminUsersList();
+        return;
+    }
+    
+    const filteredUsers = appData.adminData.users.filter(user => 
+        (user.id && user.id.toString().includes(searchTerm)) ||
+        (user.name && user.name.toLowerCase().includes(searchTerm)) ||
+        (user.username && user.username.toLowerCase().includes(searchTerm))
+    );
+    
+    if (filteredUsers.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
+                <i class="fas fa-search" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
+                <h3 style="margin-bottom: 10px;">Пользователи не найдены</h3>
+                <p>Попробуйте другой поисковый запрос</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    filteredUsers.forEach(user => {
+        const regDate = user.registrationDate ? new Date(user.registrationDate).toLocaleDateString('ru-RU') : 'Неизвестно';
+        
+        const verifiedBadge = user.verified ? '<span class="status-badge" style="background: rgba(16, 185, 129, 0.3); color: #10B981;">✓</span>' : '';
+        const blockedBadge = user.blocked ? '<span class="status-badge" style="background: rgba(239, 68, 68, 0.3); color: #EF4444;">🚫</span>' : '';
+        
+        html += `
+            <div class="admin-list-item">
+                <div class="admin-item-info">
+                    <h4>${user.name || 'Без имени'} ${verifiedBadge} ${blockedBadge}</h4>
+                    <p>${user.username || 'Без username'} • ID: ${user.id} • Регистрация: ${regDate}</p>
+                </div>
+                <div class="admin-item-actions">
+                    <button class="admin-small-btn view" onclick="viewUserDetails('${user.id}')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    ${user.id !== appData.currentUserId ? `
+                        ${user.blocked ? `
+                            <button class="admin-small-btn edit" onclick="unblockUser('${user.id}')">
+                                <i class="fas fa-unlock"></i>
+                            </button>
+                        ` : `
+                            <button class="admin-small-btn delete" onclick="blockUserModal('${user.id}')">
+                                <i class="fas fa-lock"></i>
+                            </button>
+                        `}
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Обновить список жалоб
+function updateAdminComplaintsList() {
+    const container = document.getElementById('admin-complaints-list');
+    if (!container || !appData.adminData.complaints) return;
+    
+    let filteredComplaints = [...appData.adminData.complaints];
+    
+    // Применяем фильтры
+    switch (appData.currentAdminFilter) {
+        case 'new':
+            filteredComplaints = filteredComplaints.filter(c => c.status === 'new');
+            break;
+        case 'pending':
+            filteredComplaints = filteredComplaints.filter(c => c.status === 'pending');
+            break;
+        case 'fraud':
+            filteredComplaints = filteredComplaints.filter(c => c.type === 'fraud');
+            break;
+    }
+    
+    // Сортируем по дате (новые сначала)
+    filteredComplaints.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+    if (filteredComplaints.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
+                <i class="fas fa-flag" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
+                <h3 style="margin-bottom: 10px;">Жалоб нет</h3>
+                <p>В этом разделе пока нет жалоб</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    filteredComplaints.forEach(complaint => {
+        const date = complaint.createdAt ? new Date(complaint.createdAt).toLocaleDateString('ru-RU') : 'Неизвестно';
+        const statusClass = `status-${complaint.status || 'new'}`;
+        const statusText = getComplaintStatusText(complaint.status);
+        const typeText = getComplaintTypeText(complaint.type);
+        
+        html += `
+            <div class="admin-list-item">
+                <div class="admin-item-info">
+                    <h4>Жалоба на: ${complaint.targetUsername || 'Неизвестно'}</h4>
+                    <p>Тип: ${typeText} • От: ${complaint.reporterUsername || 'Аноним'} • ${date}</p>
+                    <p>${complaint.description || 'Описание отсутствует'}</p>
+                    <span class="status-badge ${statusClass}">${statusText}</span>
+                </div>
+                <div class="admin-item-actions">
+                    <button class="admin-small-btn view" onclick="viewComplaintDetails('${complaint.id}')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="admin-small-btn edit" onclick="resolveComplaint('${complaint.id}')">
+                        <i class="fas fa-check"></i>
+                    </button>
+                    <button class="admin-small-btn delete" onclick="rejectComplaint('${complaint.id}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Фильтрация жалоб
+function filterAdminComplaints(filter) {
+    appData.currentAdminFilter = filter;
+    
+    document.querySelectorAll('.admin-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    updateAdminComplaintsList();
+}
+
+// Получить текст статуса жалобы
+function getComplaintStatusText(status) {
+    const statuses = {
+        'new': 'Новая',
+        'pending': 'В работе',
+        'resolved': 'Решена',
+        'rejected': 'Отклонена'
+    };
+    return statuses[status] || status;
+}
+
+// Получить текст типа жалобы
+function getComplaintTypeText(type) {
+    const types = {
+        'fraud': 'Мошенничество',
+        'wrong_category': 'Неправильная категория',
+        'prohibited': 'Запрещенные товары',
+        'insult': 'Оскорбления',
+        'spam': 'Спам',
+        'other': 'Другое'
+    };
+    return types[type] || type;
+}
+
+// ==================== АДМИН-ДЕЙСТВИЯ ====================
+
+// Просмотр деталей объявления
+function viewAdDetails(adId) {
+    const ad = appData.ads.find(a => a.id === adId);
+    if (!ad) return;
+    
+    alert(`Детали объявления:\n\n` +
+          `Название: ${ad.title}\n` +
+          `Продавец: ${ad.sellerName} (${ad.sellerUsername})\n` +
+          `Категория: ${getCategoryName(ad.category)}\n` +
+          `Цена: ${ad.price ? ad.price.toLocaleString() + ' ₽' : 'Не указана'}\n` +
+          `Описание: ${ad.description || 'Отсутствует'}\n` +
+          `Лайки: ${ad.likes || 0}\n` +
+          `Дизлайки: ${ad.dislikes || 0}\n` +
+          `Жалобы: ${ad.complaints || 0}\n` +
+          `Статус: ${ad.verified ? 'Проверено' : 'Не проверено'}\n` +
+          `Создано: ${ad.createdAt ? new Date(ad.createdAt).toLocaleString('ru-RU') : 'Неизвестно'}`);
+}
+
+// Редактирование объявления (админ)
+function editAdminAd(adId) {
+    const ad = appData.ads.find(a => a.id === adId);
+    if (!ad) return;
+    
+    const newTitle = prompt('Новое название объявления:', ad.title);
+    if (newTitle === null) return;
+    
+    const newPrice = prompt('Новая цена:', ad.price);
+    if (newPrice === null) return;
+    
+    const newDescription = prompt('Новое описание:', ad.description);
+    if (newDescription === null) return;
+    
+    // Обновляем в Firebase
+    FirebaseMarketServer.updateAd(adId, {
+        title: newTitle,
+        price: Number(newPrice),
+        description: newDescription,
+        updatedAt: firebase.database.ServerValue.TIMESTAMP
+    }).then(success => {
+        if (success) {
+            showNotification('Объявление обновлено', 'success');
+            loadAdminData();
+        } else {
+            showNotification('Ошибка при обновлении', 'error');
+        }
+    });
+}
+
+// Удаление объявления (админ)
+function deleteAdminAd(adId) {
+    if (!confirm('Вы уверены, что хотите удалить это объявление?\nЭто действие нельзя отменить.')) {
+        return;
+    }
+    
+    const ad = appData.ads.find(a => a.id === adId);
+    if (!ad) return;
+    
+    const reason = prompt('Причина удаления:', 'Нарушение правил');
+    if (reason === null) return;
+    
+    // Обновляем статус объявления
+    FirebaseMarketServer.updateAd(adId, {
+        status: 'deleted',
+        deleteReason: reason,
+        deletedAt: firebase.database.ServerValue.TIMESTAMP
+    }).then(success => {
+        if (success) {
+            showNotification('Объявление удалено', 'warning');
+            loadAdminData();
+        } else {
+            showNotification('Ошибка при удалении', 'error');
+        }
+    });
+}
+
+// Просмотр деталей пользователя
+function viewUserDetails(userId) {
+    const user = appData.adminData.users.find(u => u.id === userId);
+    if (!user) return;
+    
+    const adsCount = appData.ads.filter(ad => ad.sellerId === userId).length;
+    const lastActive = user.lastActive ? new Date(user.lastActive).toLocaleString('ru-RU') : 'Никогда';
+    const regDate = user.registrationDate ? new Date(user.registrationDate).toLocaleString('ru-RU') : 'Неизвестно';
+    
+    let blockInfo = '';
+    if (user.blocked) {
+        const blockedAt = user.blockedAt ? new Date(user.blockedAt).toLocaleString('ru-RU') : 'Неизвестно';
+        let unblockDate = 'Никогда';
+        if (user.blockedUntil && user.blockedUntil !== 'permanent') {
+            unblockDate = new Date(user.blockedUntil).toLocaleString('ru-RU');
+        }
+        blockInfo = `\n🔒 Блокировка:\n` +
+                   `Причина: ${user.blockReason || 'Не указана'}\n` +
+                   `Заблокирован: ${blockedAt}\n` +
+                   `Разблокировка: ${unblockDate}`;
+    }
+    
+    alert(`Детали пользователя:\n\n` +
+          `ID: ${user.id}\n` +
+          `Имя: ${user.name || 'Не указано'}\n` +
+          `Username: ${user.username || 'Не указан'}\n` +
+          `Рейтинг: ${user.rating ? user.rating.toFixed(1) : '0.0'}\n` +
+          `Объявления: ${adsCount}\n` +
+          `Лайки: ${user.likesCount || 0}\n` +
+          `Дизлайки: ${user.dislikesCount || 0}\n` +
+          `Жалобы: ${user.complaintsCount || 0}\n` +
+          `Предупреждения: ${user.warnings || 0}\n` +
+          `Статус: ${user.blocked ? 'Заблокирован' : 'Активен'}\n` +
+          `Верифицирован: ${user.verified ? 'Да' : 'Нет'}\n` +
+          `Зарегистрирован: ${regDate}\n` +
+          `Последняя активность: ${lastActive}` +
+          blockInfo);
+}
+
+// Модальное окно блокировки пользователя
+function blockUserModal(userId) {
+    const user = appData.adminData.users.find(u => u.id === userId);
+    if (!user || user.id === appData.currentUserId) return;
+    
+    const reason = prompt('Причина блокировки:', 'Нарушение правил');
+    if (reason === null) return;
+    
+    const durationChoice = prompt('Длительность блокировки:\n1 - 1 час\n2 - 24 часа\n3 - 7 дней\n4 - 30 дней\n5 - Навсегда', '2');
+    if (durationChoice === null) return;
+    
+    let duration;
+    let durationText;
+    
+    switch (durationChoice) {
+        case '1':
+            duration = 1;
+            durationText = '1 час';
+            break;
+        case '2':
+            duration = 24;
+            durationText = '24 часа';
+            break;
+        case '3':
+            duration = 24 * 7;
+            durationText = '7 дней';
+            break;
+        case '4':
+            duration = 24 * 30;
+            durationText = '30 дней';
+            break;
+        case '5':
+            duration = 'permanent';
+            durationText = 'навсегда';
+            break;
+        default:
+            duration = 24;
+            durationText = '24 часа';
+    }
+    
+    if (confirm(`Заблокировать пользователя ${user.name || user.id}?\nПричина: ${reason}\nДлительность: ${durationText}`)) {
+        FirebaseMarketServer.blockUser(userId, reason, duration).then(success => {
+            if (success) {
+                showNotification(`Пользователь заблокирован на ${durationText}`, 'warning');
+                loadAdminData();
+            } else {
+                showNotification('Ошибка при блокировке', 'error');
+            }
+        });
+    }
+}
+
+// Разблокировать пользователя
+function unblockUser(userId) {
+    const user = appData.adminData.users.find(u => u.id === userId);
+    if (!user || user.id === appData.currentUserId) return;
+    
+    if (confirm(`Разблокировать пользователя ${user.name || user.id}?`)) {
+        FirebaseMarketServer.unblockUser(userId).then(success => {
+            if (success) {
+                showNotification('Пользователь разблокирован', 'success');
+                loadAdminData();
+            } else {
+                showNotification('Ошибка при разблокировке', 'error');
+            }
+        });
+    }
+}
+
+// Верифицировать пользователя
+function verifyUser(userId) {
+    const user = appData.adminData.users.find(u => u.id === userId);
+    if (!user || user.id === appData.currentUserId) return;
+    
+    if (confirm(`Верифицировать пользователя ${user.name || user.id}?\nВерифицированные пользователи получают специальную отметку.`)) {
+        FirebaseMarketServer.verifyUser(userId).then(success => {
+            if (success) {
+                showNotification('Пользователь верифицирован', 'success');
+                loadAdminData();
+            } else {
+                showNotification('Ошибка при верификации', 'error');
+            }
+        });
+    }
+}
+
+// Просмотр деталей жалобы
+function viewComplaintDetails(complaintId) {
+    const complaint = appData.adminData.complaints.find(c => c.id === complaintId);
+    if (!complaint) return;
+    
+    const date = complaint.createdAt ? new Date(complaint.createdAt).toLocaleString('ru-RU') : 'Неизвестно';
+    
+    alert(`Детали жалобы:\n\n` +
+          `ID: ${complaint.id}\n` +
+          `Тип: ${getComplaintTypeText(complaint.type)}\n` +
+          `Статус: ${getComplaintStatusText(complaint.status)}\n` +
+          `На кого: ${complaint.targetUsername || 'Неизвестно'}\n` +
+          `От кого: ${complaint.reporterUsername || 'Аноним'}\n` +
+          `Описание: ${complaint.description || 'Отсутствует'}\n` +
+          `Доказательства: ${complaint.evidence ? 'Есть' : 'Нет'}\n` +
+          `Дата: ${date}\n` +
+          `Заметка админа: ${complaint.adminNote || 'Нет'}`);
+}
+
+// Решить жалобу
+function resolveComplaint(complaintId) {
+    const complaint = appData.adminData.complaints.find(c => c.id === complaintId);
+    if (!complaint) return;
+    
+    const note = prompt('Заметка админа (опционально):', 'Жалоба рассмотрена, нарушения устранены');
+    
+    FirebaseMarketServer.updateComplaintStatus(complaintId, 'resolved', note).then(success => {
+        if (success) {
+            showNotification('Жалоба отмечена как решенная', 'success');
+            loadAdminData();
+        } else {
+            showNotification('Ошибка при обновлении жалобы', 'error');
+        }
+    });
+}
+
+// Отклонить жалобу
+function rejectComplaint(complaintId) {
+    const complaint = appData.adminData.complaints.find(c => c.id === complaintId);
+    if (!complaint) return;
+    
+    const note = prompt('Причина отклонения:', 'Жалоба необоснована');
+    
+    FirebaseMarketServer.updateComplaintStatus(complaintId, 'rejected', note).then(success => {
+        if (success) {
+            showNotification('Жалоба отклонена', 'warning');
+            loadAdminData();
+        } else {
+            showNotification('Ошибка при обновлении жалобы', 'error');
+        }
+    });
+}
+
+// Отправить уведомление всем пользователям
+function sendBannerToAll() {
+    const title = document.getElementById('banner-title').value.trim();
+    const text = document.getElementById('banner-text').value.trim();
+    const type = document.getElementById('banner-type').value;
+    
+    if (!title || !text) {
+        showNotification('Заполните заголовок и текст уведомления', 'error');
+        return;
+    }
+    
+    const notificationData = {
+        title: title,
+        text: text,
+        type: type,
+        sentBy: appData.currentUserId,
+        sentAt: new Date().toISOString()
+    };
+    
+    FirebaseMarketServer.createSystemNotification(notificationData).then(notificationId => {
+        if (notificationId) {
+            showNotification('Системное уведомление отправлено всем пользователям', 'success');
+            clearBannerForm();
+            
+            // Добавляем в историю
+            const historyItem = document.createElement('div');
+            historyItem.className = 'admin-list-item';
+            historyItem.innerHTML = `
+                <div class="admin-item-info">
+                    <h4>${title}</h4>
+                    <p>${new Date().toLocaleString('ru-RU')} • Тип: ${type}</p>
+                    <p>${text.substring(0, 100)}${text.length > 100 ? '...' : ''}</p>
+                </div>
+            `;
+            document.getElementById('admin-banners-history').prepend(historyItem);
+        } else {
+            showNotification('Ошибка при отправке уведомления', 'error');
+        }
+    });
+}
+
+// Очистить форму баннера
+function clearBannerForm() {
+    document.getElementById('banner-title').value = '';
+    document.getElementById('banner-text').value = '';
+    document.getElementById('banner-type').value = 'info';
+}
+
+// Экспорт статистики
+function exportAnalytics() {
+    const analyticsData = {
+        totalUsers: appData.adminData.users.length,
+        totalAds: appData.ads.length,
+        complaints: {
+            total: appData.adminData.complaints.length,
+            new: appData.adminData.complaints.filter(c => c.status === 'new').length,
+            pending: appData.adminData.complaints.filter(c => c.status === 'pending').length,
+            resolved: appData.adminData.complaints.filter(c => c.status === 'resolved').length,
+            rejected: appData.adminData.complaints.filter(c => c.status === 'rejected').length
+        },
+        categories: {},
+        exportDate: new Date().toISOString()
+    };
+    
+    // Считаем категории
+    appData.ads.forEach(ad => {
+        const category = ad.category || 'other';
+        analyticsData.categories[category] = (analyticsData.categories[category] || 0) + 1;
+    });
+    
+    // Создаем и скачиваем файл
+    const dataStr = JSON.stringify(analyticsData, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `vape-market-analytics-${new Date().toISOString().split('T')[0]}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+    
+    showNotification('Статистика экспортирована в JSON', 'success');
+}
+
+// ==================== ОБЩИЕ ФУНКЦИИ ====================
+
+// Обновить профиль пользователя в UI
+function updateUserProfile() {
+    if (!appData.currentUserData) return;
+    
+    const profileName = document.getElementById('profileName');
+    const profileUsername = document.getElementById('profileUsername');
+    const profileAvatar = document.getElementById('profileAvatar');
+    
+    let fullName = appData.currentUserData.first_name;
+    if (appData.currentUserData.last_name) {
+        fullName += ' ' + appData.currentUserData.last_name;
+    }
+    profileName.textContent = fullName;
+    
+    if (appData.currentUserData.username) {
+        profileUsername.textContent = '@' + appData.currentUserData.username;
+    } else {
+        profileUsername.textContent = 'Без username';
+    }
+    
+    if (appData.currentUserData.photo_url) {
+        profileAvatar.innerHTML = `<img src="${appData.currentUserData.photo_url}" alt="Аватар">`;
+    } else {
+        const firstLetter = (appData.currentUserData.first_name || 'П').charAt(0).toUpperCase();
+        profileAvatar.innerHTML = `<span>${firstLetter}</span>`;
+    }
+}
+
+// Показать уведомление
+function showNotification(message, type = 'info') {
+    // Если пользователь заблокирован, не показываем уведомления
+    if (appData.isUserBlocked) return;
+    
+    const notification = document.getElementById('notification');
+    notification.textContent = message;
+    notification.className = `notification ${type} show`;
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 3000);
+}
+
+// Переключение страниц
+function switchPage(page) {
+    // Проверяем блокировку перед переключением
+    if (!checkBlockBeforeAction('переключение страницы')) return;
+    
+    // Скрываем все страницы
+    document.querySelectorAll('.page').forEach(p => {
+        p.classList.remove('active');
+    });
+    
+    // Показываем выбранную страницу
+    document.getElementById(`page-${page}`).classList.add('active');
+    
+    // Обновляем активные кнопки навигации
+    document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    const navItem = document.querySelector(`[data-page="${page}"]`);
+    if (navItem) {
+        navItem.classList.add('active');
+    }
+    
+    // Обновляем заголовок
+    const titles = {
+        'ads': 'Vape Market',
+        'profile': 'Личный кабинет',
+        'faq': 'Помощь',
+        'admin': 'Админ-панель'
+    };
+    document.getElementById('header-title').textContent = titles[page] || 'Vape Market';
+    
+    // Скрываем форму добавления
+    hideAddForm();
+    
+    // Сбрасываем админ-секцию на главную
+    if (page !== 'admin') {
+        switchAdminSection('main');
+    }
+    
+    // Обновляем данные если нужно
+    if (appData.isDataLoaded) {
+        if (page === 'profile') {
+            updateProfileStats();
+            updateMyAdsList();
+            updateHistory();
+        }
+        
+        if (page === 'faq') {
+            updateServerStatsUI();
+        }
+        
+        if (page === 'admin' && appData.isAdmin) {
+            loadAdminData();
+        }
+    }
+}
+
+// Переключение вкладок в личном кабинете
+function switchProfileTab(tab) {
+    document.querySelectorAll('.profile-tab').forEach(t => {
+        t.classList.remove('active');
+    });
+    document.querySelector(`[onclick="switchProfileTab('${tab}')"]`).classList.add('active');
+    
+    document.querySelectorAll('.profile-tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    document.getElementById(`${tab}-tab`).classList.add('active');
+    
+    if (tab === 'history' && appData.isDataLoaded) {
+        updateHistory();
+    }
+}
+
+// Переключение формы добавления
+function toggleAddForm() {
+    // Проверяем блокировку перед открытием формы
+    if (!checkBlockBeforeAction('добавление объявления')) return;
+    
+    const form = document.getElementById('addAdForm');
+    const btnText = document.getElementById('toggle-btn-text');
+    
+    if (form.classList.contains('active')) {
+        form.classList.remove('active');
+        btnText.textContent = 'Добавить';
+    } else {
+        form.classList.add('active');
+        btnText.textContent = 'Скрыть';
+    }
+}
+
+// Скрыть форму добавления
+function hideAddForm() {
+    const form = document.getElementById('addAdForm');
+    const btnText = document.getElementById('toggle-btn-text');
+    
+    form.classList.remove('active');
+    btnText.textContent = 'Добавить';
+    clearAddForm();
+}
+
+// Фильтр по категориям
+function filterCategory(category) {
+    // Проверяем блокировку перед фильтрацией
+    if (!checkBlockBeforeAction('фильтрация объявлений')) return;
+    
+    appData.currentCategory = category;
+    
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    renderAds();
+}
+
+// Рассчитать рейтинг
+function calculateRating(sellerId) {
+    if (!appData.userRatings[sellerId]) return
+    // Рассчитать рейтинг
         function calculateRating(sellerId) {
             if (!appData.userRatings[sellerId]) return 0.1;
             
