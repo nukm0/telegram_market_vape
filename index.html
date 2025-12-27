@@ -1994,7 +1994,8 @@
             currentCategory: 'all',
             editingAdId: null,
             serverStats: null,
-            lastSyncTime: null
+            lastSyncTime: null,
+            isDataLoaded: false // Флаг загрузки данных
         };
         
         // Проверка Telegram и инициализация пользователя
@@ -2053,13 +2054,47 @@
                 appData.serverStats = await FirebaseMarketServer.getStats();
                 
                 appData.lastSyncTime = new Date();
+                appData.isDataLoaded = true; // Устанавливаем флаг загрузки
+                
                 updateSyncStatus();
+                
+                // Обновляем UI после загрузки данных
+                updateUIAfterDataLoad();
                 
                 showNotification(`Данные загружены (${appData.ads.length} объявлений)`, 'success');
                 
             } catch (error) {
                 console.error('Ошибка загрузки данных:', error);
                 showNotification('Ошибка загрузки данных', 'warning');
+                
+                // Все равно обновляем UI с базовыми данными
+                appData.isDataLoaded = true;
+                updateUIAfterDataLoad();
+            }
+        }
+        
+        // Обновить UI после загрузки данных
+        function updateUIAfterDataLoad() {
+            if (!appData.isDataLoaded) return;
+            
+            // Обновляем профиль
+            updateUserProfile();
+            
+            // Обновляем статистику профиля
+            updateProfileStats();
+            
+            // Обновляем объявления
+            renderAds();
+            
+            // Обновляем мои объявления (если открыта страница профиля)
+            if (document.getElementById('page-profile').classList.contains('active')) {
+                updateMyAdsList();
+                updateHistory();
+            }
+            
+            // Обновляем статистику сервера (если открыта FAQ страница)
+            if (document.getElementById('page-faq').classList.contains('active')) {
+                updateServerStatsUI();
             }
         }
         
@@ -2088,7 +2123,39 @@
         
         // Обновить статистику сервера
         function updateServerStatsUI() {
-            if (!appData.serverStats) return;
+            if (!appData.serverStats) {
+                // Показываем заглушку если данные не загружены
+                const statsGrid = document.getElementById('server-stats-grid');
+                if (statsGrid) {
+                    statsGrid.innerHTML = `
+                        <div class="server-stat-item">
+                            <div class="server-stat-number">0</div>
+                            <div class="server-stat-label">Пользователей</div>
+                        </div>
+                        <div class="server-stat-item">
+                            <div class="server-stat-number">0</div>
+                            <div class="server-stat-label">Объявлений</div>
+                        </div>
+                        <div class="server-stat-item">
+                            <div class="server-stat-number">0</div>
+                            <div class="server-stat-label">Активных</div>
+                        </div>
+                        <div class="server-stat-item">
+                            <div class="server-stat-number">0</div>
+                            <div class="server-stat-label">Сегодня</div>
+                        </div>
+                        <div class="server-stat-item">
+                            <div class="server-stat-number">0</div>
+                            <div class="server-stat-label">Лайков</div>
+                        </div>
+                        <div class="server-stat-item">
+                            <div class="server-stat-number">0</div>
+                            <div class="server-stat-label">Дизлайков</div>
+                        </div>
+                    `;
+                }
+                return;
+            }
             
             const statsGrid = document.getElementById('server-stats-grid');
             const faqAnswer5 = document.getElementById('faq-answer-5');
@@ -2166,34 +2233,28 @@
                 });
             }
             
-            // Загружаем данные с Firebase
+            // Сначала обновляем профиль с базовыми данными
+            updateUserProfile();
+            
+            // Загружаем данные с Firebase (асинхронно)
             loadFromServer();
             
             // Слушаем новые объявления в реальном времени
             FirebaseMarketServer.listenToAds((ads) => {
                 appData.ads = ads;
-                renderAds();
-                updateProfileStats();
-                updateMyAdsList();
-                updateServerStatsUI();
-                showNotification('Получены обновленные данные', 'info');
+                if (appData.isDataLoaded) {
+                    renderAds();
+                    updateProfileStats();
+                    updateMyAdsList();
+                    updateServerStatsUI();
+                    showNotification('Получены обновленные данные', 'info');
+                }
             });
-            
-            // Обновляем профиль
-            updateUserProfile();
-            
-            // Рендерим объявления
-            renderAds();
-            
-            // Обновляем статистику профиля
-            updateProfileStats();
-            
-            // Обновляем статистику сервера
-            updateServerStatsUI();
             
             // Инициализация FAQ
             for (let i = 1; i <= 6; i++) {
-                document.getElementById(`faq-answer-${i}`).style.display = 'none';
+                const answer = document.getElementById(`faq-answer-${i}`);
+                if (answer) answer.style.display = 'none';
             }
             
             // Обновляем статус каждую минуту
@@ -2266,14 +2327,16 @@
             
             hideAddForm();
             
-            if (page === 'profile') {
-                updateProfileStats();
-                updateMyAdsList();
-                updateHistory();
-            }
-            
-            if (page === 'faq') {
-                updateServerStatsUI();
+            if (appData.isDataLoaded) {
+                if (page === 'profile') {
+                    updateProfileStats();
+                    updateMyAdsList();
+                    updateHistory();
+                }
+                
+                if (page === 'faq') {
+                    updateServerStatsUI();
+                }
             }
         }
         
@@ -2288,6 +2351,11 @@
                 content.classList.remove('active');
             });
             document.getElementById(`${tab}-tab`).classList.add('active');
+            
+            // Обновляем контент вкладки
+            if (tab === 'history' && appData.isDataLoaded) {
+                updateHistory();
+            }
         }
         
         // Переключение формы добавления
@@ -2329,6 +2397,19 @@
         // Рендер объявлений
         function renderAds() {
             const container = document.getElementById('ads-container');
+            
+            // Проверяем, загружены ли данные
+            if (!appData.isDataLoaded) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 48px; margin-bottom: 20px;"></i>
+                        <h3 style="margin-bottom: 10px;">Загрузка объявлений...</h3>
+                        <p>Пожалуйста, подождите</p>
+                    </div>
+                `;
+                return;
+            }
+            
             container.innerHTML = '';
             
             // Фильтруем объявления по категории
@@ -2529,6 +2610,11 @@
         
         // Оценить продавца
         async function rateSeller(sellerId, type, adId) {
+            if (!appData.isDataLoaded) {
+                showNotification('Данные еще загружаются', 'warning');
+                return;
+            }
+            
             const ad = appData.ads.find(a => a.id === adId);
             if (!ad) return;
             
@@ -2571,6 +2657,11 @@
         
         // Написать продавцу
         async function contactSeller(username, adId, adTitle, category, price) {
+            if (!appData.isDataLoaded) {
+                showNotification('Данные еще загружаются', 'warning');
+                return;
+            }
+            
             // Находим объявление
             const ad = appData.ads.find(a => a.id === adId);
             if (!ad) return;
@@ -2627,6 +2718,12 @@
         // Обновить историю просмотров
         function updateHistory() {
             const historyList = document.getElementById('historyList');
+            
+            if (!appData.isDataLoaded) {
+                historyList.innerHTML = '<div style="text-align: center; color: #D8B4FE; padding: 20px;">Загрузка истории...</div>';
+                return;
+            }
+            
             historyList.innerHTML = '';
             
             if (appData.history.length === 0) {
@@ -2653,6 +2750,11 @@
         // Обновить список моих объявлений
         function updateMyAdsList() {
             const myAdsList = document.getElementById('myAdsList');
+            
+            if (!appData.isDataLoaded) {
+                myAdsList.innerHTML = '<div style="text-align: center; color: #D8B4FE; padding: 20px;">Загрузка объявлений...</div>';
+                return;
+            }
             
             // Фильтруем объявления текущего пользователя
             const myAds = appData.ads.filter(ad => ad.sellerId === appData.currentUserId);
@@ -2772,7 +2874,7 @@
         
         // Очистить историю
         async function clearHistory() {
-            if (appData.history.length === 0) {
+            if (!appData.isDataLoaded || appData.history.length === 0) {
                 showNotification('История уже пуста', 'info');
                 return;
             }
@@ -2863,6 +2965,7 @@
                     <div style="text-align: center; width: 100%; color: #A78BFA; padding: 20px;">
                         <i class="fas fa-images" style="font-size: 48px; opacity: 0.5; margin-bottom: 10px;"></i>
                         <div>Нажмите "Загрузить фотографии"</div>
+                    </div>
                 `;
             }
         }
@@ -3015,6 +3118,15 @@
         
         // Обновить статистику профиля
         function updateProfileStats() {
+            if (!appData.isDataLoaded) {
+                // Показываем нули если данные не загружены
+                document.getElementById('myAdsCount').textContent = '0';
+                document.getElementById('myLikesCount').textContent = '0';
+                document.getElementById('myDislikesCount').textContent = '0';
+                document.getElementById('myRating').textContent = '0.0';
+                return;
+            }
+            
             // Считаем мои объявления
             const myAds = appData.ads.filter(ad => ad.sellerId === appData.currentUserId).length;
             document.getElementById('myAdsCount').textContent = myAds;
