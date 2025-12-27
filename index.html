@@ -2314,51 +2314,43 @@
     
     // Инициализация приложения
     function initApp() {
-        if (tg) {
-            tg.expand();
-            tg.ready();
-            
-            // Устанавливаем тему
-            tg.setHeaderColor('#6D28D9');
-            tg.setBackgroundColor('#7C3AED');
-            
-            // Показываем кнопку "Назад"
-            tg.BackButton.show();
-            tg.BackButton.onClick(function() {
-                tg.close();
-            });
+    // Удаляем неподдерживаемые функции для Telegram 6.0
+    // tg.setHeaderColor('#6D28D9'); // Не поддерживается
+    // tg.setBackgroundColor('#7C3AED'); // Не поддерживается
+    // tg.BackButton.show(); // Не поддерживается
+    // tg.BackButton.onClick(function() { // Не поддерживается
+    //     tg.close();
+    // });
+    
+    // Обновляем профиль
+    updateUserProfile();
+    
+    // Загружаем данные
+    loadFromServer();
+    
+    // Слушаем новые объявления
+    FirebaseMarketServer.listenToAds((ads) => {
+        console.log('📡 Получены обновления:', ads.length);
+        appData.ads = ads;
+        if (appData.isDataLoaded) {
+            renderAds();
+            updateProfileStats();
+            updateMyAdsList();
+            updateServerStatsUI();
+            showNotification('Данные обновлены', 'info');
         }
-        
-        // Сначала обновляем профиль с базовыми данными
-        updateUserProfile();
-        
-        // Загружаем данные с Firebase (асинхронно)
-        loadFromServer();
-        
-        // Слушаем новые объявления в реальном времени
-        FirebaseMarketServer.listenToAds((ads) => {
-            console.log('📡 Получены обновления в реальном времени:', ads.length);
-            appData.ads = ads;
-            if (appData.isDataLoaded) {
-                renderAds();
-                updateProfileStats();
-                updateMyAdsList();
-                updateServerStatsUI();
-                showNotification('Получены обновленные данные', 'info');
-            }
-        });
-        
-        // Инициализация FAQ
-        for (let i = 1; i <= 6; i++) {
-            const answer = document.getElementById(`faq-answer-${i}`);
-            if (answer) answer.style.display = 'none';
-        }
-        
-        // Обновляем статус каждую минуту
-        setInterval(updateSyncStatus, 60000);
-        
-        showNotification(`Добро пожаловать, ${appData.currentUserData?.first_name || 'Пользователь'}!`, 'success');
+    });
+    
+    // Инициализация FAQ
+    for (let i = 1; i <= 6; i++) {
+        const answer = document.getElementById(`faq-answer-${i}`);
+        if (answer) answer.style.display = 'none';
     }
+    
+    setInterval(updateSyncStatus, 60000);
+    
+    showNotification(`Добро пожаловать, ${appData.currentUserData?.first_name || 'Пользователь'}!`, 'success');
+}
         
         // Обновить профиль пользователя в UI
         function updateUserProfile() {
