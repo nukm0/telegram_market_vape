@@ -2765,191 +2765,68 @@
         const FirebaseMarketServer = {
             // Добавить объявление
             addAd: async function(adData) {
-                try {
-                    console.log('🔄 Добавляю объявление в Firebase...');
-                    
-                    // Регистрируем пользователя
-                    await this.registerUser({
-                        id: adData.sellerId,
-                        name: adData.sellerName,
-                        username: adData.sellerUsername
-                    });
-                    
-                    // Подготавливаем данные с фото
-                    const adToSave = {
-                        sellerId: adData.sellerId,
-                        sellerName: adData.sellerName,
-                        sellerUsername: adData.sellerUsername,
-                        sellerAvatar: adData.sellerAvatar || null,
-                        title: adData.title,
-                        category: adData.category,
-                        price: Number(adData.price),
-                        description: adData.description || '',
-                        photoUrls: adData.photoUrls || [],
-                        photos: adData.photoUrls?.length || 0,
-                        likes: 0,
-                        dislikes: 0,
-                        complaints: 0,
-                        createdAt: firebase.database.ServerValue.TIMESTAMP,
-                        updatedAt: firebase.database.ServerValue.TIMESTAMP,
-                        verified: false,
-                        status: 'active'
-                    };
-                    
-                    // Добавляем в базу
-                    const newAdRef = database.ref('ads').push();
-                    const adId = newAdRef.key;
-                    
-                    await newAdRef.set(adToSave);
-                    
-                    // Обновляем счетчик пользователя
-                    await database.ref(`users/${adData.sellerId}/adsCount`).transaction((current) => {
-                        return (current || 0) + 1;
-                    });
-                    
-                    console.log('✅ Объявление добавлено, ID:', adId);
-                    return adId;
-                    
-                } catch (error) {
-                    console.error('❌ Ошибка добавления:', error);
-                    throw error;
+    try {
+        console.log('🔄 Добавляю объявление в Firebase...');
+        
+        // Регистрируем пользователя
+        await this.registerUser({
+            id: adData.sellerId,
+            name: adData.sellerName,
+            username: adData.sellerUsername
+        });
+        
+        // Обрабатываем фото - преобразуем base64 в строки
+        const processedPhotoUrls = adData.photoUrls ? 
+            adData.photoUrls.map(url => {
+                // Если это base64, оставляем как есть (в реальном приложении нужно загружать в storage)
+                // В демо-режиме сохраняем base64
+                if (url && url.startsWith('data:image')) {
+                    return url;
                 }
-            },
-            
-            // Получить все объявления
-            getAllAds: async function() {
-                try {
-                    const snapshot = await database.ref('ads').once('value');
-                    const ads = [];
-                    
-                    snapshot.forEach((childSnapshot) => {
-                        const ad = childSnapshot.val();
-                        ad.id = childSnapshot.key;
-                        if (!ad.photoUrls && ad.photos > 0) {
-                            ad.photoUrls = [];
-                            for (let i = 0; i < ad.photos; i++) {
-                                ad.photoUrls.push(null);
-                            }
-                        }
-                        ads.push(ad);
-                    });
-                    
-                    // Сортируем по дате (новые сначала)
-                    ads.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-                    
-                    return ads;
-                } catch (error) {
-                    console.error('❌ Ошибка загрузки объявлений:', error);
-                    return [];
-                }
-            },
-            
-            // Слушать новые объявления в реальном времени
-            listenToAds: function(callback) {
-                database.ref('ads').on('value', (snapshot) => {
-                    const ads = [];
-                    snapshot.forEach((childSnapshot) => {
-                        const ad = childSnapshot.val();
-                        ad.id = childSnapshot.key;
-                        if (!ad.photoUrls && ad.photos > 0) {
-                            ad.photoUrls = [];
-                            for (let i = 0; i < ad.photos; i++) {
-                                ad.photoUrls.push(null);
-                            }
-                        }
-                        ads.push(ad);
-                    });
-                    
-                    // Сортируем
-                    ads.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-                    callback(ads);
-                });
-            },
-            
-            // Получить рейтинги
-            getRatings: async function() {
-                try {
-                    const snapshot = await database.ref('ratings').once('value');
-                    return snapshot.val() || {};
-                } catch (error) {
-                    console.error('❌ Ошибка загрузки рейтингов:', error);
-                    return {};
-                }
-            },
-            
-            // Обновить рейтинг
-            updateRating: async function(sellerId, userId, rating) {
-                try {
-                    // Сохраняем оценку
-                    await database.ref(`ratings/${sellerId}/${userId}`).set(rating);
-                    
-                    // Получаем все оценки
-                    const ratingsSnapshot = await database.ref(`ratings/${sellerId}`).once('value');
-                    const ratings = ratingsSnapshot.val() || {};
-                    
-                    // Считаем лайки/дизлайки
-                    let likes = 0, dislikes = 0;
-                    Object.values(ratings).forEach(r => {
-                        if (r === 'like') likes++;
-                        if (r === 'dislike') dislikes++;
-                    });
-                    
-                    // Рассчитываем рейтинг
-                    const total = likes + dislikes;
-                    const calculatedRating = total > 0 ? 0.1 + (likes / total) * 4.9 : 0.1;
-                    
-                    // Обновляем пользователя
-                    await database.ref(`users/${sellerId}`).update({
-                        likesCount: likes,
-                        dislikesCount: dislikes,
-                        rating: calculatedRating,
-                        lastActive: firebase.database.ServerValue.TIMESTAMP
-                    });
-                    
-                    return true;
-                } catch (error) {
-                    console.error('❌ Ошибка обновления рейтинга:', error);
-                    return false;
-                }
-            },
-            
-            // Регистрация пользователя
-            registerUser: async function(userData) {
-                try {
-                    const userRef = database.ref(`users/${userData.id}`);
-                    const snapshot = await userRef.once('value');
-                    
-                    if (!snapshot.exists()) {
-                        await userRef.set({
-                            id: userData.id,
-                            name: userData.name || 'Пользователь',
-                            username: userData.username || '',
-                            registrationDate: firebase.database.ServerValue.TIMESTAMP,
-                            lastActive: firebase.database.ServerValue.TIMESTAMP,
-                            adsCount: 0,
-                            likesCount: 0,
-                            dislikesCount: 0,
-                            rating: 0.1,
-                            verified: false,
-                            blocked: false,
-                            blockReason: null,
-                            blockedUntil: null,
-                            warnings: 0,
-                            complaintsCount: 0
-                        });
-                        console.log('✅ Новый пользователь зарегистрирован');
-                    } else {
-                        await userRef.update({
-                            lastActive: firebase.database.ServerValue.TIMESTAMP
-                        });
-                    }
-                    
-                    return true;
-                } catch (error) {
-                    console.error('❌ Ошибка регистрации:', error);
-                    return false;
-                }
-            },
+                return url;
+            }) : [];
+        
+        // Подготавливаем данные с фото
+        const adToSave = {
+            sellerId: adData.sellerId,
+            sellerName: adData.sellerName,
+            sellerUsername: adData.sellerUsername,
+            sellerAvatar: adData.sellerAvatar || null,
+            title: adData.title,
+            category: adData.category,
+            price: Number(adData.price),
+            description: adData.description || '',
+            // Временно сохраняем фото как base64
+            photoUrls: processedPhotoUrls,
+            photos: processedPhotoUrls.length,
+            likes: 0,
+            dislikes: 0,
+            complaints: 0,
+            createdAt: firebase.database.ServerValue.TIMESTAMP,
+            updatedAt: firebase.database.ServerValue.TIMESTAMP,
+            verified: false,
+            status: 'active'
+        };
+        
+        // Добавляем в базу
+        const newAdRef = database.ref('ads').push();
+        const adId = newAdRef.key;
+        
+        await newAdRef.set(adToSave);
+        
+        // Обновляем счетчик пользователя
+        await database.ref(`users/${adData.sellerId}/adsCount`).transaction((current) => {
+            return (current || 0) + 1;
+        });
+        
+        console.log('✅ Объявление добавлено, ID:', adId);
+        return adId;
+        
+    } catch (error) {
+        console.error('❌ Ошибка добавления:', error);
+        throw error;
+    }
+},
             
             // Добавить в историю
             addToHistory: async function(userId, historyItem) {
