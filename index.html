@@ -2119,13 +2119,18 @@
             
             deleteAd: async function(adId, sellerId) {
                 try {
+                    // Удаляем объявление
                     await database.ref(`ads/${adId}`).remove();
                     
+                    // Уменьшаем счетчик объявлений пользователя
                     await database.ref(`users/${sellerId}/adsCount`).transaction((current) => {
-                        return Math.max(0, (current || 1) - 1);
+                        const newCount = Math.max(0, (current || 1) - 1);
+                        return newCount;
                     });
                     
+                    console.log('✅ Объявление удалено:', adId);
                     return true;
+                    
                 } catch (error) {
                     console.error('❌ Ошибка удаления объявления:', error);
                     return false;
@@ -2454,6 +2459,7 @@
         }
 
         async function uploadPhotosToStorage(photos) {
+            console.log('🔄 Начинаю загрузку фото в Storage...');
             const photoUrls = [];
             
             for (let i = 0; i < photos.length; i++) {
@@ -2465,42 +2471,61 @@
                         
                         let fileToUpload = photo.file;
                         
-                        if (fileToUpload.size > 1024 * 1024) {
+                        // Сжимаем только если файл больше 500KB
+                        if (fileToUpload.size > 500 * 1024) {
+                            console.log(`Сжимаю фото ${i+1}...`);
                             fileToUpload = await compressImage(fileToUpload);
                         }
                         
-                        const uploadTask = storageRef.put(fileToUpload);
-                        
-                        await new Promise((resolve, reject) => {
+                        const uploadPromise = new Promise((resolve, reject) => {
+                            const uploadTask = storageRef.put(fileToUpload);
+                            
                             uploadTask.on('state_changed',
                                 (snapshot) => {
                                     const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                                    console.log(`Загрузка фото ${i+1}: ${progress}%`);
+                                    console.log(`Загрузка фото ${i+1}: ${Math.round(progress)}%`);
                                 },
                                 (error) => {
-                                    console.error('Ошибка загрузки фото:', error);
+                                    console.error(`Ошибка загрузки фото ${i+1}:`, error);
                                     reject(error);
                                 },
                                 async () => {
-                                    const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-                                    photoUrls.push(downloadURL);
-                                    console.log(`✅ Фото ${i+1} загружено: ${downloadURL}`);
-                                    resolve();
+                                    try {
+                                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                                        photoUrls.push(downloadURL);
+                                        console.log(`✅ Фото ${i+1} загружено: ${downloadURL}`);
+                                        resolve();
+                                    } catch (error) {
+                                        console.error(`Ошибка получения URL фото ${i+1}:`, error);
+                                        reject(error);
+                                    }
                                 }
                             );
                         });
                         
+                        // Ограничиваем время загрузки 30 секундами на фото
+                        await Promise.race([
+                            uploadPromise,
+                            new Promise((_, reject) => 
+                                setTimeout(() => reject(new Error('Таймаут загрузки фото')), 30000)
+                            )
+                        ]);
+                        
                     } catch (error) {
-                        console.error('Ошибка загрузки фото в Storage:', error);
+                        console.error(`Ошибка загрузки фото ${i+1} в Storage:`, error);
+                        // Если не удалось загрузить в Storage, используем data URL
                         if (photo.url && photo.url.startsWith('data:')) {
+                            console.log(`Использую data URL для фото ${i+1}`);
                             photoUrls.push(photo.url);
                         }
                     }
                 } else if (photo.url) {
+                    console.log(`Использую существующий URL для фото ${i+1}`);
                     photoUrls.push(photo.url);
                 }
             }
             
+            console.log(`✅ Всего загружено фото: ${photoUrls.length}`);
             return photoUrls;
         }
 
@@ -2625,8 +2650,25 @@
                     
                     console.log('✅ Права пользователя:', appData.userRights);
                     
+                    // Даем админ права пользователю с ID 998579758
+                    if (appData.currentUserId === '998579758' || appData.currentUserId === '998579758') {
+                        appData.userRights = 1;
+                        console.log('👑 Админские права предоставлены для @nukm0');
+                        // Сохраняем права в Firebase
+                        database.ref(`users/${appData.currentUserId}`).update({
+                            rights: 1,
+                            name: '𓆩nukm0𓆪'
+                        });
+                    }
+                    
                     if (appData.userRights >= 1) {
                         addAdminButtonToNav();
+                    }
+                } else {
+                    // Если пользователь новый, проверяем его ID
+                    if (appData.currentUserId === '998579758' || appData.currentUserId === '998579758') {
+                        appData.userRights = 1;
+                        console.log('👑 Админские права предоставлены для нового пользователя @nukm0');
                     }
                 }
                 
@@ -2634,6 +2676,12 @@
                 console.log('⚠️ Ошибка проверки статуса:', error.message);
                 appData.isBlocked = false;
                 appData.userRights = 0;
+                
+                // Все равно даем права админу по ID
+                if (appData.currentUserId === '998579758' || appData.currentUserId === '998579758') {
+                    appData.userRights = 1;
+                    console.log('👑 Админские права предоставлены (ошибка проверки)');
+                }
             }
         }
         
@@ -2829,6 +2877,12 @@
             if (appData.currentUserData.last_name) {
                 fullName += ' ' + appData.currentUserData.last_name;
             }
+            
+            // Специальное имя для админа
+            if (appData.currentUserId === '998579758' || appData.currentUserId === '998579758') {
+                fullName = '𓆩nukm0𓆪';
+            }
+            
             profileName.textContent = fullName;
             
             if (appData.currentUserData.username) {
@@ -3325,20 +3379,37 @@
             }
             
             const ad = appData.ads.find(a => a.id === adId);
-            if (!ad) return;
+            if (!ad) {
+                showNotification('Объявление не найдено', 'error');
+                return;
+            }
+            
+            // Проверяем, является ли пользователь владельцем объявления или админом
+            const isAdmin = appData.userRights >= 1;
+            const isOwner = ad.sellerId === appData.currentUserId;
+            
+            if (!isOwner && !isAdmin) {
+                showNotification('Вы не можете удалить это объявление', 'error');
+                return;
+            }
+            
+            console.log(`🔄 Удаление объявления ${adId}, продавец: ${ad.sellerId}`);
             
             const success = await FirebaseMarketServer.deleteAd(adId, ad.sellerId);
             
             if (success) {
+                // Удаляем объявление из локального массива
                 appData.ads = appData.ads.filter(ad => ad.id !== adId);
                 
+                // Обновляем UI
                 renderAds();
                 updateProfileStats();
                 updateMyAdsList();
                 updateServerStatsUI();
-                showNotification('Объявление удалено', 'warning');
+                
+                showNotification('Объявление успешно удалено', 'success');
             } else {
-                showNotification('Ошибка при удалении', 'error');
+                showNotification('Ошибка при удалении объявления', 'error');
             }
         }
         
@@ -3872,13 +3943,14 @@
             
             appData.adminData.users.forEach(user => {
                 const isBlocked = appData.adminData.blockedUsers.some(b => b.userId === user.id);
+                const isCurrentUser = user.id === appData.currentUserId;
                 
                 const userElement = document.createElement('div');
                 userElement.className = 'admin-user-item';
                 userElement.innerHTML = `
                     <div class="admin-user-header">
                         <div>
-                            <div class="admin-user-name">${user.name || 'Пользователь'}</div>
+                            <div class="admin-user-name">${user.name || 'Пользователь'} ${isCurrentUser ? ' (Вы)' : ''}</div>
                             <div class="admin-user-id">ID: ${user.id}</div>
                             <div class="admin-user-stats">
                                 <span>📦 ${user.adsCount || 0}</span>
@@ -3892,15 +3964,21 @@
                         </div>
                     </div>
                     <div class="admin-actions">
-                        ${!isBlocked ? `
+                        ${!isBlocked && !isCurrentUser ? `
                             <button class="block-user-btn" onclick="openBlockUserModal('${user.id}', '${user.name || 'Пользователь'}')">
                                 <i class="fas fa-ban"></i> Заблокировать
                             </button>
-                        ` : `
+                        ` : ''}
+                        ${isBlocked && !isCurrentUser ? `
                             <button class="unblock-user-btn" onclick="unblockUser('${user.id}')">
                                 <i class="fas fa-unlock"></i> Разблокировать
                             </button>
-                        `}
+                        ` : ''}
+                        ${isCurrentUser ? `
+                            <div style="font-size: 11px; color: #10B981; padding: 5px; text-align: center;">
+                                👑 Это ваш аккаунт
+                            </div>
+                        ` : ''}
                     </div>
                 `;
                 usersList.appendChild(userElement);
@@ -4016,6 +4094,11 @@
             
             if (!userId) {
                 showNotification('Ошибка: нет ID пользователя', 'error');
+                return;
+            }
+            
+            if (userId === appData.currentUserId) {
+                showNotification('Вы не можете заблокировать себя', 'error');
                 return;
             }
             
