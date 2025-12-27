@@ -1620,10 +1620,128 @@
         .admin-badge.show {
             display: flex;
         }
+        
+        /* ============ ЭКРАН БЛОКИРОВКИ ============ */
+        .blocked-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-dark);
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .blocked-icon {
+            font-size: 80px;
+            color: #EF4444;
+            margin-bottom: 30px;
+            animation: pulse 2s infinite;
+        }
+        
+        .blocked-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: white;
+        }
+        
+        .blocked-reason {
+            font-size: 16px;
+            color: #D8B4FE;
+            margin-bottom: 25px;
+            max-width: 400px;
+            line-height: 1.5;
+        }
+        
+        .blocked-details {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        .blocked-info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .blocked-info-label {
+            color: #A78BFA;
+        }
+        
+        .blocked-info-value {
+            color: white;
+            font-weight: 600;
+        }
+        
+        .blocked-time-left {
+            font-size: 18px;
+            font-weight: 700;
+            color: #F59E0B;
+            margin-top: 10px;
+        }
+        
+        .blocked-contact {
+            margin-top: 20px;
+            color: #D8B4FE;
+            font-size: 14px;
+        }
+        
+        .blocked-contact a {
+            color: #A78BFA;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .blocked-contact a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
-    <div class="app-container">
+    <!-- Экран блокировки (изначально скрыт) -->
+    <div class="blocked-screen" id="blockedScreen" style="display: none;">
+        <div class="blocked-icon">
+            <i class="fas fa-ban"></i>
+        </div>
+        <div class="blocked-title">Аккаунт заблокирован</div>
+        <div class="blocked-reason" id="blockedReason">Ваш аккаунт был временно заблокирован администратором</div>
+        
+        <div class="blocked-details">
+            <div class="blocked-info-item">
+                <span class="blocked-info-label">Причина:</span>
+                <span class="blocked-info-value" id="blockReasonText">Нарушение правил</span>
+            </div>
+            <div class="blocked-info-item">
+                <span class="blocked-info-label">Заблокирован:</span>
+                <span class="blocked-info-value" id="blockDateText">Неизвестно</span>
+            </div>
+            <div class="blocked-info-item">
+                <span class="blocked-info-label">Разблокировка:</span>
+                <span class="blocked-info-value" id="unblockDateText">Неизвестно</span>
+            </div>
+            <div class="blocked-time-left" id="timeLeft">Осталось: --:--:--</div>
+        </div>
+        
+        <div class="blocked-contact">
+            Если вы считаете, что это ошибка, свяжитесь с администратором:
+            <a href="https://t.me/nukm0" target="_blank">@nukm0</a>
+        </div>
+    </div>
+
+    <div class="app-container" id="appContainer">
         <!-- Бейдж администратора -->
         <div class="admin-badge" id="adminBadge">
             <i class="fas fa-crown"></i>
@@ -2305,7 +2423,6 @@
 
         // ==================== FIREBASE СЕРВЕР ====================
         const FirebaseMarketServer = {
-            // [Весь ваш существующий код FirebaseMarketServer]
             // Добавить объявление
             addAd: async function(adData) {
                 try {
@@ -2328,7 +2445,7 @@
                         category: adData.category,
                         price: Number(adData.price),
                         description: adData.description || '',
-                        photoUrls: adData.photoUrls || [], // Теперь правильно сохраняем фото
+                        photoUrls: adData.photoUrls || [],
                         photos: adData.photoUrls?.length || 0,
                         likes: 0,
                         dislikes: 0,
@@ -2368,11 +2485,10 @@
                     snapshot.forEach((childSnapshot) => {
                         const ad = childSnapshot.val();
                         ad.id = childSnapshot.key;
-                        // Восстанавливаем photoUrls если они есть
                         if (!ad.photoUrls && ad.photos > 0) {
                             ad.photoUrls = [];
                             for (let i = 0; i < ad.photos; i++) {
-                                ad.photoUrls.push(null); // Заглушки
+                                ad.photoUrls.push(null);
                             }
                         }
                         ads.push(ad);
@@ -2395,7 +2511,6 @@
                     snapshot.forEach((childSnapshot) => {
                         const ad = childSnapshot.val();
                         ad.id = childSnapshot.key;
-                        // Восстанавливаем photoUrls если они есть
                         if (!ad.photoUrls && ad.photos > 0) {
                             ad.photoUrls = [];
                             for (let i = 0; i < ad.photos; i++) {
@@ -2477,6 +2592,8 @@
                             rating: 0.1,
                             verified: false,
                             blocked: false,
+                            blockReason: null,
+                            blockedUntil: null,
                             warnings: 0,
                             complaintsCount: 0
                         });
@@ -2706,11 +2823,14 @@
             // Заблокировать пользователя
             blockUser: async function(userId, reason, duration) {
                 try {
+                    const blockedUntil = duration === 'permanent' ? 'permanent' : 
+                                      Date.now() + (duration * 60 * 60 * 1000);
+                    
                     await database.ref(`users/${userId}`).update({
                         blocked: true,
                         blockReason: reason,
-                        blockedUntil: duration === 'permanent' ? 'permanent' : 
-                                    Date.now() + (duration * 60 * 60 * 1000)
+                        blockedUntil: blockedUntil,
+                        blockedAt: firebase.database.ServerValue.TIMESTAMP
                     });
                     
                     // Добавляем в историю модерации
@@ -2720,6 +2840,7 @@
                         adminId: appData.currentUserId,
                         reason: reason,
                         duration: duration,
+                        blockedUntil: blockedUntil,
                         timestamp: firebase.database.ServerValue.TIMESTAMP
                     });
                     
@@ -2736,7 +2857,8 @@
                     await database.ref(`users/${userId}`).update({
                         blocked: false,
                         blockReason: null,
-                        blockedUntil: null
+                        blockedUntil: null,
+                        blockedAt: null
                     });
                     
                     await database.ref('moderationHistory').push().set({
@@ -2853,6 +2975,53 @@
                     console.error('❌ Ошибка загрузки истории модерации:', error);
                     return [];
                 }
+            },
+            
+            // ==================== ПРОВЕРКА БЛОКИРОВКИ ====================
+            
+            // Проверить блокировку пользователя
+            checkUserBlocked: async function(userId) {
+                try {
+                    const snapshot = await database.ref(`users/${userId}`).once('value');
+                    const user = snapshot.val();
+                    
+                    if (!user || !user.blocked) {
+                        return { isBlocked: false };
+                    }
+                    
+                    // Проверяем временную блокировку
+                    if (user.blockedUntil && user.blockedUntil !== 'permanent') {
+                        const now = Date.now();
+                        const blockedUntil = user.blockedUntil;
+                        
+                        // Если время блокировки истекло - разблокировать
+                        if (blockedUntil < now) {
+                            await this.unblockUser(userId);
+                            return { isBlocked: false };
+                        }
+                        
+                        return {
+                            isBlocked: true,
+                            reason: user.blockReason || 'Нарушение правил',
+                            blockedAt: user.blockedAt,
+                            blockedUntil: blockedUntil,
+                            isPermanent: false
+                        };
+                    }
+                    
+                    // Перманентная блокировка
+                    return {
+                        isBlocked: true,
+                        reason: user.blockReason || 'Нарушение правил',
+                        blockedAt: user.blockedAt,
+                        blockedUntil: 'permanent',
+                        isPermanent: true
+                    };
+                    
+                } catch (error) {
+                    console.error('❌ Ошибка проверки блокировки:', error);
+                    return { isBlocked: false };
+                }
             }
         };
         // ==================== КОНЕЦ FIREBASE СЕРВЕРА ====================
@@ -2885,7 +3054,9 @@
                 stats: {}
             },
             currentAdminSection: 'main',
-            currentAdminFilter: 'all'
+            currentAdminFilter: 'all',
+            isUserBlocked: false,
+            blockInfo: null
         };
         
         // Администраторы системы
@@ -2897,6 +3068,131 @@
                 role: 'superadmin'
             }
         };
+        
+        // ==================== СИСТЕМА БЛОКИРОВКИ ====================
+        
+        // Проверить блокировку пользователя
+        async function checkUserBlocked() {
+            if (!appData.currentUserId) return false;
+            
+            try {
+                const blockData = await FirebaseMarketServer.checkUserBlocked(appData.currentUserId);
+                
+                if (blockData.isBlocked) {
+                    appData.isUserBlocked = true;
+                    appData.blockInfo = blockData;
+                    
+                    // Показываем экран блокировки
+                    showBlockScreen(blockData);
+                    return true;
+                } else {
+                    appData.isUserBlocked = false;
+                    appData.blockInfo = null;
+                    
+                    // Скрываем экран блокировки
+                    hideBlockScreen();
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Ошибка проверки блокировки:', error);
+                return false;
+            }
+        }
+        
+        // Показать экран блокировки
+        function showBlockScreen(blockData) {
+            const blockedScreen = document.getElementById('blockedScreen');
+            const appContainer = document.getElementById('appContainer');
+            
+            // Заполняем информацию о блокировке
+            document.getElementById('blockedReason').textContent = 
+                `Ваш аккаунт был ${blockData.isPermanent ? 'заблокирован навсегда' : 'временно заблокирован'} администратором`;
+            
+            document.getElementById('blockReasonText').textContent = blockData.reason || 'Нарушение правил';
+            
+            // Форматируем даты
+            if (blockData.blockedAt) {
+                const blockDate = new Date(blockData.blockedAt);
+                document.getElementById('blockDateText').textContent = 
+                    blockDate.toLocaleDateString('ru-RU') + ' ' + blockDate.toLocaleTimeString('ru-RU');
+            }
+            
+            if (blockData.blockedUntil === 'permanent') {
+                document.getElementById('unblockDateText').textContent = 'Никогда';
+                document.getElementById('timeLeft').textContent = 'Блокировка постоянная';
+            } else if (blockData.blockedUntil) {
+                const unblockDate = new Date(blockData.blockedUntil);
+                document.getElementById('unblockDateText').textContent = 
+                    unblockDate.toLocaleDateString('ru-RU') + ' ' + unblockDate.toLocaleTimeString('ru-RU');
+                
+                // Запускаем таймер обратного отсчета
+                startBlockCountdown(blockData.blockedUntil);
+            }
+            
+            // Показываем экран блокировки и скрываем основное приложение
+            blockedScreen.style.display = 'flex';
+            appContainer.style.display = 'none';
+            
+            // Останавливаем все слушатели Firebase
+            if (appData.firebaseListeners) {
+                Object.values(appData.firebaseListeners).forEach(unsubscribe => unsubscribe());
+            }
+        }
+        
+        // Скрыть экран блокировки
+        function hideBlockScreen() {
+            const blockedScreen = document.getElementById('blockedScreen');
+            const appContainer = document.getElementById('appContainer');
+            
+            blockedScreen.style.display = 'none';
+            appContainer.style.display = 'flex';
+            
+            // Останавливаем таймер
+            if (appData.blockTimer) {
+                clearInterval(appData.blockTimer);
+                appData.blockTimer = null;
+            }
+        }
+        
+        // Таймер обратного отсчета до разблокировки
+        function startBlockCountdown(blockedUntil) {
+            if (appData.blockTimer) {
+                clearInterval(appData.blockTimer);
+            }
+            
+            function updateCountdown() {
+                const now = Date.now();
+                const timeLeft = blockedUntil - now;
+                
+                if (timeLeft <= 0) {
+                    // Время вышло, перезагружаем страницу для проверки статуса
+                    clearInterval(appData.blockTimer);
+                    location.reload();
+                    return;
+                }
+                
+                // Форматируем оставшееся время
+                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                
+                document.getElementById('timeLeft').textContent = 
+                    `Осталось: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            // Обновляем сразу и запускаем таймер
+            updateCountdown();
+            appData.blockTimer = setInterval(updateCountdown, 1000);
+        }
+        
+        // Проверить блокировку перед действиями
+        function checkBlockBeforeAction(actionName) {
+            if (appData.isUserBlocked) {
+                showNotification('Ваш аккаунт заблокирован', 'error');
+                return false;
+            }
+            return true;
+        }
         
         function checkTelegramAndInit() {
             console.log('🔍 Начинаем инициализацию...');
@@ -2940,16 +3236,21 @@
                         console.log('👑 Пользователь является администратором');
                     }
                     
-                    // Регистрируем в Firebase и запускаем приложение
-                    FirebaseMarketServer.registerUser(appData.currentUserData)
-                        .then(success => {
-                            console.log('Регистрация в Firebase:', success ? '✅ Успешно' : '❌ Ошибка');
-                            initApp();
-                        })
-                        .catch(error => {
-                            console.error('Ошибка регистрации в Firebase:', error);
-                            initApp();
-                        });
+                    // Проверяем блокировку пользователя
+                    checkUserBlocked().then(isBlocked => {
+                        if (!isBlocked) {
+                            // Регистрируем в Firebase и запускаем приложение
+                            FirebaseMarketServer.registerUser(appData.currentUserData)
+                                .then(success => {
+                                    console.log('Регистрация в Firebase:', success ? '✅ Успешно' : '❌ Ошибка');
+                                    initApp();
+                                })
+                                .catch(error => {
+                                    console.error('Ошибка регистрации в Firebase:', error);
+                                    initApp();
+                                });
+                        }
+                    });
                 } else {
                     console.warn('⚠️ Нет данных пользователя в Telegram');
                     createTestUser();
@@ -2970,20 +3271,31 @@
                 
                 console.log('🔄 Создан тестовый пользователь:', appData.currentUserData);
                 
-                FirebaseMarketServer.registerUser(appData.currentUserData)
-                    .then(success => {
-                        console.log('Регистрация тестового пользователя:', success ? '✅ Успешно' : '❌ Ошибка');
-                        initApp();
-                    })
-                    .catch(error => {
-                        console.error('Ошибка регистрации тестового пользователя:', error);
-                        initApp();
-                    });
+                // Проверяем блокировку тестового пользователя
+                checkUserBlocked().then(isBlocked => {
+                    if (!isBlocked) {
+                        FirebaseMarketServer.registerUser(appData.currentUserData)
+                            .then(success => {
+                                console.log('Регистрация тестового пользователя:', success ? '✅ Успешно' : '❌ Ошибка');
+                                initApp();
+                            })
+                            .catch(error => {
+                                console.error('Ошибка регистрации тестового пользователя:', error);
+                                initApp();
+                            });
+                    }
+                });
             }
         }
         
         // Загрузить данные с Firebase
         async function loadFromServer() {
+            // Проверяем блокировку перед загрузкой
+            if (appData.isUserBlocked) {
+                console.log('⛔ Пользователь заблокирован, загрузка данных отменена');
+                return;
+            }
+            
             try {
                 console.log('🔄 Загрузка данных с Firebase...');
                 
@@ -3314,6 +3626,9 @@
         
         // Обновить статистику
         async function refreshStats() {
+            // Проверяем блокировку перед действием
+            if (!checkBlockBeforeAction('обновление статистики')) return;
+            
             appData.serverStats = await FirebaseMarketServer.getStats();
             updateServerStatsUI();
             showNotification('Статистика обновлена', 'success');
@@ -3337,18 +3652,38 @@
             updateUserProfile();
             loadFromServer();
             
-            FirebaseMarketServer.listenToAds((ads) => {
-                console.log('📡 Получены обновления в реальном времени:', ads.length);
-                appData.ads = ads;
-                if (appData.isDataLoaded) {
-                    renderAds();
-                    updateProfileStats();
-                    updateMyAdsList();
-                    updateServerStatsUI();
-                    updateAdminStats();
-                    showNotification('Получены обновленные данные', 'info');
-                }
-            });
+            // Слушаем обновления в реальном времени только если пользователь не заблокирован
+            if (!appData.isUserBlocked) {
+                appData.firebaseListeners = {
+                    ads: database.ref('ads').on('value', (snapshot) => {
+                        console.log('📡 Получены обновления в реальном времени:', snapshot.numChildren());
+                        const ads = [];
+                        snapshot.forEach((childSnapshot) => {
+                            const ad = childSnapshot.val();
+                            ad.id = childSnapshot.key;
+                            if (!ad.photoUrls && ad.photos > 0) {
+                                ad.photoUrls = [];
+                                for (let i = 0; i < ad.photos; i++) {
+                                    ad.photoUrls.push(null);
+                                }
+                            }
+                            ads.push(ad);
+                        });
+                        
+                        ads.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                        appData.ads = ads;
+                        
+                        if (appData.isDataLoaded) {
+                            renderAds();
+                            updateProfileStats();
+                            updateMyAdsList();
+                            updateServerStatsUI();
+                            updateAdminStats();
+                            showNotification('Получены обновленные данные', 'info');
+                        }
+                    })
+                };
+            }
             
             for (let i = 1; i <= 6; i++) {
                 const answer = document.getElementById(`faq-answer-${i}`);
@@ -3478,7 +3813,7 @@
             updateAdminAdsList();
         }
         
-        // Обновить список пользователей в админ -панели
+        // Обновить список пользователей в админ-панели
         function updateAdminUsersList() {
             const container = document.getElementById('admin-users-list');
             if (!container || !appData.adminData.users) return;
@@ -3819,6 +4154,19 @@
             const lastActive = user.lastActive ? new Date(user.lastActive).toLocaleString('ru-RU') : 'Никогда';
             const regDate = user.registrationDate ? new Date(user.registrationDate).toLocaleString('ru-RU') : 'Неизвестно';
             
+            let blockInfo = '';
+            if (user.blocked) {
+                const blockedAt = user.blockedAt ? new Date(user.blockedAt).toLocaleString('ru-RU') : 'Неизвестно';
+                let unblockDate = 'Никогда';
+                if (user.blockedUntil && user.blockedUntil !== 'permanent') {
+                    unblockDate = new Date(user.blockedUntil).toLocaleString('ru-RU');
+                }
+                blockInfo = `\n🔒 Блокировка:\n` +
+                           `Причина: ${user.blockReason || 'Не указана'}\n` +
+                           `Заблокирован: ${blockedAt}\n` +
+                           `Разблокировка: ${unblockDate}`;
+            }
+            
             alert(`Детали пользователя:\n\n` +
                   `ID: ${user.id}\n` +
                   `Имя: ${user.name || 'Не указано'}\n` +
@@ -3832,7 +4180,8 @@
                   `Статус: ${user.blocked ? 'Заблокирован' : 'Активен'}\n` +
                   `Верифицирован: ${user.verified ? 'Да' : 'Нет'}\n` +
                   `Зарегистрирован: ${regDate}\n` +
-                  `Последняя активность: ${lastActive}`);
+                  `Последняя активность: ${lastActive}` +
+                  blockInfo);
         }
         
         // Модальное окно блокировки пользователя
@@ -3843,13 +4192,42 @@
             const reason = prompt('Причина блокировки:', 'Нарушение правил');
             if (reason === null) return;
             
-            const duration = prompt('Длительность блокировки (в часах):', '24');
-            if (duration === null) return;
+            const durationChoice = prompt('Длительность блокировки:\n1 - 1 час\n2 - 24 часа\n3 - 7 дней\n4 - 30 дней\n5 - Навсегда', '2');
+            if (durationChoice === null) return;
             
-            if (confirm(`Заблокировать пользователя ${user.name || user.id}?\nПричина: ${reason}\nДлительность: ${duration} часов`)) {
+            let duration;
+            let durationText;
+            
+            switch (durationChoice) {
+                case '1':
+                    duration = 1;
+                    durationText = '1 час';
+                    break;
+                case '2':
+                    duration = 24;
+                    durationText = '24 часа';
+                    break;
+                case '3':
+                    duration = 24 * 7;
+                    durationText = '7 дней';
+                    break;
+                case '4':
+                    duration = 24 * 30;
+                    durationText = '30 дней';
+                    break;
+                case '5':
+                    duration = 'permanent';
+                    durationText = 'навсегда';
+                    break;
+                default:
+                    duration = 24;
+                    durationText = '24 часа';
+            }
+            
+            if (confirm(`Заблокировать пользователя ${user.name || user.id}?\nПричина: ${reason}\nДлительность: ${durationText}`)) {
                 FirebaseMarketServer.blockUser(userId, reason, duration).then(success => {
                     if (success) {
-                        showNotification('Пользователь заблокирован', 'warning');
+                        showNotification(`Пользователь заблокирован на ${durationText}`, 'warning');
                         loadAdminData();
                     } else {
                         showNotification('Ошибка при блокировке', 'error');
@@ -4061,6 +4439,9 @@
         
         // Показать уведомление
         function showNotification(message, type = 'info') {
+            // Если пользователь заблокирован, не показываем уведомления
+            if (appData.isUserBlocked) return;
+            
             const notification = document.getElementById('notification');
             notification.textContent = message;
             notification.className = `notification ${type} show`;
@@ -4072,6 +4453,9 @@
         
         // Переключение страниц
         function switchPage(page) {
+            // Проверяем блокировку перед переключением
+            if (!checkBlockBeforeAction('переключение страницы')) return;
+            
             // Скрываем все страницы
             document.querySelectorAll('.page').forEach(p => {
                 p.classList.remove('active');
@@ -4144,6 +4528,9 @@
         
         // Переключение формы добавления
         function toggleAddForm() {
+            // Проверяем блокировку перед открытием формы
+            if (!checkBlockBeforeAction('добавление объявления')) return;
+            
             const form = document.getElementById('addAdForm');
             const btnText = document.getElementById('toggle-btn-text');
             
@@ -4168,6 +4555,9 @@
         
         // Фильтр по категориям
         function filterCategory(category) {
+            // Проверяем блокировку перед фильтрацией
+            if (!checkBlockBeforeAction('фильтрация объявлений')) return;
+            
             appData.currentCategory = category;
             
             document.querySelectorAll('.category-btn').forEach(btn => {
@@ -4178,7 +4568,7 @@
             renderAds();
         }
         
-        // Рендер объявлений (существующий код)
+        // Рендер объявлений
         function renderAds() {
             const container = document.getElementById('ads-container');
             
@@ -4344,6 +4734,9 @@
         
         // Открыть просмотр фото
         function openPhotoViewer(adId, photoIndex = 0) {
+            // Проверяем блокировку перед просмотром фото
+            if (!checkBlockBeforeAction('просмотр фото')) return;
+            
             const ad = appData.ads.find(a => a.id === adId);
             if (!ad || !ad.photoUrls || ad.photoUrls.length === 0 || ad.photoUrls[0] === null) {
                 showNotification('Фотографии не найдены', 'error');
@@ -4390,7 +4783,7 @@
             const modalImg = document.getElementById('modalPhoto');
             modalImg.src = appData.currentPhotoList[appData.currentPhotoIndex];
             modalImg.onerror = function() {
-                this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDQwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiM4MzVBRjkiLz48cGF0aCBkPSJNMTYwIDE5MEwyNDAgMjQwTDE4MCAxOTBMMjIwIDE0MEwxNjAgMTkwWiIgZmlsbD0id2hpdGUiLz48dGV4dCB4PSIyMDAiIHk9IjI4MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNp48dCB4PSIyMDAiIHk9IjI4MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+Rm90byBub3QgZm91bmQ8L3RleHQ+PC9zdmc+';
+                this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDQwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiM4MzVBRjkiLz48cGF0aCBkPSJNMTYwIDE5MEwyNDAgMjQwTDE4MCAxOTBMMjIwIDE0MEwxNjAgMTkwWiIgZmlsbD0id2hpdGUiLz48dGV4dCB4PSIyMDAiIHk9IjI4MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+Rm90byBub3QgZm91bmQ8L3RleHQ+PC9zdmc+';
             };
             document.getElementById('photoCounter').textContent = 
                 `${appData.currentPhotoIndex + 1} / ${appData.currentPhotoList.length}`;
@@ -4415,6 +4808,9 @@
         
         // Оценить продавца
         async function rateSeller(sellerId, type, adId) {
+            // Проверяем блокировку перед оценкой
+            if (!checkBlockBeforeAction('оценка продавца')) return;
+            
             if (!appData.isDataLoaded) {
                 showNotification('Данные еще загружаются', 'warning');
                 return;
@@ -4461,6 +4857,9 @@
         
         // Написать продавцу
         async function contactSeller(username, adId, adTitle, category, price) {
+            // Проверяем блокировку перед контактом
+            if (!checkBlockBeforeAction('контакт с продавцом')) return;
+            
             if (!appData.isDataLoaded) {
                 showNotification('Данные еще загружаются', 'warning');
                 return;
@@ -4597,6 +4996,9 @@
         
         // Удалить объявление
         async function deleteAd(adId) {
+            // Проверяем блокировку перед удалением
+            if (!checkBlockBeforeAction('удаление объявления')) return;
+            
             if (!confirm('Вы уверены, что хотите удалить это объявление?')) {
                 return;
             }
@@ -4624,6 +5026,9 @@
         
         // Редактировать объявление
         function editAd(adId) {
+            // Проверяем блокировку перед редактированием
+            if (!checkBlockBeforeAction('редактирование объявления')) return;
+            
             const ad = appData.ads.find(a => a.id === adId);
             if (!ad) return;
             
@@ -4656,6 +5061,9 @@
         
         // Удалить из истории
         async function removeFromHistory(id) {
+            // Проверяем блокировку перед удалением из истории
+            if (!checkBlockBeforeAction('удаление из истории')) return;
+            
             appData.history = appData.history.filter(item => item.id !== id);
             updateHistory();
             showNotification('Удалено из истории', 'warning');
@@ -4663,6 +5071,9 @@
         
         // Очистить историю
         async function clearHistory() {
+            // Проверяем блокировку перед очисткой истории
+            if (!checkBlockBeforeAction('очистка истории')) return;
+            
             if (!appData.isDataLoaded || appData.history.length === 0) {
                 showNotification('История уже пуста', 'info');
                 return;
@@ -4685,11 +5096,17 @@
         
         // Открыть выбор фото
         function openPhotoPicker() {
+            // Проверяем блокировку перед загрузкой фото
+            if (!checkBlockBeforeAction('загрузка фото')) return;
+            
             document.getElementById('photoInput').click();
         }
         
         // Обработка загрузки фото
         function handlePhotoUpload(event) {
+            // Проверяем блокировку перед обработкой фото
+            if (!checkBlockBeforeAction('обработка фото')) return;
+            
             const files = event.target.files;
             const maxFiles = 3;
             
@@ -4763,6 +5180,9 @@
         
         // Удалить загруженное фото
         function removeUploadedPhoto(photoId) {
+            // Проверяем блокировку перед удалением фото
+            if (!checkBlockBeforeAction('удаление фото')) return;
+            
             appData.uploadedPhotos = appData.uploadedPhotos.filter(photo => photo.id !== photoId);
             updatePhotoPreviews();
             showNotification(`Фото удалено (${appData.uploadedPhotos.length}/3)`, 'warning');
@@ -4783,6 +5203,9 @@
         
         // Опубликовать объявление
         async function publishAd() {
+            // Проверяем блокировку перед публикацией
+            if (!checkBlockBeforeAction('публикация объявления')) return;
+            
             const title = document.getElementById('adTitle').value.trim();
             const category = document.getElementById('adCategory').value;
             const price = parseInt(document.getElementById('adPrice').value);
@@ -4927,6 +5350,9 @@
         
         // Переключение FAQ
         function toggleFaq(id) {
+            // Проверяем блокировку перед просмотром FAQ
+            if (!checkBlockBeforeAction('просмотр FAQ')) return;
+            
             const answer = document.getElementById(`faq-answer-${id}`);
             const icon = document.getElementById(`faq-icon-${id}`);
             
@@ -4945,6 +5371,9 @@
         
         // Подать жалобу
         function submitComplaint() {
+            // Проверяем блокировку перед подачей жалобы
+            if (!checkBlockBeforeAction('подача жалобы')) return;
+            
             const message = encodeURIComponent('Хочу подать жалобу в Vape Market!');
             const telegramUrl = `https://t.me/nukm0?text=${message}`;
             
