@@ -3240,72 +3240,147 @@
         }
         
         // Опубликовать объявление
-        async function publishAd() {
-            const title = document.getElementById('adTitle').value.trim();
-            const category = document.getElementById('adCategory').value;
-            const price = parseInt(document.getElementById('adPrice').value);
-            const description = document.getElementById('adDescription').value.trim();
-            
-            // Валидация
-            if (!title) {
-                showNotification('Введите название товара!', 'error');
-                return;
+async function publishAd() {
+    const title = document.getElementById('adTitle').value.trim();
+    const category = document.getElementById('adCategory').value;
+    const price = parseInt(document.getElementById('adPrice').value);
+    const description = document.getElementById('adDescription').value.trim();
+    
+    // Валидация
+    if (!title) {
+        showNotification('Введите название товара!', 'error');
+        return;
+    }
+    
+    if (!category) {
+        showNotification('Выберите категорию!', 'error');
+        return;
+    }
+    
+    if (!price || isNaN(price) || price <= 0) {
+        showNotification('Введите корректную цену!', 'error');
+        return;
+    }
+    
+    if (appData.uploadedPhotos.length === 0) {
+        showNotification('Добавьте хотя бы одну фотографию!', 'error');
+        return;
+    }
+    
+    showNotification('Загрузка фотографий...', 'info');
+    
+    // Загружаем фото в Firebase Storage
+    const photoUrls = [];
+    for (let i = 0; i < appData.uploadedPhotos.length; i++) {
+        const photo = appData.uploadedPhotos[i];
+        if (photo.file) {
+            try {
+                const fileName = `ads/${Date.now()}_${i}_${appData.currentUserId}.jpg`;
+                const storageRef = storage.ref(fileName);
+                
+                // Сжимаем изображение
+                const compressedFile = await compressImage(photo.file);
+                
+                await storageRef.put(compressedFile);
+                const downloadUrl = await storageRef.getDownloadURL();
+                photoUrls.push(downloadUrl);
+                
+                console.log(`✅ Фото ${i+1} загружено`);
+            } catch (error) {
+                console.error('Ошибка загрузки фото:', error);
+                // Используем base64 как fallback
+                photoUrls.push(photo.url);
             }
+        } else {
+            // Если фото уже было загружено ранее (при редактировании)
+            photoUrls.push(photo.url);
+        }
+    }
+    
+    // Если редактируем существующее объявление
+    if (appData.editingAdId) {
+        const ad = appData.ads.find(a => a.id === appData.editingAdId);
+        if (ad) {
+            ad.title = title;
+            ad.category = category;
+            ad.price = price;
+            ad.description = description || 'Без описания';
+            ad.photoUrls = photoUrls;
+            ad.photos = photoUrls.length;
+            ad.updatedAt = firebase.database.ServerValue.TIMESTAMP;
             
-            if (!category) {
-                showNotification('Выберите категорию!', 'error');
-                return;
-            }
+            // Сохраняем на Firebase
+            const success = await FirebaseMarketServer.updateAd(ad.id, {
+                title: ad.title,
+                category: ad.category,
+                price: ad.price,
+                description: ad.description,
+                photoUrls: ad.photoUrls,
+                photos: ad.photos,
+                updatedAt: ad.updatedAt
+            });
             
-            if (!price || isNaN(price) || price <= 0) {
-                showNotification('Введите корректную цену!', 'error');
-                return;
+            if (success) {
+                renderAds();
+                updateProfileStats();
+                updateMyAdsList();
+                updateServerStatsUI();
+                hideAddForm();
+                
+                appData.editingAdId = null;
+                showNotification('Объявление обновлено!', 'success');
+            } else {
+                showNotification('Ошибка при обновлении', 'error');
             }
-            
-            if (appData.uploadedPhotos.length === 0) {
-                showNotification('Добавьте хотя бы одну фотографию!', 'error');
-                return;
-            }
-            
-            // Если редактируем существующее объявление
-            if (appData.editingAdId) {
-                const ad = appData.ads.find(a => a.id === appData.editingAdId);
-                if (ad) {
-                    ad.title = title;
-                    ad.category = category;
-                    ad.price = price;
-                    ad.description = description || 'Без описания';
-                    
-                    // 🔥 ИСПРАВЛЕНИЕ ДЛЯ FIREBASE 🔥
-                    ad.photoUrls = appData.uploadedPhotos.slice(0, 3).map((p, i) => {
-                        // Ограничиваем размер для Firebase
-                        if (p.url && p.url.length > 200000) {
-                            // Если фото >200KB, используем заглушку
-                            return `https://via.placeholder.com/150/8B5CF6/FFFFFF?text=Фото${i+1}`;
-                        }
-                        return p.url || `https://via.placeholder.com/150/7C3AED/FFFFFF?text=Фото${i+1}`;
-                    });
-                    
-                    ad.photos = appData.uploadedPhotos.length;
-                    
-                    // Сохраняем на Firebase
-                    const success = await FirebaseMarketServer.updateAd(ad.id, ad);
-                    
-                    if (success) {
-                        renderAds();
-                        updateProfileStats();
-                        updateMyAdsList();
-                        updateServerStatsUI();
-                        hideAddForm();
-                        
-                        appData.editingAdId = null;
-                        showNotification('Объявление обновлено!', 'success');
-                    } else {
-                        showNotification('Ошибка при обновлении', 'error');
-                    }
-                }
-                return;
-            }
+        }
+        return;
+    }
+    
+    // Создаем новое объявление
+    const newAd = {
+        sellerId: appData.currentUserId,
+        sellerName: appData.currentUserData.first_name + 
+                   (appData.currentUserData.last_name ? ' ' + appData.currentUserData.last_name : ''),
+        sellerUsername: appData.currentUserData.username ? '@' + appData.currentUserData.username : 'Без username',
+        sellerAvatar: appData.currentUserData.photo_url || null,
+        title: title,
+        category: category,
+        price: price,
+        description: description || 'Без описания',
+        photos: photoUrls.length,
+        photoUrls: photoUrls,
+        likes: 0,
+        dislikes: 0,
+        createdAt: firebase.database.ServerValue.TIMESTAMP,
+        updatedAt: firebase.database.ServerValue.TIMESTAMP
+    };
+    
+    try {
+        // Сохраняем в Firebase
+        const adId = await FirebaseMarketServer.addAd(newAd);
+        
+        // Добавляем в локальный список
+        newAd.id = adId;
+        appData.ads.unshift(newAd);
+        
+        // Обновляем статистику
+        appData.serverStats = await FirebaseMarketServer.getStats();
+        updateServerStatsUI();
+        
+        // Обновляем статистику профиля
+        updateProfileStats();
+        updateMyAdsList();
+        
+        // Обновляем отображение
+        renderAds();
+        hideAddForm();
+        
+        showNotification('Объявление успешно опубликовано!', 'success');
+    } catch (error) {
+        console.error('Ошибка публикации:', error);
+        showNotification('Ошибка при публикации объявления', 'error');
+    }
+}
             
             // Создаем новое объявление
             const newAd = {
