@@ -2034,18 +2034,7 @@
     };
     
     function checkTelegramAndInit() {
-    const tg = window.Telegram?.WebApp;
-    
-    if (tg) {
-        // Добавьте логирование версии
-        console.log('Версия Telegram WebApp:', tg.version);
-        
-        // Показываем предупреждение для старых версий
-        if (parseFloat(tg.version) < 6.1) {
-            setTimeout(() => {
-                showNotification('Для полного функционала обновите Telegram', 'info');
-            }, 1000);
-        }
+    console.log('🔍 Начинаем инициализацию...');
     
     // Пробуем получить Telegram Web App
     const tg = window.Telegram?.WebApp;
@@ -2301,53 +2290,29 @@
     }
     
     // Обновить статистику
-    function initApp() {
-    // Добавьте эти проверки в начало функции
-    const webAppVersion = tg?.version || 'unknown';
-    console.log('📱 Версия Telegram:', webAppVersion);
-    
-    const isNewVersion = parseFloat(webAppVersion) >= 6.1;
-    
-    if (tg) {
-        tg.expand();
-        tg.ready();
-        
-        // Только для новых версий
-        if (isNewVersion) {
-            try {
-                tg.setHeaderColor('#6D28D9');
-                tg.setBackgroundColor('#7C3AED');
-            } catch(e) {
-                console.log('⚠️ Цвета не поддерживаются');
-            }
-            
-            // Кнопка "Назад" для новых версий
-            if (tg.BackButton && tg.BackButton.show) {
-                try {
-                    tg.BackButton.show();
-                    tg.BackButton.onClick(() => tg.close());
-                } catch(e) {
-                    console.log('⚠️ BackButton не работает');
-                }
-            }
-        } else {
-            // Для старых версий - создаем свою кнопку
-            const header = document.querySelector('.app-header');
-            if (header) {
-                header.style.position = 'relative';
-                header.innerHTML = `
-                    <button onclick="window.Telegram?.WebApp?.close?.() || alert('Используйте кнопку назад Telegram')" 
-                            style="position:absolute; left:15px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.1); border:2px solid rgba(255,255,255,0.3); color:white; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:18px; z-index:10;">
-                        <i class="fas fa-arrow-left"></i>
-                    </button>
-                    ${header.innerHTML}
-                `;
-                const logo = header.querySelector('.logo');
-                if (logo) logo.style.marginLeft = '40px';
-            }
-        }
+    async function refreshStats() {
+        appData.serverStats = await FirebaseMarketServer.getStats();
+        updateServerStatsUI();
+        showNotification('Статистика обновлена', 'success');
     }
     
+    // Инициализация приложения
+    function initApp() {
+        if (tg) {
+            tg.expand();
+            tg.ready();
+            
+            // Устанавливаем тему
+            tg.setHeaderColor('#6D28D9');
+            tg.setBackgroundColor('#7C3AED');
+            
+            // Показываем кнопку "Назад"
+            tg.BackButton.show();
+            tg.BackButton.onClick(function() {
+                tg.close();
+            });
+        }
+        
         // Сначала обновляем профиль с базовыми данными
         updateUserProfile();
         
@@ -2368,16 +2333,16 @@
         });
         
         // Инициализация FAQ
-    for (let i = 1; i <= 6; i++) {
-        const answer = document.getElementById(`faq-answer-${i}`);
-        if (answer) answer.style.display = 'none';
+        for (let i = 1; i <= 6; i++) {
+            const answer = document.getElementById(`faq-answer-${i}`);
+            if (answer) answer.style.display = 'none';
+        }
+        
+        // Обновляем статус каждую минуту
+        setInterval(updateSyncStatus, 60000);
+        
+        showNotification(`Добро пожаловать, ${appData.currentUserData?.first_name || 'Пользователь'}!`, 'success');
     }
-    
-    // Обновляем статус каждую минуту
-    setInterval(updateSyncStatus, 60000);
-    
-    showNotification(`Добро пожаловать, ${appData.currentUserData?.first_name || 'Пользователь'}!`, 'success');
-}
         
         // Обновить профиль пользователя в UI
         function updateUserProfile() {
@@ -2608,7 +2573,7 @@
                             <div class="seller-stats">
                                 <div class="seller-stat stat-rating">
                                     <i class="fas fa-star"></i>
-                                    <span id="rating-${ad.sellerId}">${calculateRating(ad.sellerId).toFixed(1)}</span>
+                                    <span>${rating.toFixed(1)}</span>
                                 </div>
                                 <div class="seller-stat stat-likes">
                                     <i class="fas fa-thumbs-up"></i>
@@ -3314,14 +3279,17 @@
             return categories[category] || category;
         }
         
-            // Запуск при загрузке
-    document.getElementById('photoModal').addEventListener('click', function(event) {
-        if (event.target === this) {
-            closePhotoModal();
-        }
-    });
-// Инициализация при загрузке
-checkTelegramAndInit();
-</script>
+        // Запуск при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            checkTelegramAndInit();
+        });
+        
+        // Закрытие модального окна по клику на фон
+        document.getElementById('photoModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closePhotoModal();
+            }
+        });
+    </script>
 </body>
-</html>
+</html> 
