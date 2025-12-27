@@ -3119,7 +3119,7 @@ async function uploadPhotoToStorage(file, adId, index) {
 }
 
 // Функция для placeholder
-function getPlaceholderUrl(index) {
+function getPlaceholderUrl(index) {async
     const colors = ['8B5CF6', '7C3AED', '6D28D9', '5B21B6'];
     const color = colors[index % colors.length];
     return `https://via.placeholder.com/300x300/${color}/FFFFFF?text=Vape+${index+1}`;
