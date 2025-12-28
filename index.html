@@ -60,7 +60,7 @@
         .container {
             max-width: 100%;
             margin: 0 auto;
-            padding: 20px 16px 80px; /* Уменьшил отступ снизу для меньшего меню */
+            padding: 20px 16px 80px;
         }
 
         /* ЛОАДЕР */
@@ -100,9 +100,121 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* ШАПКА С КНОПКОЙ ДОБАВЛЕНИЯ */
+        .main-header {
+            margin-bottom: 15px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            font-size: 2.2rem;
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary-darker);
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .app-subtitle {
+            font-size: 0.8rem;
+            color: #666;
+            margin: 0;
+        }
+
+        .user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--gradient-button);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .user-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-medium);
+        }
+
+        /* КНОПКА ДОБАВЛЕНИЯ В ВЕРХНЕЙ ЧАСТИ */
+        .add-ad-header-btn {
+            width: 100%;
+            background: var(--gradient-button);
+            border: none;
+            border-radius: 16px;
+            padding: 16px;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow-medium);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .add-ad-header-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.3),
+                transparent
+            );
+            transition: left 0.7s ease;
+        }
+
+        .add-ad-header-btn:hover::before {
+            left: 100%;
+        }
+
+        .add-ad-header-btn:hover {
+            background: var(--gradient-button-hover);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .add-ad-header-btn i {
+            font-size: 1.2rem;
+        }
+
         /* КРУГЛЫЕ КАТЕГОРИИ С КРУГОВЫМ ЛИСТАНИЕМ */
         .categories-section {
-            margin: 25px 0 30px;
+            margin: 0 0 30px;
             position: relative;
             overflow: hidden;
         }
@@ -112,7 +224,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            padding: 0 8px;
+            padding: 0 5px;
         }
 
         .section-title h2 {
@@ -124,15 +236,15 @@
 
         .scroll-hint {
             color: var(--primary);
-            font-size: 0.9rem;
+            font-size: 0.75rem;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
             animation: pulse 2s infinite;
         }
 
         .scroll-hint i {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
         }
 
         /* Контейнер для кругового скролла */
@@ -141,23 +253,22 @@
             padding: 10px 0 25px;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
-            scrollbar-width: none; /* Firefox */
+            scrollbar-width: none;
         }
 
         .categories-scroll-container::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Edge */
+            display: none;
         }
 
         /* Трек с категориями для кругового листания */
         .categories-track {
             display: flex;
-            gap: 15px;
+            gap: 18px;
             padding: 0 20px;
             width: max-content;
-            animation: scrollLoop 30s linear infinite;
+            animation: scrollLoop 40s linear infinite;
         }
 
-        /* Анимация кругового листания */
         @keyframes scrollLoop {
             0% {
                 transform: translateX(0);
@@ -167,7 +278,6 @@
             }
         }
 
-        /* Пауза анимации при наведении */
         .categories-track:hover {
             animation-play-state: paused;
         }
@@ -178,8 +288,8 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            width: 85px;
-            height: 85px;
+            width: 90px;
+            height: 90px;
             border-radius: 50%;
             background: var(--gradient-button);
             box-shadow: var(--shadow-medium);
@@ -188,9 +298,10 @@
             position: relative;
             overflow: hidden;
             flex-shrink: 0;
+            padding: 5px;
+            box-sizing: border-box;
         }
 
-        /* Эффект переливания светом при наведении */
         .category-item::before {
             content: '';
             position: absolute;
@@ -223,10 +334,14 @@
         }
 
         .category-icon {
-            font-size: 1.8rem;
-            margin-bottom: 5px;
+            font-size: 2rem;
+            margin-bottom: 6px;
             color: white;
             text-shadow: var(--shadow-text);
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .category-name {
@@ -234,19 +349,21 @@
             font-weight: 600;
             color: white;
             text-align: center;
-            max-width: 70px;
             line-height: 1.1;
             text-shadow: var(--shadow-text);
-        }
-
-        /* УБИРАЕМ РАЗДЕЛ "РАЗМЕСТИТЬ ОБЪЯВЛЕНИЕ" */
-        .create-ad-section {
-            display: none;
+            max-width: 80px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            word-break: break-word;
+            height: 32px;
         }
 
         /* ОБЪЯВЛЕНИЯ */
         .ads-section {
-            margin-top: 10px;
+            margin-top: 15px;
         }
 
         .section-header {
@@ -254,7 +371,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            padding: 0 8px;
+            padding: 0 5px;
         }
 
         .section-header h2 {
@@ -266,22 +383,22 @@
 
         .sort-controls {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
 
         .sort-btn {
             background: white;
             border: 1px solid var(--primary-light);
-            border-radius: 20px;
+            border-radius: 18px;
             padding: 6px 12px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 500;
             color: var(--primary-dark);
             cursor: pointer;
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
         }
 
         .sort-btn:hover {
@@ -298,8 +415,8 @@
         .ads-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            padding: 0 8px;
+            gap: 18px;
+            padding: 0 5px;
         }
 
         /* УМЕНЬШЕННОЕ НИЖНЕЕ МЕНЮ */
@@ -316,7 +433,7 @@
             padding: 8px 0 12px;
             z-index: 1000;
             box-shadow: 0 -2px 15px rgba(168, 85, 247, 0.1);
-            height: 60px; /* Уменьшил с 80px до 60px */
+            height: 60px;
         }
 
         .nav-item {
@@ -339,25 +456,19 @@
         }
 
         .nav-icon {
-            font-size: 1.2rem; /* Уменьшил иконки */
+            font-size: 1.2rem;
             margin-bottom: 4px;
         }
 
         .nav-label {
-            font-size: 0.7rem; /* Уменьшил текст */
+            font-size: 0.7rem;
             font-weight: 500;
         }
 
-        /* Другие анимации */
         @keyframes pulse {
             0% { opacity: 0.7; }
             50% { opacity: 1; }
             100% { opacity: 0.7; }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
         }
     </style>
 </head>
@@ -372,7 +483,7 @@
     <div class="container">
         <!-- ГЛАВНЫЙ ЭКРАН -->
         <div id="mainScreen" class="screen active-screen">
-            <!-- ШАПКА -->
+            <!-- ШАПКА С ЛОГО И АВАТАРОМ -->
             <header class="main-header">
                 <div class="header-content">
                     <div class="logo-container">
@@ -386,6 +497,12 @@
                         <i class="fas fa-user"></i>
                     </div>
                 </div>
+
+                <!-- КНОПКА ДОБАВЛЕНИЯ ОБЪЯВЛЕНИЯ В ВЕРХНЕЙ ЧАСТИ -->
+                <button id="addAdHeaderBtn" class="add-ad-header-btn" onclick="showCreateAdScreen()">
+                    <i class="fas fa-plus-circle"></i>
+                    Добавить объявление
+                </button>
             </header>
 
             <!-- КРУГЛЫЕ КАТЕГОРИИ С КРУГОВЫМ ЛИСТАНИЕМ -->
@@ -402,10 +519,10 @@
                         <!-- Основные категории -->
                         <div class="category-item active" data-category="all">
                             <div class="category-icon">🔥</div>
-                            <div class="category-name">Все</div>
+                            <div class="category-name">Все товары</div>
                         </div>
 
-                        <div class="category-item" data-category="liquids">
+                        <div class="category-item" data-category="pod">
                             <div class="category-icon">🔋</div>
                             <div class="category-name">Под-системы</div>
                         </div>
@@ -415,22 +532,22 @@
                             <div class="category-name">Одноразки</div>
                         </div>
 
-                        <div class="category-item" data-category="pod">
+                        <div class="category-item" data-category="liquids">
                             <div class="category-icon">💧</div>
                             <div class="category-name">Жидкости</div>
                         </div>
 
                         <div class="category-item" data-category="accessories">
                             <div class="category-icon">🛠️</div>
-                            <div class="category-name">Расхоники</div>
+                            <div class="category-name">Расходники</div>
                         </div>
 
-                        <div class="category-item" data-category="coils">
+                        <div class="category-item" data-category="hookah">
                             <div class="category-icon">🎷</div>
                             <div class="category-name">Для кальяна</div>
                         </div>
 
-                        <div class="category-item" data-category="mods">
+                        <div class="category-item" data-category="other">
                             <div class="category-icon">🎨</div>
                             <div class="category-name">Другое</div>
                         </div>
@@ -438,10 +555,10 @@
                         <!-- Дубликаты для кругового эффекта -->
                         <div class="category-item" data-category="all">
                             <div class="category-icon">🔥</div>
-                            <div class="category-name">Все</div>
+                            <div class="category-name">Все товары</div>
                         </div>
 
-                        <div class="category-item" data-category="liquids">
+                        <div class="category-item" data-category="pod">
                             <div class="category-icon">🔋</div>
                             <div class="category-name">Под-системы</div>
                         </div>
@@ -451,15 +568,13 @@
                             <div class="category-name">Одноразки</div>
                         </div>
 
-                        <div class="category-item" data-category="pod">
+                        <div class="category-item" data-category="liquids">
                             <div class="category-icon">💧</div>
                             <div class="category-name">Жидкости</div>
                         </div>
                     </div>
                 </div>
             </section>
-
-            <!-- РАЗДЕЛ "РАЗМЕСТИТЬ" УБРАН -->
 
             <!-- ОБЪЯВЛЕНИЯ -->
             <section class="ads-section">
@@ -476,7 +591,7 @@
                 </div>
 
                 <div id="adsContainer" class="ads-grid">
-                    <!-- Пример объявления для демонстрации стиля -->
+                    <!-- Пример объявления -->
                     <div class="ad-card demo-card">
                         <div class="ad-badge">
                             <span class="badge-type sell">Продажа</span>
@@ -534,10 +649,8 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Конец демо карточки -->
                 </div>
 
-                <!-- Состояние "нет объявлений" -->
                 <div id="emptyState" class="empty-state" style="display: none;">
                     <div class="empty-state-icon">
                         <i class="fas fa-store-slash"></i>
@@ -551,14 +664,14 @@
             </section>
         </div>
 
-        <!-- ДРУГИЕ ЭКРАНЫ (ПРОФИЛЬ, СОЗДАНИЕ, FAQ) -->
+        <!-- ДРУГИЕ ЭКРАНЫ -->
         <div id="profileScreen" class="screen" style="display: none;"></div>
         <div id="createAdScreen" class="screen" style="display: none;"></div>
         <div id="faqScreen" class="screen" style="display: none;"></div>
         <div id="adminScreen" class="screen" style="display: none;"></div>
     </div>
 
-    <!-- УМЕНЬШЕННОЕ НИЖНЕЕ МЕНЮ -->
+    <!-- НИЖНЕЕ МЕНЮ -->
     <nav class="bottom-nav">
         <a href="javascript:void(0)" class="nav-item active" onclick="showMainScreen()">
             <div class="nav-icon">
@@ -566,8 +679,6 @@
             </div>
             <div class="nav-label">Главная</div>
         </a>
-
-        <!-- Убрали кнопку "Разместить" из нижнего меню -->
 
         <a href="javascript:void(0)" class="nav-item" onclick="showProfileScreen()">
             <div class="nav-icon">
@@ -589,29 +700,21 @@
     <script src="app.js"></script>
 
     <script>
-        // Дополнительный JavaScript для кругового листания категорий
         document.addEventListener('DOMContentLoaded', function() {
             const track = document.getElementById('categoriesTrack');
             const categories = track.querySelectorAll('.category-item');
             
-            // Обработка кликов по категориям
             categories.forEach(category => {
                 category.addEventListener('click', function() {
-                    // Убираем активный класс у всех категорий
                     categories.forEach(c => c.classList.remove('active'));
-                    
-                    // Добавляем активный класс к выбранной категории
                     this.classList.add('active');
                     
-                    // Получаем категорию для фильтрации
                     const selectedCategory = this.getAttribute('data-category');
                     console.log('Выбрана категория:', selectedCategory);
-                    
-                    // Здесь можно добавить логику фильтрации объявлений
                 });
             });
             
-            // Пауза анимации при касании на мобильных устройствах
+            // Пауза анимации при касании
             track.addEventListener('touchstart', function() {
                 track.style.animationPlayState = 'paused';
             });
@@ -619,9 +722,54 @@
             track.addEventListener('touchend', function() {
                 setTimeout(() => {
                     track.style.animationPlayState = 'running';
-                }, 1000);
+                }, 1500);
+            });
+            
+            // Обработка кнопки добавления объявления
+            document.getElementById('addAdHeaderBtn').addEventListener('click', function() {
+                showCreateAdScreen();
             });
         });
+        
+        function showCreateAdScreen() {
+            document.getElementById('mainScreen').style.display = 'none';
+            document.getElementById('createAdScreen').style.display = 'block';
+            
+            // Обновляем активное меню
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+        }
+        
+        function showMainScreen() {
+            document.getElementById('createAdScreen').style.display = 'none';
+            document.getElementById('mainScreen').style.display = 'block';
+            
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector('.nav-item:nth-child(1)').classList.add('active');
+        }
+        
+        function showProfileScreen() {
+            document.getElementById('mainScreen').style.display = 'none';
+            document.getElementById('profileScreen').style.display = 'block';
+            
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector('.nav-item:nth-child(2)').classList.add('active');
+        }
+        
+        function showFaqScreen() {
+            document.getElementById('mainScreen').style.display = 'none';
+            document.getElementById('faqScreen').style.display = 'block';
+            
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector('.nav-item:nth-child(3)').classList.add('active');
+        }
     </script>
 </body>
 </html>
