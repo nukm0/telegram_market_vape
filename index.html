@@ -3520,31 +3520,34 @@
         
         // Система данных приложения
         const appData = {
-            currentUserId: null,
-            currentUserData: null,
-            ads: [],
-            userRatings: {},
-            history: [],
-            uploadedPhotos: [],
-            currentPhotoIndex: 0,
-            currentPhotoList: [],
-            currentCategory: 'all',
-            editingAdId: null,
-            serverStats: null,
-            lastSyncTime: null,
-            isDataLoaded: false,
-            isAdmin: false,
-            adminData: {
-                users: [],
-                complaints: [],
-                moderationHistory: [],
-                stats: {}
-            },
-            currentAdminSection: 'main',
-            currentAdminFilter: 'all',
-            isUserBlocked: false,
-            blockInfo: null
-        };
+    currentUserId: null,
+    currentUserData: null,
+    ads: [],
+    userRatings: {},
+    history: [],
+    uploadedPhotos: [],
+    currentPhotoIndex: 0,
+    currentPhotoList: [],
+    currentCategory: 'all',
+    editingAdId: null,
+    serverStats: null,
+    lastSyncTime: null,
+    isDataLoaded: false,
+    isAdmin: false,
+    adminData: {
+        users: [],
+        complaints: [],
+        moderationHistory: [],
+        stats: {}
+    },
+    currentAdminSection: 'main',
+    currentAdminFilter: 'all',
+    isUserBlocked: false,
+    blockInfo: null,
+    // ВАЖНО: Добавляем флаги для отслеживания слушателей
+    adminListenersSetup: false,
+    firebaseListeners: {}
+};
         
         // Администраторы системы
         const ADMIN_USERS = {
@@ -3638,43 +3641,31 @@
         
         // Показать экран блокировки
         function showBlockScreen(blockData) {
-            const blockedScreen = document.getElementById('blockedScreen');
-            const appContainer = document.getElementById('appContainer');
-            
-            // Заполняем информацию о блокировке
-            document.getElementById('blockedReason').textContent = 
-                `Ваш аккаунт был ${blockData.isPermanent ? 'заблокирован навсегда' : 'временно заблокирован'} администратором`;
-            
-            document.getElementById('blockReasonText').textContent = blockData.reason || 'Нарушение правил';
-            
-            // Форматируем даты
-            if (blockData.blockedAt) {
-                const blockDate = new Date(blockData.blockedAt);
-                document.getElementById('blockDateText').textContent = 
-                    blockDate.toLocaleDateString('ru-RU') + ' ' + blockDate.toLocaleTimeString('ru-RU');
+    const blockedScreen = document.getElementById('blockedScreen');
+    const appContainer = document.getElementById('appContainer');
+    
+    // Заполняем информацию о блокировке
+    document.getElementById('blockedReason').textContent = 
+        `Ваш аккаунт был ${blockData.isPermanent ? 'заблокирован навсегда' : 'временно заблокирован'} администратором`;
+    
+    // ... остальной код заполнения информации ...
+    
+    // ВАЖНО: Останавливаем все Firebase слушатели при блокировке
+    if (appData.firebaseListeners) {
+        console.log('⛔ Останавливаем Firebase listeners из-за блокировки');
+        Object.values(appData.firebaseListeners).forEach(unsubscribe => {
+            if (typeof unsubscribe === 'function') {
+                unsubscribe();
             }
-            
-            if (blockData.blockedUntil === 'permanent') {
-                document.getElementById('unblockDateText').textContent = 'Никогда';
-                document.getElementById('timeLeft').textContent = 'Блокировка постоянная';
-            } else if (blockData.blockedUntil) {
-                const unblockDate = new Date(blockData.blockedUntil);
-                document.getElementById('unblockDateText').textContent = 
-                    unblockDate.toLocaleDateString('ru-RU') + ' ' + unblockDate.toLocaleTimeString('ru-RU');
-                
-                // Запускаем таймер обратного отсчета
-                startBlockCountdown(blockData.blockedUntil);
-            }
-            
-            // Показываем экран блокировки и скрываем основное приложение
-            blockedScreen.style.display = 'flex';
-            appContainer.style.display = 'none';
-            
-            // Останавливаем все слушатели Firebase
-            if (appData.firebaseListeners) {
-                Object.values(appData.firebaseListeners).forEach(unsubscribe => unsubscribe());
-            }
-        }
+        });
+        appData.firebaseListeners = {};
+        appData.adminListenersSetup = false;
+    }
+    
+    // Показываем экран блокировки и скрываем основное приложение
+    blockedScreen.style.display = 'flex';
+    appContainer.style.display = 'none';
+}
         
         // Скрыть экран блокировки
         function hideBlockScreen() {
@@ -3876,45 +3867,50 @@
         
         // Загрузить данные для админ-панели
         async function loadAdminData() {
-            if (!appData.isAdmin) return;
-            
-            try {
-                console.log('🔄 Загрузка админ-данных...');
-                
-                // Загружаем пользователи
-                const usersSnapshot = await database.ref('users').once('value');
-                appData.adminData.users = [];
-                usersSnapshot.forEach((child) => {
-                    const user = child.val();
-                    user.id = child.key;
-                    appData.adminData.users.push(user);
-                });
-                
-                // Загружаем жалобы
-                const complaintsSnapshot = await database.ref('complaints').once('value');
-                appData.adminData.complaints = [];
-                complaintsSnapshot.forEach((child) => {
-                    const complaint = child.val();
-                    complaint.id = child.key;
-                    appData.adminData.complaints.push(complaint);
-                });
-                
-                // Загружаем историю модерации
-                appData.adminData.moderationHistory = await FirebaseMarketServer.getModerationHistory();
-                
-                // Обновляем статистику
-                updateAdminStats();
-                
-                // Обновляем текущий раздел админ-панели
-                updateCurrentAdminSection();
-                
-                showNotification('Админ-данные обновлены', 'success');
-                
-            } catch (error) {
-                console.error('❌ Ошибка загрузки админ-данных:', error);
-                showNotification('Ошибка загрузки админ-данных', 'error');
-            }
+    if (!appData.isAdmin) return;
+    
+    try {
+        console.log('🔄 Загрузка админ-данных...');
+        
+        // Загружаем пользователи
+        const usersSnapshot = await database.ref('users').once('value');
+        appData.adminData.users = [];
+        usersSnapshot.forEach((child) => {
+            const user = child.val();
+            user.id = child.key;
+            appData.adminData.users.push(user);
+        });
+        
+        // Загружаем жалобы
+        const complaintsSnapshot = await database.ref('complaints').once('value');
+        appData.adminData.complaints = [];
+        complaintsSnapshot.forEach((child) => {
+            const complaint = child.val();
+            complaint.id = child.key;
+            appData.adminData.complaints.push(complaint);
+        });
+        
+        // Загружаем историю модерации
+        appData.adminData.moderationHistory = await FirebaseMarketServer.getModerationHistory();
+        
+        // Обновляем статистику
+        updateAdminStats();
+        
+        // Обновляем текущий раздел админ-панели
+        updateCurrentAdminSection();
+        
+        // ВАЖНО: Если реальные слушатели еще не настроены, настраиваем их
+        if (!appData.adminListenersSetup) {
+            setupAdminRealtimeListeners();
         }
+        
+        showNotification('Админ-данные обновлены', 'success');
+        
+    } catch (error) {
+        console.error('❌ Ошибка загрузки админ-данных:', error);
+        showNotification('Ошибка загрузки админ-данных', 'error');
+    }
+}
         
         // Обновить статистику админ-панели
         function updateAdminStats() {
@@ -4789,28 +4785,36 @@
         
         // Инициализация приложения
         function initApp() {
-            console.log('🚀 Инициализация приложения...');
-            
-            // Загружаем данные
+    console.log('🚀 Инициализация приложения...');
+    
+    // Загружаем данные
+    loadFromServer();
+    
+    // Обновляем UI
+    updateUserProfile();
+    
+    // ВАЖНО: НАСТРАИВАЕМ REAL-TIME LISTENERS если пользователь админ
+    if (appData.isAdmin) {
+        // Ждем немного перед настройкой слушателей
+        setTimeout(() => {
+            setupAdminRealtimeListeners();
+        }, 1000);
+    }
+    
+    // Устанавливаем автообновление каждые 30 секунд (теперь backup)
+    setInterval(() => {
+        if (!appData.isUserBlocked) {
             loadFromServer();
-            
-            // Обновляем UI
-            updateUserProfile();
-            
-            // Устанавливаем автообновление каждые 30 секунд
-            setInterval(() => {
-                if (!appData.isUserBlocked) {
-                    loadFromServer();
-                }
-            }, 30000);
-            
-            // Показываем уведомление о загрузке
-            setTimeout(() => {
-                if (!appData.isDataLoaded) {
-                    showNotification('Загружаем данные с сервера...', 'info');
-                }
-            }, 1000);
         }
+    }, 30000);
+    
+    // Показываем уведомление о загрузке
+    setTimeout(() => {
+        if (!appData.isDataLoaded) {
+            showNotification('Загружаем данные с сервера...', 'info');
+        }
+    }, 1000);
+}
         
         // Обновить UI после загрузки данных
         function updateUIAfterDataLoad() {
@@ -6129,7 +6133,114 @@
             }
         }
         
-        // ==================== ИНИЦИАЛИЗАЦИЯ ====================
+        // ==================== REAL-TIME LISTENERS ДЛЯ АДМИНА ====================
+
+function setupAdminRealtimeListeners() {
+    if (!appData.isAdmin || appData.adminListenersSetup) return;
+    
+    console.log('🔄 Настройка real-time listeners для админа...');
+    
+    // Останавливаем старые слушатели если есть
+    if (appData.firebaseListeners.complaints) {
+        appData.firebaseListeners.complaints();
+    }
+    if (appData.firebaseListeners.users) {
+        appData.firebaseListeners.users();
+    }
+    if (appData.firebaseListeners.ads) {
+        appData.firebaseListeners.ads();
+    }
+    
+    // 1. Слушатель для жалоб - САМОЕ ВАЖНОЕ!
+    appData.firebaseListeners.complaints = database.ref('complaints').on('value', (snapshot) => {
+        console.log('📢 Получено обновление жалоб из Firebase');
+        const complaints = [];
+        snapshot.forEach((child) => {
+            const complaint = child.val();
+            complaint.id = child.key;
+            complaints.push(complaint);
+        });
+        
+        appData.adminData.complaints = complaints;
+        console.log(`✅ Загружено ${complaints.length} жалоб в реальном времени`);
+        
+        // Обновляем UI раздела жалоб, если он активен
+        if (appData.currentAdminSection === 'complaints') {
+            updateComplaintsSection();
+        }
+        
+        // Обновляем статистику в админ-панели
+        updateAdminStats();
+    });
+    
+    // 2. Слушатель для пользователей (опционально)
+    appData.firebaseListeners.users = database.ref('users').on('value', (snapshot) => {
+        console.log('📢 Получено обновление пользователей из Firebase');
+        const users = [];
+        snapshot.forEach((child) => {
+            const user = child.val();
+            user.id = child.key;
+            users.push(user);
+        });
+        
+        appData.adminData.users = users;
+        
+        // Обновляем UI раздела пользователей, если он активен
+        if (appData.currentAdminSection === 'users') {
+            updateUsersSection();
+        }
+        
+        // Обновляем статистику
+        updateAdminStats();
+    });
+    
+    // 3. Слушатель для объявлений
+    appData.firebaseListeners.ads = database.ref('ads').on('value', (snapshot) => {
+        console.log('📢 Получено обновление объявлений из Firebase');
+        const ads = [];
+        snapshot.forEach((child) => {
+            const ad = child.val();
+            ad.id = child.key;
+            
+            // Инициализируем фото
+            if (!ad.photoUrls && ad.photos > 0) {
+                ad.photoUrls = [];
+                for (let i = 0; i < ad.photos; i++) {
+                    ad.photoUrls.push(null);
+                }
+            }
+            
+            ad.likes = ad.likes || 0;
+            ad.dislikes = ad.dislikes || 0;
+            ad.complaints = ad.complaints || 0;
+            
+            ads.push(ad);
+        });
+        
+        // Сортируем по дате
+        ads.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        appData.ads = ads;
+        console.log(`✅ Загружено ${ads.length} объявлений в реальном времени`);
+        
+        // Обновляем главную страницу если активна
+        if (document.getElementById('page-ads').classList.contains('active')) {
+            renderAds();
+        }
+        
+        // Обновляем админ-раздел модерации если активен
+        if (appData.currentAdminSection === 'moderation') {
+            updateModerationSection();
+        }
+        
+        // Обновляем статистику
+        updateAdminStats();
+    });
+    
+    appData.adminListenersSetup = true;
+    console.log('✅ Real-time listeners для админа настроены');
+}
+
+// ==================== ИНИЦИАЛИЗАЦИЯ ====================
         
         // Запустить приложение
         checkTelegramAndInit();
