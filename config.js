@@ -9,7 +9,6 @@ const firebaseConfig = {
     appId: "1:35870048384:web:acd6501459aa39180b6665",
     measurementId: "G-99R2PPBNF8"
 };
-
 const appConfig = {
     appName: "Vape Market",
     adminIds: [998579758],
