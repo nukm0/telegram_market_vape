@@ -5,32 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vape Market | Барахолка для вейпов</title>
     
-    <!-- Telegram Web App SDK -->
+    <!-- Внешние зависимости -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
-    <!-- Firebase -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Стили -->
-    <link rel="stylesheet" href="assets/css/style.css">
-    
-    <!-- Манифест PWA -->
+    <!-- Наши файлы -->
+    <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#7C3AED">
 </head>
 <body>
     <!-- Экран блокировки -->
     <div class="blocked-screen" id="blockedScreen" style="display: none;">
-        <div class="blocked-icon">
-            <i class="fas fa-ban"></i>
-        </div>
+        <div class="blocked-icon"><i class="fas fa-ban"></i></div>
         <div class="blocked-title">Аккаунт заблокирован</div>
         <div class="blocked-reason" id="blockedReason">Ваш аккаунт был временно заблокирован администратором</div>
-        
         <div class="blocked-details">
             <div class="blocked-info-item">
                 <span class="blocked-info-label">Причина:</span>
@@ -46,7 +37,6 @@
             </div>
             <div class="blocked-time-left" id="timeLeft">Осталось: --:--:--</div>
         </div>
-        
         <div class="blocked-contact">
             Если вы считаете, что это ошибка, свяжитесь с администратором:
             <a href="https://t.me/nukm0" target="_blank">@nukm0</a>
@@ -56,106 +46,224 @@
     <div class="app-container" id="appContainer">
         <!-- Бейдж администратора -->
         <div class="admin-badge" id="adminBadge">
-            <i class="fas fa-crown"></i>
-            <span>Админ</span>
+            <i class="fas fa-crown"></i><span>Админ</span>
         </div>
 
-        <!-- Шапка -->
+        <!-- Шапка с поиском -->
         <header class="app-header">
             <div class="logo">
                 <i class="fas fa-smoking"></i>
                 <span id="header-title">Vape Market</span>
             </div>
+            <div class="search-container">
+                <input type="text" class="search-input" id="searchInput" placeholder="Поиск товаров...">
+                <button class="search-btn" onclick="performSearch()"><i class="fas fa-search"></i></button>
+            </div>
         </header>
 
         <!-- Основной контент -->
         <main class="main-content" id="main-content">
-            <!-- Страница 1: Объявления (загружается динамически) -->
+            <!-- Страница 1: Объявления -->
             <div class="page active" id="page-ads">
-                <!-- Контент будет загружен динамически -->
+                <!-- Фильтры: Продажа/Покупка/Все -->
+                <div class="deal-type-filter">
+                    <button class="deal-type-btn active" onclick="filterDealType('all')">Все</button>
+                    <button class="deal-type-btn" onclick="filterDealType('sell')">Продажа</button>
+                    <button class="deal-type-btn" onclick="filterDealType('buy')">Покупка</button>
+                </div>
+
+                <div class="add-ad-section">
+                    <div class="add-ad-header">
+                        <div class="add-ad-title">Разместить объявление</div>
+                        <button class="toggle-form-btn" onclick="toggleAddForm()" id="addAdButton">
+                            <i class="fas fa-plus-circle"></i><span id="toggle-btn-text">Добавить</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Форма добавления объявления -->
+                    <div class="add-ad-form" id="addAdForm">
+                        <input type="file" id="photoInput" class="hidden-file-input" accept="image/*" multiple onchange="handlePhotoUpload(event)">
+                        
+                        <div class="photo-upload-section">
+                            <div class="uploaded-photos-container" id="uploaded-photos-container"></div>
+                            <button class="upload-btn" onclick="openPhotoPicker()">
+                                <i class="fas fa-images"></i> Загрузить фотографии
+                            </button>
+                            <div class="upload-info">
+                                Можно загрузить до 3 фотографий. Выбрано: <span id="photo-count">0</span>/3
+                            </div>
+                        </div>
+
+                        <!-- Тип сделки -->
+                        <div class="form-row">
+                            <select class="form-input" id="adDealType" style="width: 48%;">
+                                <option value="sell">Продаю</option>
+                                <option value="buy">Покупаю</option>
+                            </select>
+                            <select class="form-input" id="adCategory" style="width: 48%;">
+                                <option value="">Категория</option>
+                                <option value="liquids">Жидкости</option>
+                                <option value="disposable">Одноразовые</option>
+                                <option value="pod">Под-системы</option>
+                                <option value="consumables">Расходники</option>
+                            </select>
+                        </div>
+
+                        <input type="text" class="form-input" placeholder="Название товара" id="adTitle">
+                        <input type="number" class="form-input" placeholder="Цена (₽)" id="adPrice">
+                        <textarea class="form-input" placeholder="Описание товара" id="adDescription" rows="3"></textarea>
+                        
+                        <div class="form-buttons">
+                            <button class="publish-btn" onclick="publishAd()">
+                                <i class="fas fa-paper-plane"></i> Опубликовать
+                            </button>
+                            <button class="cancel-btn" onclick="toggleAddForm()">
+                                <i class="fas fa-times"></i> Отмена
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Категории -->
+                <div class="categories">
+                    <button class="category-btn active" onclick="filterCategory('all')">Все</button>
+                    <button class="category-btn" onclick="filterCategory('liquids')">Жидкости</button>
+                    <button class="category-btn" onclick="filterCategory('disposable')">Одноразовые</button>
+                    <button class="category-btn" onclick="filterCategory('pod')">Под-системы</button>
+                    <button class="category-btn" onclick="filterCategory('consumables')">Расходники</button>
+                </div>
+
+                <!-- Результаты поиска -->
+                <div class="search-results-header" id="searchResultsHeader" style="display: none;">
+                    <h3>Результаты поиска: <span id="searchQueryText"></span></h3>
+                    <button class="clear-search-btn" onclick="clearSearch()">Очистить поиск</button>
+                </div>
+
+                <!-- Контейнер объявлений -->
+                <div id="ads-container"></div>
+                
+                <!-- Статус синхронизации -->
+                <div class="sync-status" id="sync-status">
+                    <div class="sync-indicator"></div>
+                    <span id="sync-text">Синхронизировано с Firebase</span>
+                </div>
             </div>
 
             <!-- Страница 2: Личный кабинет -->
             <div class="page" id="page-profile">
-                <!-- Загружается из pages/profile.html -->
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <div class="profile-avatar" id="profileAvatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="profile-info">
+                            <h2 id="profileName">Загрузка...</h2>
+                            <p id="profileUsername">@username</p>
+                            <div class="seller-stat stat-rating">
+                                <i class="fas fa-star"></i>
+                                <span id="myRating">0.0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-stats">
+                        <div class="profile-stat">
+                            <div class="stat-number" id="myAdsCount">0</div>
+                            <div class="stat-label">Объявления</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="stat-number" id="myLikesCount">0</div>
+                            <div class="stat-label">Лайки</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="stat-number" id="myDislikesCount">0</div>
+                            <div class="stat-label">Дизлайки</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="stat-number" id="myComplaintsCount">0</div>
+                            <div class="stat-label">Жалобы</div>
+                        </div>
+                    </div>
+
+                    <!-- Вкладки -->
+                    <div class="profile-tabs">
+                        <div class="profile-tab active" onclick="switchProfileTab('my-ads')">Мои объявления</div>
+                        <div class="profile-tab" onclick="switchProfileTab('history')">История</div>
+                        <div class="profile-tab" onclick="switchProfileTab('complaints')">Мои жалобы</div>
+                    </div>
+
+                    <!-- Мои объявления -->
+                    <div class="profile-tab-content active" id="my-ads-tab">
+                        <div class="my-ads-list" id="myAdsList"></div>
+                    </div>
+
+                    <!-- История -->
+                    <div class="profile-tab-content" id="history-tab">
+                        <div class="history-list" id="historyList"></div>
+                        <button class="cancel-btn" onclick="clearHistory()" style="width: 100%; margin-top: 10px;">
+                            <i class="fas fa-trash"></i> Очистить историю
+                        </button>
+                    </div>
+
+                    <!-- Мои жалобы -->
+                    <div class="profile-tab-content" id="complaints-tab">
+                        <div class="my-complaints-list" id="myComplaintsList"></div>
+                    </div>
+                </div>
             </div>
 
             <!-- Страница 3: FAQ -->
             <div class="page" id="page-faq">
-                <!-- Загружается из pages/faq.html -->
+                <!-- ... код FAQ страницы ... -->
             </div>
 
             <!-- Страница 4: Админ-панель -->
             <div class="page" id="page-admin">
-                <!-- Загружается из pages/admin.html -->
+                <!-- ... код админ-панели ... -->
             </div>
         </main>
 
-        <!-- Нижнее меню навигации -->
+        <!-- Нижнее меню -->
         <nav class="bottom-nav">
             <button class="nav-item active" data-page="ads" onclick="switchPage('ads')">
-                <div class="nav-icon">
-                    <i class="fas fa-box-open"></i>
-                </div>
+                <div class="nav-icon"><i class="fas fa-box-open"></i></div>
                 <span class="nav-label">Объявления</span>
             </button>
-            
             <button class="nav-item" data-page="profile" onclick="switchPage('profile')">
-                <div class="nav-icon">
-                    <i class="fas fa-user-circle"></i>
-                </div>
+                <div class="nav-icon"><i class="fas fa-user-circle"></i></div>
                 <span class="nav-label">Кабинет</span>
             </button>
-            
             <button class="nav-item" data-page="faq" onclick="switchPage('faq')">
-                <div class="nav-icon">
-                    <i class="fas fa-question-circle"></i>
-                </div>
+                <div class="nav-icon"><i class="fas fa-question-circle"></i></div>
                 <span class="nav-label">FAQ</span>
             </button>
-            
             <button class="nav-item" data-page="admin" onclick="switchPage('admin')" id="admin-nav-item" style="display: none;">
-                <div class="nav-icon">
-                    <i class="fas fa-crown"></i>
-                </div>
+                <div class="nav-icon"><i class="fas fa-crown"></i></div>
                 <span class="nav-label">Админ</span>
             </button>
         </nav>
 
-        <!-- Модальное окно для просмотра фото -->
+        <!-- Модальное окно для фото -->
         <div class="photo-modal" id="photoModal">
-            <button class="photo-modal-close" onclick="closePhotoModal()">
-                <i class="fas fa-times"></i>
-            </button>
-            <div class="photo-modal-nav">
-                <button class="photo-modal-nav-btn" onclick="prevPhoto()">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <button class="photo-modal-nav-btn" onclick="nextPhoto()">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-            </div>
-            <img class="photo-modal-img" id="modalPhoto" src="" alt="Просмотр фото">
-            <div class="photo-modal-counter" id="photoCounter">1 / 1</div>
+            <!-- ... код модального окна ... -->
+        </div>
+
+        <!-- Модальное окно жалобы -->
+        <div class="complaint-modal" id="complaintModal">
+            <!-- ... код модального окна жалобы ... -->
         </div>
 
         <!-- Уведомление -->
         <div class="notification" id="notification"></div>
     </div>
 
-    <!-- Подключение скриптов -->
-    <script src="assets/js/config.js"></script>
-    <script src="assets/js/utils.js"></script>
-    <script src="assets/js/components.js"></script>
-    <script src="api/server-api.js"></script>
-    <script src="assets/js/app.js"></script>
-    
-    <!-- Service Worker для PWA -->
+    <!-- Скрипты -->
+    <script src="config.js"></script>
+    <script src="app.js"></script>
     <script>
+        // Service Worker регистрация
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('service-worker.js')
-                .then(reg => console.log('Service Worker зарегистрирован:', reg))
-                .catch(err => console.log('Ошибка регистрации Service Worker:', err));
+            navigator.serviceWorker.register('service-worker.js');
         }
     </script>
 </body>
