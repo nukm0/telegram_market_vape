@@ -3,60 +3,402 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vape Market</title>
+    <title>Vape Market - Telegram Mini App</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Firebase COMPAT версия (глобальная) -->
+    
+    <!-- Мок Telegram для разработки в браузере -->
+    <script>
+        // Если запускаем в браузере, создаем мок Telegram
+        if (window.location.href.indexOf('file://') !== -1 || 
+            window.location.hostname === 'localhost' || 
+            window.location.hostname === '127.0.0.1' ||
+            typeof Telegram === 'undefined') {
+            
+            console.log('🔧 Режим разработки: создаем мок Telegram Web App');
+            
+            window.Telegram = {
+                WebApp: {
+                    // Методы интерфейса
+                    expand: function() {
+                        console.log('📱 Telegram WebApp: expand()');
+                    },
+                    setHeaderColor: function(color) {
+                        console.log(`🎨 Telegram WebApp: setHeaderColor("${color}")`);
+                    },
+                    setBackgroundColor: function(color) {
+                        console.log(`🎨 Telegram WebApp: setBackgroundColor("${color}")`);
+                    },
+                    enableClosingConfirmation: function() {
+                        console.log('❌ Telegram WebApp: enableClosingConfirmation()');
+                    },
+                    openTelegramLink: function(url) {
+                        console.log(`🔗 Telegram WebApp: openTelegramLink("${url}")`);
+                        window.open(url, '_blank');
+                    },
+                    
+                    // Данные пользователя (ваш Telegram ID 998579758)
+                    initDataUnsafe: {
+                        user: {
+                            id: 998579758,
+                            first_name: "Иван",
+                            last_name: "Иванов",
+                            username: "test_user_998579758",
+                            photo_url: "",
+                            language_code: "ru"
+                        }
+                    }
+                }
+            };
+            
+            console.log('✅ Мок Telegram Web App создан для разработки');
+        }
+    </script>
+    
+    <!-- Firebase CDN (версия 8.10.0 - совместимая) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    
     <!-- Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
+    
+    <style>
+        /* Дополнительные inline стили для быстрой загрузки */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        /* Лоадер по умолчанию (скрыт) */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #6B21A8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Навигация */
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .nav-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: linear-gradient(135deg, #6B21A8 0%, #9333EA 100%);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+        
+        .nav-buttons button:hover {
+            transform: translateY(-2px);
+        }
+    </style>
 </head>
 <body>
-    <!-- Структура приложения -->
-    <div id="loader" class="loading" style="display: none;">Загрузка...</div>
-    
+    <!-- Лоадер -->
+    <div id="loader">
+        <div class="spinner"></div>
+        <div style="color: #6B21A8; font-weight: 500;">Загрузка Vape Market...</div>
+    </div>
+
     <!-- Навигация -->
     <div class="nav-buttons">
         <button id="navMain">🏠 Главная</button>
         <button id="navProfile">👤 Профиль</button>
         <button id="navFAQ">❓ Помощь</button>
     </div>
-    
+
     <!-- Основные экраны -->
-    <div id="mainScreen">
-        <h1>Vape Market</h1>
-        <!-- Фильтры -->
-        <div class="filters">
-            <button class="filter-btn" data-category="all">Все</button>
-            <button class="filter-btn" data-category="Жидкости">Жидкость</button>
-            <button class="filter-btn" data-category="Одноразовые">Одноразово</button>
-            <button class="filter-btn" data-category="Под-системы">Под-системы</button>
-            <button class="filter-btn" data-category="Расходники">Расходники</button>
+    <div class="container">
+        
+        <!-- Главный экран (отображается по умолчанию) -->
+        <div id="mainScreen">
+            <h1>Vape Market</h1>
+            
+            <!-- Фильтры по категориям -->
+            <div class="filters">
+                <button class="filter-btn" data-category="all">Все</button>
+                <button class="filter-btn" data-category="Жидкости">Жидкость</button>
+                <button class="filter-btn" data-category="Одноразовые">Одноразово</button>
+                <button class="filter-btn" data-category="Под-системы">Под-системы</button>
+                <button class="filter-btn" data-category="Расходники">Расходники</button>
+            </div>
+            
+            <!-- Кнопка создания объявления -->
+            <button id="createAdBtn" class="create-ad-btn">
+                + Новое объявление
+            </button>
+            
+            <!-- Контейнер для объявлений -->
+            <div id="adsContainer">
+                <!-- Объявления будут загружаться сюда -->
+                <div style="text-align: center; padding: 40px 20px; color: #666;">
+                    <div class="loading" style="display: inline-block;">
+                        <div style="
+                            width: 40px;
+                            height: 40px;
+                            border: 4px solid #f3f4f6;
+                            border-top-color: #6B21A8;
+                            border-radius: 50%;
+                            animation: spin 1s linear infinite;
+                            margin: 0 auto 15px;
+                        "></div>
+                        <p>Загрузка объявлений...</p>
+                    </div>
+                </div>
+            </div>
         </div>
-        <!-- Кнопка создания -->
-        <button id="createAdBtn" class="btn-create">+ Новое объявление</button>
-        <!-- Контейнер объявлений -->
-        <div id="adsContainer"></div>
+
+        <!-- Экран профиля (скрыт по умолчанию) -->
+        <div id="profileScreen" style="display: none;">
+            <h1>Мой профиль</h1>
+            <div id="profileContent">
+                <!-- Контент профиля будет загружен сюда -->
+                <div style="text-align: center; padding: 40px 20px; color: #666;">
+                    <div class="loading" style="display: inline-block;">
+                        <div style="
+                            width: 40px;
+                            height: 40px;
+                            border: 4px solid #f3f4f6;
+                            border-top-color: #6B21A8;
+                            border-radius: 50%;
+                            animation: spin 1s linear infinite;
+                            margin: 0 auto 15px;
+                        "></div>
+                        <p>Загрузка профиля...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Экран FAQ/Помощь (скрыт по умолчанию) -->
+        <div id="faqScreen" style="display: none;">
+            <h1>Помощь и FAQ</h1>
+            <div id="faqContent">
+                <!-- Контент FAQ будет загружен сюда -->
+                <div style="text-align: center; padding: 40px 20px; color: #666;">
+                    <div class="loading" style="display: inline-block;">
+                        <div style="
+                            width: 40px;
+                            height: 40px;
+                            border: 4px solid #f3f4f6;
+                            border-top-color: #6B21A8;
+                            border-radius: 50%;
+                            animation: spin 1s linear infinite;
+                            margin: 0 auto 15px;
+                        "></div>
+                        <p>Загрузка информации...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Админ-панель (скрыта по умолчанию) -->
+        <div id="adminScreen" style="display: none;">
+            <h1>Админ-панель</h1>
+            <div id="adminContent">
+                <!-- Контент админ-панели будет загружен сюда -->
+                <div style="text-align: center; padding: 40px 20px; color: #666;">
+                    <p>Доступ запрещен</p>
+                    <button onclick="showMainScreen()" style="
+                        padding: 10px 20px;
+                        background: #6B21A8;
+                        color: white;
+                        border: none;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        margin-top: 20px;
+                    ">
+                        Вернуться на главную
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </div>
-    
-    <div id="profileScreen" style="display: none;">
-        <h1>Мой профиль</h1>
-        <div id="profileContent"></div>
-    </div>
-    
-    <div id="faqScreen" style="display: none;">
-        <h1>Помощь и FAQ</h1>
-        <div id="faqContent"></div>
-    </div>
-    
-    <div id="adminScreen" style="display: none;">
-        <h1>Админ-панель</h1>
-        <div id="adminContent"></div>
-    </div>
-    
-    <!-- Подключение скриптов -->
+
+    <!-- Дополнительный стиль для кнопки создания объявления -->
+    <style>
+        .create-ad-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #6B21A8 0%, #9333EA 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 20px 0 30px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .create-ad-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(107, 33, 168, 0.3);
+        }
+        
+        .create-ad-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* Стили для фильтров */
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .filter-btn {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #6B21A8;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        
+        .filter-btn:hover {
+            background: #f3e8ff;
+            border-color: #6B21A8;
+            transform: translateY(-2px);
+        }
+        
+        .filter-btn.active {
+            background: #6B21A8;
+            color: white;
+            border-color: #6B21A8;
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .nav-buttons {
+                flex-direction: column;
+            }
+            
+            .filters {
+                overflow-x: auto;
+                padding-bottom: 10px;
+                justify-content: flex-start;
+            }
+            
+            .filter-btn {
+                white-space: nowrap;
+            }
+            
+            .container {
+                padding: 0 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 24px;
+                margin: 15px 0 20px;
+            }
+            
+            .nav-buttons button {
+                padding: 10px;
+                font-size: 13px;
+            }
+            
+            .create-ad-btn {
+                padding: 14px;
+                font-size: 15px;
+            }
+        }
+    </style>
+
+    <!-- Подключение JavaScript файлов -->
     <script src="config.js"></script>
     <script src="app.js"></script>
+    
+    <!-- Service Worker для PWA -->
+    <script>
+        // Регистрация Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('service-worker.js').then(
+                    function(registration) {
+                        console.log('✅ ServiceWorker зарегистрирован:', registration.scope);
+                    },
+                    function(err) {
+                        console.log('❌ Ошибка регистрации ServiceWorker:', err);
+                    }
+                );
+            });
+        }
+        
+        // Глобальные функции для отладки
+        window.showLoader = function(show) {
+            document.getElementById('loader').style.display = show ? 'flex' : 'none';
+        };
+        
+        // Показать информацию о версии
+        console.log('🚀 Vape Market App v1.0');
+        console.log('📅 Загружен: ' + new Date().toLocaleString());
+        console.log('👤 Тестовый пользователь: 998579758');
+    </script>
 </body>
 </html>
