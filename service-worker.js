@@ -1,103 +1,96 @@
 const CACHE_NAME = 'vape-market-v1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/assets/css/style.css',
-  '/assets/js/app.js',
-  '/assets/js/config.js',
-  '/assets/js/utils.js',
-  '/assets/js/components.js',
-  '/api/server-api.js',
-  '/pages/profile.html',
-  '/pages/faq.html',
-  '/pages/admin.html',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-  'https://telegram.org/js/telegram-web-app.js',
-  'https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js',
-  'https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js'
+    '/',
+    '/index.html',
+    '/style.css',
+    '/app.js',
+    '/config.js',
+    '/manifest.json',
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+    'https://telegram.org/js/telegram-web-app.js'
 ];
 
 // Установка Service Worker
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Кэширование файлов...');
-        return cache.addAll(urlsToCache);
-      })
-  );
-});
-
-// Активация и очистка старых кэшей
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Удаление старого кэша:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
-});
-
-// Стратегия кэширования: Network First, Fallback to Cache
-self.addEventListener('fetch', event => {
-  // Пропускаем запросы к Firebase
-  if (event.request.url.includes('firebaseio.com') || 
-      event.request.url.includes('firebasestorage.googleapis.com')) {
-    return;
-  }
-  
-  event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        // Клонируем ответ для кэширования
-        const responseToCache = response.clone();
-        
+    event.waitUntil(
         caches.open(CACHE_NAME)
-          .then(cache => {
-            cache.put(event.request, responseToCache);
-          });
-          
-        return response;
-      })
-      .catch(() => {
-        // Если нет сети, используем кэш
-        return caches.match(event.request)
-          .then(response => {
-            if (response) {
-              return response;
-            }
-            
-            // Для страниц возвращаем index.html
-            if (event.request.mode === 'navigate') {
-              return caches.match('/index.html');
-            }
-            
-            return new Response('Нет соединения с интернетом', {
-              status: 503,
-              statusText: 'Service Unavailable',
-              headers: new Headers({
-                'Content-Type': 'text/plain'
-              })
-            });
-          });
-      })
-  );
+            .then(cache => cache.addAll(urlsToCache))
+            .then(() => self.skipWaiting())
+    );
+});
+
+// Активация и очистка старых кешей
+self.addEventListener('activate', event => {
+    event.waitUntil(
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => {
+                    if (cacheName !== CACHE_NAME) {
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        }).then(() => self.clients.claim())
+    );
+});
+
+// Перехват запросов
+self.addEventListener('fetch', event => {
+    // Игнорируем запросы к Firebase
+    if (event.request.url.includes('firebaseio.com')) {
+        return;
+    }
+    
+    event.respondWith(
+        caches.match(event.request)
+            .then(response => {
+                if (response) {
+                    return response;
+                }
+                
+                return fetch(event.request).then(response => {
+                    if (!response || response.status !== 200 || response.type !== 'basic') {
+                        return response;
+                    }
+                    
+                    const responseToCache = response.clone();
+                    caches.open(CACHE_NAME)
+                        .then(cache => {
+                            cache.put(event.request, responseToCache);
+                        });
+                    
+                    return response;
+                });
+            })
+    );
+});
+
+// Фоновые задачи
+self.addEventListener('sync', event => {
+    if (event.tag === 'sync-ads') {
+        event.waitUntil(syncAds());
+    }
 });
 
 // Фоновая синхронизация
-self.addEventListener('sync', event => {
-  if (event.tag === 'sync-ads') {
-    event.waitUntil(syncAds());
-  }
-});
-
 async function syncAds() {
-  console.log('Фоновая синхронизация объявлений...');
-  // Здесь можно добавить логику фоновой синхронизации
+    try {
+        // Здесь можно добавить логику синхронизации
+        const clients = await self.clients.matchAll();
+        clients.forEach(client => {
+            client.postMessage({
+                type: 'SYNC_COMPLETE',
+                timestamp: new Date().toISOString()
+            });
+        });
+    } catch (error) {
+        console.error('Sync error:', error);
+    }
 }
+
+// Прием сообщений от основного скрипта
+self.addEventListener('message', event => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
+});
