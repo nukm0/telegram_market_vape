@@ -4473,36 +4473,6 @@ function selectComplaintType(typeId) {
     // Добавляем активный класс к выбранной кнопке
     event.target.closest('.complaint-type-btn').classList.add('active');
 }
-        // Закрыть модальное окно для жалобы
-        function closeComplaintModal() {
-            document.getElementById('complaintModal').classList.remove('active');
-            
-            // Сбрасываем данные жалобы
-            complaintData.selectedType = null;
-            complaintData.description = '';
-            complaintData.attachedPhotos = [];
-            
-            // Очищаем прикрепленные фото
-            const container = document.getElementById('complaint-attached-photos');
-            if (container) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 10px; color: #A78BFA; font-size: 12px; width: 100%;">
-                        Фото не прикреплены
-                    </div>
-                `;
-            }
-        }
-        
-        // Выбрать тип жалобы
-        function selectComplaintType(typeId) {
-            complaintData.selectedType = typeId;
-            
-            // Обновляем UI
-            document.querySelectorAll('.complaint-type-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.closest('.complaint-type-btn').classList.add('active');
-        }
         
         // Прикрепить фото к жалобе
         function attachComplaintPhoto() {
