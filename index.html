@@ -2909,7 +2909,8 @@
             },
             
             // Обновить рейтинг
-            updateRating: async function(adId, raterId, type) {
+            // Обновить рейтинг
+updateRating: async function(adId, raterId, type) {
     try {
         // 1. Сохраняем оценку для КОНКРЕТНОГО объявления (adId вместо sellerId)
         await database.ref(`ratings/${adId}/${raterId}`).set(type);
@@ -5202,7 +5203,8 @@
         // ==================== РЕЙТИНГИ ====================
         
         // Оценить объявление
-        async function rateAd(adId, sellerId, type) {
+        // Оценить объявление
+async function rateAd(adId, sellerId, type) {
     // Проверяем блокировку перед действием
     if (!checkBlockBeforeAction('rateAd')) return;
     
@@ -5258,7 +5260,8 @@
 }
         
         // Обновить карточку объявления с новым рейтингом
-        function updateAdCardRating(adId) {
+        // Обновить карточку объявления с новым рейтингом
+function updateAdCardRating(adId) {
     const ad = appData.ads.find(a => a.id === adId);
     if (!ad) return;
     
@@ -5540,43 +5543,44 @@
         // ==================== КОНТАКТЫ ====================
         
         // Связаться с продавцом
-        function contactSeller(adId) {
-            // Проверяем блокировку перед действием
-            if (!checkBlockBeforeAction('contactSeller')) return;
-            
-            const ad = appData.ads.find(a => a.id === adId);
-            if (!ad) {
-                showNotification('Объявление не найдено', 'error');
-                return;
-            }
-            
-            // Проверяем, не пытается ли пользователь написать сам себе
-            if (ad.sellerId === appData.currentUserId) {
-                showNotification('Нельзя написать самому себе', 'warning');
-                return;
-            }
-            
-            // Формируем сообщение
-            const message = `Привет! Я заинтересовался твоим объявлением "${ad.title}" (${ad.price} ₽) на Vape Market. Можно подробнее?`;
-            
-            // Открываем Telegram
-            const username = ad.sellerUsername;
-            if (username) {
-                window.open(`https://t.me/${username}?text=${encodeURIComponent(message)}`, '_blank');
-            } else {
-                showNotification('У продавца нет username для связи', 'warning');
-            }
-            
-            // Добавляем в историю
-            FirebaseMarketServer.addToHistory(appData.currentUserId, {
-                type: 'contact',
-                action: 'Связался с продавцом',
-                targetId: adId,
-                targetTitle: ad.title,
-                sellerName: ad.sellerName,
-                details: `Вы связались с продавцом по объявлению "${ad.title}"`
-            });
-        }
+        // Связаться с продавцом
+function contactSeller(adId) {
+    // Проверяем блокировку перед действием
+    if (!checkBlockBeforeAction('contactSeller')) return;
+    
+    const ad = appData.ads.find(a => a.id === adId);
+    if (!ad) {
+        showNotification('Объявление не найдено', 'error');
+        return;
+    }
+    
+    // ВАЖНОЕ ИСПРАВЛЕНИЕ: Проверяем, не пытается ли пользователь написать сам себе
+    if (ad.sellerId === appData.currentUserId) {
+        showNotification('Нельзя написать самому себе', 'warning');
+        return;
+    }
+    
+    // Формируем сообщение
+    const message = `Привет! Я заинтересовался твоим объявлением "${ad.title}" (${ad.price} ₽) на Vape Market. Можно подробнее?`;
+    
+    // Открываем Telegram
+    const username = ad.sellerUsername;
+    if (username) {
+        window.open(`https://t.me/${username}?text=${encodeURIComponent(message)}`, '_blank');
+    } else {
+        showNotification('У продавца нет username для связи', 'warning');
+    }
+    
+    // Добавляем в историю
+    FirebaseMarketServer.addToHistory(appData.currentUserId, {
+        type: 'contact',
+        action: 'Связался с продавцом',
+        targetId: adId,
+        targetTitle: ad.title,
+        sellerName: ad.sellerName,
+        details: `Вы связались с продавцом по объявлению "${ad.title}"`
+    });
+}
         
         // ==================== ЛИЧНЫЙ КАБИНЕТ ====================
         
