@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <!-- Навигация -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
@@ -17,15 +18,15 @@
             <div class="nav-links">
                 <a href="#" class="nav-link active" data-page="feed">
                     <i class="fas fa-home"></i>
-                    <span>Лента</span>
+                    <span>Объявления</span>
                 </a>
                 <a href="#" class="nav-link" data-page="profile">
                     <i class="fas fa-user"></i>
-                    <span>Профиль</span>
+                    <span>Кабинет</span>
                 </a>
                 <a href="#" class="nav-link" data-page="faq">
                     <i class="fas fa-question-circle"></i>
-                    <span>FAQ</span>
+                    <span>Помощь</span>
                 </a>
                 <a href="#" class="nav-link" data-page="admin" id="admin-link" style="display: none;">
                     <i class="fas fa-shield-alt"></i>
@@ -35,11 +36,12 @@
         </div>
     </nav>
 
+    <!-- Основной контент -->
     <main class="main-content">
         <!-- Страница Ленты -->
         <div id="feed-page" class="page active">
             <div class="page-header">
-                <h1>Объявления</h1>
+                <h1>Vape Market</h1>
                 <button id="create-ad-btn" class="btn-primary">
                     <i class="fas fa-plus"></i> Разместить объявление
                 </button>
@@ -47,16 +49,12 @@
             
             <div class="filters">
                 <select id="category-filter" class="filter-select">
-                    <option value="all">Все категории</option>
-                    <option value="Жидкости">Жидкости</option>
-                    <option value="Одноразовые устройства">Одноразовые устройства</option>
+                    <option value="all">Все</option>
+                    <option value="Жидкости">Жидкость</option>
+                    <option value="Одноразовые">Одноразово</option>
                     <option value="Под-системы">Под-системы</option>
                     <option value="Расходники">Расходники</option>
                 </select>
-                
-                <button id="sort-btn" class="btn-secondary">
-                    <i class="fas fa-sort-amount-down"></i> Сначала новые
-                </button>
             </div>
             
             <div id="ads-container" class="ads-grid"></div>
@@ -65,18 +63,12 @@
                 <i class="fas fa-spinner fa-spin"></i>
                 <span>Загрузка...</span>
             </div>
-            
-            <div id="no-ads" class="no-ads" style="display: none;">
-                <i class="fas fa-box-open"></i>
-                <h3>Объявлений пока нет</h3>
-                <p>Будьте первым, кто разместит объявление!</p>
-            </div>
         </div>
 
         <!-- Страница Профиля -->
         <div id="profile-page" class="page">
             <div class="page-header">
-                <h1>Мой профиль</h1>
+                <h1>Личный кабинет</h1>
             </div>
             <div id="profile-info" class="profile-info"></div>
         </div>
@@ -84,37 +76,26 @@
         <!-- Страница FAQ -->
         <div id="faq-page" class="page">
             <div class="page-header">
-                <h1>FAQ & Помощь</h1>
+                <h1>Помощь</h1>
             </div>
-            <div class="faq-content">
-                <h3>Как пользоваться приложением?</h3>
-                <p>1. Нажмите "Разместить объявление" чтобы добавить товар</p>
-                <p>2. Выберите категорию и заполните информацию</p>
-                <p>3. Другие пользователи увидят ваше объявление</p>
-                
-                <h3>Правила:</h3>
-                <ul>
-                    <li>Только товары для вейпинга</li>
-                    <li>Реальные фотографии</li>
-                    <li>Честные описания</li>
-                    <li>Уважительное общение</li>
-                </ul>
-            </div>
+            <div id="faq-content" class="faq-content"></div>
         </div>
 
         <!-- Страница Админа -->
         <div id="admin-page" class="page">
-            <!-- Контент загружается динамически -->
+            <div class="page-header">
+                <h1>Админ-панель</h1>
+            </div>
+            <div id="admin-content"></div>
         </div>
     </main>
 
-    <!-- Уведомления -->
-    <div id="notification" class="notification"></div>
-
-    <!-- Подключаем только один файл JS -->
+    <!-- Подключаем Firebase и Telegram SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- Основной файл приложения -->
     <script src="app.js"></script>
 </body>
 </html>
