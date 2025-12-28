@@ -4,23 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vape Market | Площадка для вейперов</title>
-    
+
     <!-- Стили -->
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    
+
     <!-- Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
+
     <!-- PWA -->
     <link rel="manifest" href="manifest.json">
-    
+
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💨</text></svg>">
 
@@ -33,21 +33,21 @@
             --primary: #C084FC;
             --primary-dark: #A855F7;
             --primary-darker: #9333EA;
-            
+
             /* ГРАДИЕНТЫ */
             --gradient-bg: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 50%, #DDD6FE 100%);
             --gradient-card: linear-gradient(145deg, #FFFFFF 0%, #FAF5FF 100%);
             --gradient-button: linear-gradient(135deg, #A855F7 0%, #C084FC 100%);
             --gradient-button-hover: linear-gradient(135deg, #9333EA 0%, #A855F7 100%);
             --gradient-accent: linear-gradient(90deg, #C084FC, #A855F7, #9333EA);
-            
+
             /* ТЕНИ */
             --shadow-light: 0 2px 15px rgba(168, 85, 247, 0.08);
             --shadow-medium: 0 5px 25px rgba(168, 85, 247, 0.12);
             --shadow-heavy: 0 10px 40px rgba(168, 85, 247, 0.18);
             --shadow-text: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
-        
+
         body {
             background: var(--gradient-bg);
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -55,14 +55,14 @@
             min-height: 100vh;
             overflow-x: hidden;
         }
-        
+
         /* КОНТЕЙНЕР */
         .container {
             max-width: 100%;
             margin: 0 auto;
-            padding: 20px 16px 100px;
+            padding: 20px 16px 80px; /* Уменьшил отступ снизу для меньшего меню */
         }
-        
+
         /* ЛОАДЕР */
         #loader {
             position: fixed;
@@ -78,7 +78,7 @@
             flex-direction: column;
             gap: 25px;
         }
-        
+
         .loader-spinner {
             width: 70px;
             height: 70px;
@@ -87,39 +87,277 @@
             border-radius: 50%;
             animation: spin 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
         }
-        
+
         .loader-text {
             color: var(--primary-darker);
             font-size: 1.2rem;
             font-weight: 600;
             letter-spacing: 0.5px;
         }
-        
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        
-        /* ПОЛЬЗОВАТЕЛЬСКИЕ СТИЛИ ДЛЯ АНИМАЦИЙ */
-        @keyframes slideInFromBottom {
-            0% { transform: translateY(30px); opacity: 0; }
-            100% { transform: translateY(0); opacity: 1; }
+
+        /* КРУГЛЫЕ КАТЕГОРИИ С КРУГОВЫМ ЛИСТАНИЕМ */
+        .categories-section {
+            margin: 25px 0 30px;
+            position: relative;
+            overflow: hidden;
         }
-        
+
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 0 8px;
+        }
+
+        .section-title h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary-darker);
+            margin: 0;
+        }
+
+        .scroll-hint {
+            color: var(--primary);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            animation: pulse 2s infinite;
+        }
+
+        .scroll-hint i {
+            font-size: 0.8rem;
+        }
+
+        /* Контейнер для кругового скролла */
+        .categories-scroll-container {
+            position: relative;
+            padding: 10px 0 25px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none; /* Firefox */
+        }
+
+        .categories-scroll-container::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Edge */
+        }
+
+        /* Трек с категориями для кругового листания */
+        .categories-track {
+            display: flex;
+            gap: 15px;
+            padding: 0 20px;
+            width: max-content;
+            animation: scrollLoop 30s linear infinite;
+        }
+
+        /* Анимация кругового листания */
+        @keyframes scrollLoop {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        /* Пауза анимации при наведении */
+        .categories-track:hover {
+            animation-play-state: paused;
+        }
+
+        /* КРУГЛЫЕ КНОПКИ КАТЕГОРИЙ */
+        .category-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 85px;
+            height: 85px;
+            border-radius: 50%;
+            background: var(--gradient-button);
+            box-shadow: var(--shadow-medium);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        /* Эффект переливания светом при наведении */
+        .category-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.3),
+                transparent
+            );
+            transition: left 0.7s ease;
+        }
+
+        .category-item:hover::before {
+            left: 100%;
+        }
+
+        .category-item:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: var(--shadow-heavy);
+            background: var(--gradient-button-hover);
+        }
+
+        .category-item.active {
+            background: var(--gradient-accent);
+            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.3), var(--shadow-heavy);
+        }
+
+        .category-icon {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            color: white;
+            text-shadow: var(--shadow-text);
+        }
+
+        .category-name {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: white;
+            text-align: center;
+            max-width: 70px;
+            line-height: 1.1;
+            text-shadow: var(--shadow-text);
+        }
+
+        /* УБИРАЕМ РАЗДЕЛ "РАЗМЕСТИТЬ ОБЪЯВЛЕНИЕ" */
+        .create-ad-section {
+            display: none;
+        }
+
+        /* ОБЪЯВЛЕНИЯ */
+        .ads-section {
+            margin-top: 10px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 0 8px;
+        }
+
+        .section-header h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary-darker);
+            margin: 0;
+        }
+
+        .sort-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .sort-btn {
+            background: white;
+            border: 1px solid var(--primary-light);
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--primary-dark);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .sort-btn:hover {
+            background: var(--primary-light);
+            border-color: var(--primary);
+        }
+
+        .sort-btn.active {
+            background: var(--gradient-button);
+            color: white;
+            border-color: transparent;
+        }
+
+        .ads-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 0 8px;
+        }
+
+        /* УМЕНЬШЕННОЕ НИЖНЕЕ МЕНЮ */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            border-top: 1px solid var(--primary-light);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px 0 12px;
+            z-index: 1000;
+            box-shadow: 0 -2px 15px rgba(168, 85, 247, 0.1);
+            height: 60px; /* Уменьшил с 80px до 60px */
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #666;
+            transition: all 0.2s ease;
+            flex: 1;
+            padding: 8px 0;
+        }
+
+        .nav-item:hover {
+            color: var(--primary-dark);
+        }
+
+        .nav-item.active {
+            color: var(--primary-darker);
+        }
+
+        .nav-icon {
+            font-size: 1.2rem; /* Уменьшил иконки */
+            margin-bottom: 4px;
+        }
+
+        .nav-label {
+            font-size: 0.7rem; /* Уменьшил текст */
+            font-weight: 500;
+        }
+
+        /* Другие анимации */
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
         }
     </style>
 </head>
@@ -150,71 +388,78 @@
                 </div>
             </header>
 
-            <!-- ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ КАТЕГОРИЙ -->
+            <!-- КРУГЛЫЕ КАТЕГОРИИ С КРУГОВЫМ ЛИСТАНИЕМ -->
             <section class="categories-section">
                 <div class="section-title">
                     <h2>Категории</h2>
                     <div class="scroll-hint">
-                        <i class="fas fa-chevron-right"></i>
+                        <i class="fas fa-chevron-right"></i> Листайте
                     </div>
                 </div>
-                
+
                 <div class="categories-scroll-container">
                     <div class="categories-track" id="categoriesTrack">
-                        <!-- Категории будут добавляться через JS -->
+                        <!-- Основные категории -->
                         <div class="category-item active" data-category="all">
                             <div class="category-icon">🔥</div>
                             <div class="category-name">Все</div>
                         </div>
-                        
+
                         <div class="category-item" data-category="liquids">
                             <div class="category-icon">🔋</div>
                             <div class="category-name">Под-системы</div>
                         </div>
-                        
+
                         <div class="category-item" data-category="disposable">
                             <div class="category-icon">💨</div>
                             <div class="category-name">Одноразки</div>
                         </div>
-                        
+
                         <div class="category-item" data-category="pod">
                             <div class="category-icon">💧</div>
                             <div class="category-name">Жидкости</div>
                         </div>
-                        
+
                         <div class="category-item" data-category="accessories">
                             <div class="category-icon">🛠️</div>
                             <div class="category-name">Расхоники</div>
                         </div>
-                        
+
                         <div class="category-item" data-category="coils">
                             <div class="category-icon">🎷</div>
-                            <div class="category-name">Все для кальяна</div>
+                            <div class="category-name">Для кальяна</div>
                         </div>
-                        
+
                         <div class="category-item" data-category="mods">
                             <div class="category-icon">🎨</div>
                             <div class="category-name">Другое</div>
+                        </div>
+
+                        <!-- Дубликаты для кругового эффекта -->
+                        <div class="category-item" data-category="all">
+                            <div class="category-icon">🔥</div>
+                            <div class="category-name">Все</div>
+                        </div>
+
+                        <div class="category-item" data-category="liquids">
+                            <div class="category-icon">🔋</div>
+                            <div class="category-name">Под-системы</div>
+                        </div>
+
+                        <div class="category-item" data-category="disposable">
+                            <div class="category-icon">💨</div>
+                            <div class="category-name">Одноразки</div>
+                        </div>
+
+                        <div class="category-item" data-category="pod">
+                            <div class="category-icon">💧</div>
+                            <div class="category-name">Жидкости</div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- КНОПКА СОЗДАНИЯ ОБЪЯВЛЕНИЯ -->
-            <section class="create-ad-section">
-                <button id="createAdBtn" class="create-ad-btn-main">
-                    <div class="btn-icon">
-                        <i class="fas fa-plus"></i>
-                    </div>
-                    <div class="btn-text">
-                        <span class="btn-title">Разместить объявление</span>
-                        <span class="btn-subtitle">Бесплатно • Быстро • Безопасно</span>
-                    </div>
-                    <div class="btn-arrow">
-                        <i class="fas fa-arrow-right"></i>
-                    </div>
-                </button>
-            </section>
+            <!-- РАЗДЕЛ "РАЗМЕСТИТЬ" УБРАН -->
 
             <!-- ОБЪЯВЛЕНИЯ -->
             <section class="ads-section">
@@ -229,7 +474,7 @@
                         </button>
                     </div>
                 </div>
-                
+
                 <div id="adsContainer" class="ads-grid">
                     <!-- Пример объявления для демонстрации стиля -->
                     <div class="ad-card demo-card">
@@ -237,24 +482,24 @@
                             <span class="badge-type sell">Продажа</span>
                             <span class="badge-category">Одноразки</span>
                         </div>
-                        
+
                         <div class="ad-image-placeholder">
                             <div class="image-counter">
                                 <i class="fas fa-camera"></i> 3 фото
                             </div>
                         </div>
-                        
+
                         <div class="ad-content">
                             <div class="ad-header">
                                 <h3 class="ad-title">ELF Bar 5000 puffs</h3>
                                 <div class="ad-price">1 200 ₽</div>
                             </div>
-                            
+
                             <p class="ad-description">
                                 Новый, в оригинальной упаковке. Вкус: Blue Razz Ice. 
                                 Полная зарядка, 5000 затяжек.
                             </p>
-                            
+
                             <div class="ad-meta">
                                 <div class="meta-item">
                                     <i class="fas fa-eye"></i>
@@ -269,7 +514,7 @@
                                     <span>Москва</span>
                                 </div>
                             </div>
-                            
+
                             <div class="ad-footer">
                                 <div class="seller-info">
                                     <div class="seller-avatar">А</div>
@@ -281,7 +526,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <button class="contact-btn">
                                     <i class="fab fa-telegram"></i>
                                     Написать
@@ -291,7 +536,7 @@
                     </div>
                     <!-- Конец демо карточки -->
                 </div>
-                
+
                 <!-- Состояние "нет объявлений" -->
                 <div id="emptyState" class="empty-state" style="display: none;">
                     <div class="empty-state-icon">
@@ -313,7 +558,7 @@
         <div id="adminScreen" class="screen" style="display: none;"></div>
     </div>
 
-    <!-- НИЖНЕЕ МЕНЮ -->
+    <!-- УМЕНЬШЕННОЕ НИЖНЕЕ МЕНЮ -->
     <nav class="bottom-nav">
         <a href="javascript:void(0)" class="nav-item active" onclick="showMainScreen()">
             <div class="nav-icon">
@@ -321,21 +566,16 @@
             </div>
             <div class="nav-label">Главная</div>
         </a>
-        
-        <a href="javascript:void(0)" class="nav-item" onclick="showCreateAdScreen()">
-            <div class="nav-icon">
-                <i class="fas fa-plus-circle"></i>
-            </div>
-            <div class="nav-label">Разместить</div>
-        </a>
-        
+
+        <!-- Убрали кнопку "Разместить" из нижнего меню -->
+
         <a href="javascript:void(0)" class="nav-item" onclick="showProfileScreen()">
             <div class="nav-icon">
                 <i class="fas fa-user"></i>
             </div>
             <div class="nav-label">Кабинет</div>
         </a>
-        
+
         <a href="javascript:void(0)" class="nav-item" onclick="showFaqScreen()">
             <div class="nav-icon">
                 <i class="fas fa-question-circle"></i>
@@ -349,199 +589,39 @@
     <script src="app.js"></script>
 
     <script>
-        // ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ
+        // Дополнительный JavaScript для кругового листания категорий
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Vape Market загружается...');
-            
-            // Показать лоадер
-            showLoader(true);
-            
-            // Инициализация горизонтального скролла категорий
-            initCategoriesScroll();
-            
-            // Инициализация Telegram
-            initTelegramApp();
-            
-            // Загрузить объявления
-            setTimeout(() => {
-                loadAds();
-                showLoader(false);
-            }, 1500);
-            
-            // Анимация появления
-            document.querySelectorAll('.ad-card, .category-item, .create-ad-btn-main').forEach((el, index) => {
-                el.style.animationDelay = `${index * 0.1}s`;
-                el.classList.add('animate-in');
-            });
-        });
-        
-        // ФУНКЦИЯ ПОКАЗА ЛОАДЕРА
-        function showLoader(show) {
-            const loader = document.getElementById('loader');
-            if (loader) {
-                loader.style.display = show ? 'flex' : 'none';
-            }
-        }
-        
-        // ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ КАТЕГОРИЙ
-        function initCategoriesScroll() {
             const track = document.getElementById('categoriesTrack');
-            if (!track) return;
+            const categories = track.querySelectorAll('.category-item');
             
-            let isDown = false;
-            let startX;
-            let scrollLeft;
-            
-            track.addEventListener('mousedown', (e) => {
-                isDown = true;
-                track.classList.add('active');
-                startX = e.pageX - track.offsetLeft;
-                scrollLeft = track.scrollLeft;
-            });
-            
-            track.addEventListener('mouseleave', () => {
-                isDown = false;
-                track.classList.remove('active');
-            });
-            
-            track.addEventListener('mouseup', () => {
-                isDown = false;
-                track.classList.remove('active');
-            });
-            
-            track.addEventListener('mousemove', (e) => {
-                if (!isDown) return;
-                e.preventDefault();
-                const x = e.pageX - track.offsetLeft;
-                const walk = (x - startX) * 2;
-                track.scrollLeft = scrollLeft - walk;
-            });
-            
-            // Для тач-устройств
-            track.addEventListener('touchstart', (e) => {
-                isDown = true;
-                startX = e.touches[0].pageX - track.offsetLeft;
-                scrollLeft = track.scrollLeft;
-            });
-            
-            track.addEventListener('touchend', () => {
-                isDown = false;
-            });
-            
-            track.addEventListener('touchmove', (e) => {
-                if (!isDown) return;
-                const x = e.touches[0].pageX - track.offsetLeft;
-                const walk = (x - startX) * 2;
-                track.scrollLeft = scrollLeft - walk;
-            });
-            
-            // Обработчики кликов по категориям
-            document.querySelectorAll('.category-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    // Удаляем активный класс у всех
-                    document.querySelectorAll('.category-item').forEach(i => {
-                        i.classList.remove('active');
-                    });
-                    // Добавляем активный класс текущему
+            // Обработка кликов по категориям
+            categories.forEach(category => {
+                category.addEventListener('click', function() {
+                    // Убираем активный класс у всех категорий
+                    categories.forEach(c => c.classList.remove('active'));
+                    
+                    // Добавляем активный класс к выбранной категории
                     this.classList.add('active');
                     
-                    // Фильтрация объявлений
-                    const category = this.getAttribute('data-category');
-                    filterAdsByCategory(category);
+                    // Получаем категорию для фильтрации
+                    const selectedCategory = this.getAttribute('data-category');
+                    console.log('Выбрана категория:', selectedCategory);
+                    
+                    // Здесь можно добавить логику фильтрации объявлений
                 });
             });
-        }
-        
-        // ИНИЦИАЛИЗАЦИЯ TELEGRAM
-        function initTelegramApp() {
-            if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
-                const tg = Telegram.WebApp;
-                tg.expand();
-                tg.setHeaderColor('#A855F7');
-                tg.setBackgroundColor('#F5F3FF');
-                tg.enableClosingConfirmation();
-                
-                console.log('✅ Telegram WebApp инициализирован');
-            } else {
-                console.log('⚠️ Режим разработки: Telegram не обнаружен');
-            }
-        }
-        
-        // ФУНКЦИИ НАВИГАЦИИ
-        function showMainScreen() {
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.style.display = 'none';
-            });
-            document.getElementById('mainScreen').style.display = 'block';
             
-            // Обновление активного пункта меню
-            updateNavActive('main');
-        }
-        
-        function showProfileScreen() {
-            alert('Экран профиля в разработке');
-            // В будущем здесь будет загрузка профиля
-        }
-        
-        function showCreateAdScreen() {
-            alert('Экран создания объявления в разработке');
-            // В будущем здесь будет форма создания
-        }
-        
-        function showFaqScreen() {
-            alert('Экран FAQ в разработке');
-            // В будущем здесь будет FAQ
-        }
-        
-        function updateNavActive(screen) {
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
+            // Пауза анимации при касании на мобильных устройствах
+            track.addEventListener('touchstart', function() {
+                track.style.animationPlayState = 'paused';
             });
             
-            const navMap = {
-                'main': 0,
-                'create': 1,
-                'profile': 2,
-                'faq': 3
-            };
-            
-            if (navMap[screen] !== undefined) {
-                document.querySelectorAll('.nav-item')[navMap[screen]].classList.add('active');
-            }
-        }
-        
-        // ЗАГРУЗКА ОБЪЯВЛЕНИЙ (ВРЕМЕННАЯ ФУНКЦИЯ)
-        function loadAds() {
-            const adsContainer = document.getElementById('adsContainer');
-            const emptyState = document.getElementById('emptyState');
-            
-            // Здесь будет реальная загрузка из Firebase
-            // Пока просто скрываем демо карточку и показываем пустое состояние
-            
-            if (adsContainer && emptyState) {
-                // Скрываем демо карточку
-                const demoCard = document.querySelector('.demo-card');
-                if (demoCard) {
-                    demoCard.style.display = 'none';
-                }
-                
-                // Показываем пустое состояние
-                emptyState.style.display = 'block';
-            }
-        }
-        
-        // ФИЛЬТРАЦИЯ ОБЪЯВЛЕНИЙ ПО КАТЕГОРИИ
-        function filterAdsByCategory(category) {
-            console.log(`Фильтрация по категории: ${category}`);
-            // Здесь будет реальная фильтрация
-        }
-        
-        // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
-        window.showLoader = showLoader;
-        window.showMainScreen = showMainScreen;
-        window.showProfileScreen = showProfileScreen;
-        window.showCreateAdScreen = showCreateAdScreen;
-        window.showFaqScreen = showFaqScreen;
+            track.addEventListener('touchend', function() {
+                setTimeout(() => {
+                    track.style.animationPlayState = 'running';
+                }, 1000);
+            });
+        });
     </script>
 </body>
 </html>
