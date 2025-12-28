@@ -7,6 +7,7 @@ let currentUser = null;
 let allAds = [];
 let currentScreen = 'main';
 let currentModal = null;
+let firebaseApp = null; // Добавляем глобальную переменную для Firebase app
 
 // ============================================
 // ВСЕ ФУНКЦИИ ОБЪЯВЛЕНЫ СРАЗУ
@@ -164,7 +165,7 @@ function filterAdsByCategory(category) {
     }
 }
 
-// 3. ФУНКЦИЯ СОЗДАНИЯ ОБЪЯВЛЕНИЯ (самая важная - должна быть перед initializeUI)
+// 3. ФУНКЦИЯ СОЗДАНИЯ ОБЪЯВЛЕНИЯ
 function showCreateAdForm() {
     console.log('📝 Показ формы создания объявления');
     
@@ -494,7 +495,7 @@ function initializeUI() {
     console.log('✅ UI инициализирован');
 }
 
-// 5. FIREBASE И АВТОРИЗАЦИЯ
+// 5. FIREBASE ИНИЦИАЛИЗАЦИЯ (ИЗМЕНЕНА - только один раз)
 function initializeFirebase() {
     try {
         console.log('🚀 Инициализация Firebase...');
@@ -503,9 +504,15 @@ function initializeFirebase() {
             throw new Error('Firebase не загружен. Проверьте CDN в index.html');
         }
         
-        firebase.initializeApp(firebaseConfig);
-        console.log('✅ Firebase инициализирован');
+        // Проверяем, не инициализирован ли Firebase уже
+        if (!firebaseApp) {
+            firebaseApp = firebase.initializeApp(firebaseConfig);
+            console.log('✅ Firebase инициализирован');
+        } else {
+            console.log('✅ Firebase уже инициализирован');
+        }
         
+        // Возвращаем сервисы Firebase
         return {
             auth: firebase.auth(),
             database: firebase.database()
@@ -516,6 +523,7 @@ function initializeFirebase() {
     }
 }
 
+// 6. TELEGRAM ИНИЦИАЛИЗАЦИЯ
 function initializeTelegram() {
     try {
         console.log('🤖 Инициализация Telegram Web App...');
@@ -541,6 +549,7 @@ function initializeTelegram() {
     }
 }
 
+// 7. ПОЛЬЗОВАТЕЛИ
 async function getOrCreateUser(tgUser, firebase) {
     try {
         const { database } = firebase;
@@ -584,7 +593,8 @@ async function getOrCreateUser(tgUser, firebase) {
 
 async function authenticateUser() {
     try {
-        const firebase = initializeFirebase();
+        // Используем уже инициализированный Firebase
+        const firebase = initializeFirebase(); // Эта функция теперь проверяет инициализацию
         const tg = initializeTelegram();
         
         if (!tg || !tg.initDataUnsafe || !tg.initDataUnsafe.user) {
@@ -613,7 +623,7 @@ async function authenticateUser() {
     }
 }
 
-// 6. СИСТЕМА ОБЪЯВЛЕНИЙ
+// 8. СИСТЕМА ОБЪЯВЛЕНИЙ
 async function loadAllAds() {
     try {
         console.log('📦 Загрузка объявлений...');
@@ -738,36 +748,86 @@ function renderAds(ads) {
     }
     
     adsContainer.innerHTML = ads.map(ad => `
-        <div class="ad-card" data-id="${ad.id}">
-            <div class="ad-header">
-                <span class="ad-category">${appConfig.categoryShort[ad.category] || ad.category}</span>
-                ${ad.verified ? '<span class="ad-verified">✓</span>' : ''}
-                <span class="ad-price">${ad.price} ₽</span>
+        <div class="ad-card" data-id="${ad.id}" style="
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        ">
+            <div class="ad-header" style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 10px;
+            ">
+                <span class="ad-category" style="
+                    background: #f3e8ff;
+                    color: #6B21A8;
+                    padding: 4px 8px;
+                    border-radius: 6px;
+                    font-size: 12px;
+                    font-weight: 500;
+                ">${appConfig.categoryShort[ad.category] || ad.category}</span>
+                ${ad.verified ? '<span class="ad-verified" style="color: #10b981;">✓</span>' : ''}
+                <span class="ad-price" style="
+                    font-weight: bold;
+                    font-size: 18px;
+                    color: #6B21A8;
+                ">${ad.price} ₽</span>
             </div>
             
-            <h3 class="ad-title">${ad.title}</h3>
+            <h3 class="ad-title" style="
+                margin: 0 0 10px 0;
+                font-size: 16px;
+                color: #333;
+            ">${ad.title}</h3>
             
             ${ad.photoUrls && ad.photoUrls.length > 0 ? `
-                <div class="ad-photos">
-                    <img src="${ad.photoUrls[0]}" alt="${ad.title}" loading="lazy">
+                <div class="ad-photos" style="margin-bottom: 10px;">
+                    <img src="${ad.photoUrls[0]}" alt="${ad.title}" loading="lazy" style="
+                        width: 100%;
+                        height: 200px;
+                        object-fit: cover;
+                        border-radius: 8px;
+                    ">
                 </div>
             ` : ''}
             
-            <p class="ad-description">${ad.description}</p>
+            <p class="ad-description" style="
+                margin: 0 0 10px 0;
+                color: #666;
+                font-size: 14px;
+                line-height: 1.5;
+            ">${ad.description}</p>
             
-            <div class="ad-seller">
+            <div class="ad-seller" style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 15px;
+                color: #666;
+                font-size: 14px;
+            ">
                 <span>👤 ${ad.sellerName}</span>
                 <span class="seller-rating">⭐ ${ad.sellerRating || '0.0'}</span>
             </div>
             
-            <div class="ad-actions">
-                <div class="rating-buttons">
+            <div class="ad-actions" style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            ">
+                <div class="rating-buttons" style="display: flex; gap: 10px;">
                     <button onclick="rateAd('${ad.id}', 'like')" style="
                         padding: 8px 15px;
                         border: 1px solid #ddd;
                         background: white;
                         border-radius: 6px;
                         cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        gap: 5px;
                     ">
                         👍 ${ad.likes || 0}
                     </button>
@@ -777,6 +837,9 @@ function renderAds(ads) {
                         background: white;
                         border-radius: 6px;
                         cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        gap: 5px;
                     ">
                         👎 ${ad.dislikes || 0}
                     </button>
@@ -790,6 +853,9 @@ function renderAds(ads) {
                         border: none;
                         border-radius: 6px;
                         cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        gap: 5px;
                     ">
                         ✉️ Написать
                     </button>
@@ -799,7 +865,7 @@ function renderAds(ads) {
     `).join('');
 }
 
-// 7. РЕЙТИНГИ
+// 9. РЕЙТИНГИ
 async function rateAd(adId, ratingType) {
     try {
         if (!currentUser) {
@@ -898,7 +964,7 @@ async function updateSellerRating(sellerId) {
     }
 }
 
-// 8. ПРОФИЛЬ И ДОПОЛНИТЕЛЬНЫЕ ЭКРАНЫ
+// 10. ПРОФИЛЬ И ДОПОЛНИТЕЛЬНЫЕ ЭКРАНЫ
 function renderProfile() {
     if (!currentUser) return;
     
@@ -906,7 +972,11 @@ function renderProfile() {
     if (!profileContent) return;
     
     profileContent.innerHTML = `
-        <div class="profile-header">
+        <div class="profile-header" style="
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        ">
             <div class="avatar" style="
                 width: 80px;
                 height: 80px;
@@ -921,7 +991,7 @@ function renderProfile() {
                 margin-right: 15px;
             ">${currentUser.firstName?.[0] || 'U'}</div>
             <div class="profile-info">
-                <h3 style="margin: 0 0 5px 0;">${currentUser.firstName || ''} ${currentUser.lastName || ''}</h3>
+                <h3 style="margin: 0 0 5px 0; color: #333;">${currentUser.firstName || ''} ${currentUser.lastName || ''}</h3>
                 <p style="margin: 0 0 10px 0; color: #666;">${currentUser.username || 'Без username'}</p>
                 <div class="rating" style="display: flex; align-items: center;">
                     <span style="margin-right: 5px;">⭐</span>
@@ -1315,7 +1385,7 @@ async function loadAdminStats() {
     }
 }
 
-// 9. ФУНКЦИИ ОШИБОК (должны быть в конце)
+// 11. ФУНКЦИИ ОШИБОК
 function showErrorScreen(message) {
     document.body.innerHTML = `
         <div style="
@@ -1364,7 +1434,7 @@ function showBlockedScreen() {
     `;
 }
 
-// 10. ЗАГЛУШКИ ДЛЯ НЕРЕАЛИЗОВАННЫХ ФУНКЦИЙ
+// 12. ЗАГЛУШКИ ДЛЯ НЕРЕАЛИЗОВАННЫХ ФУНКЦИЙ
 function loadMyAds() {
     showError('Мои объявления в разработке');
 }
@@ -1381,10 +1451,7 @@ function moderateAd(adId, action) {
     showError('Модерация в разработке');
 }
 
-// ============================================
-// 11. ГЛАВНАЯ ФУНКЦИЯ ИНИЦИАЛИЗАЦИИ
-// ============================================
-
+// 13. ГЛАВНАЯ ФУНКЦИЯ ИНИЦИАЛИЗАЦИИ (УПРОЩЕННАЯ)
 async function initializeApp() {
     try {
         console.log('🚀 Инициализация приложения...');
@@ -1400,10 +1467,7 @@ async function initializeApp() {
         }
         console.log('✅ Конфигурация загружена');
         
-        console.log('🔥 Инициализация Firebase...');
-        firebase.initializeApp(firebaseConfig);
-        console.log('✅ Firebase инициализирован');
-        
+        // Firebase инициализируется внутри authenticateUser() при необходимости
         console.log('🎨 Инициализация UI...');
         initializeUI();
         
@@ -1426,7 +1490,7 @@ async function initializeApp() {
 }
 
 // ============================================
-// 12. СТАРТ ПРИЛОЖЕНИЯ
+// 14. СТАРТ ПРИЛОЖЕНИЯ
 // ============================================
 
 // Ожидаем загрузку DOM
