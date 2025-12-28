@@ -7,13 +7,13 @@ let currentUser = null;
 let allAds = [];
 let currentScreen = 'main';
 let currentModal = null;
-let firebaseApp = null; // Добавляем глобальную переменную для Firebase app
+let firebaseApp = null;
 
 // ============================================
 // ВСЕ ФУНКЦИИ ОБЪЯВЛЕНЫ СРАЗУ
 // ============================================
 
-// 1. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (объявлены первыми)
+// 1. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 function showLoading(show) {
     const loader = document.getElementById('loader');
     if (loader) {
@@ -104,7 +104,40 @@ function fileToBase64(file) {
     });
 }
 
-// 2. UI ФУНКЦИИ (используются при инициализации)
+// 2. FIREBASE ИНИЦИАЛИЗАЦИЯ (ТОЛЬКО ОДИН РАЗ)
+function initializeFirebase() {
+    try {
+        console.log('🚀 Инициализация Firebase...');
+        
+        if (typeof firebase === 'undefined') {
+            throw new Error('Firebase не загружен. Проверьте CDN в index.html');
+        }
+        
+        // Проверяем, не инициализирован ли Firebase уже
+        try {
+            // Пытаемся получить существующее приложение
+            const existingApp = firebase.app();
+            console.log('✅ Firebase уже инициализирован ранее');
+            firebaseApp = existingApp;
+        } catch (error) {
+            // Если нет существующего приложения - создаем новое
+            console.log('🔥 Создание нового Firebase приложения...');
+            firebaseApp = firebase.initializeApp(firebaseConfig);
+            console.log('✅ Firebase успешно инициализирован');
+        }
+        
+        // Возвращаем сервисы Firebase
+        return {
+            auth: firebase.auth(),
+            database: firebase.database()
+        };
+    } catch (error) {
+        console.error('❌ Ошибка инициализации Firebase:', error);
+        throw error;
+    }
+}
+
+// 3. UI ФУНКЦИИ
 function showMainScreen() {
     console.log('🏠 Переход на главный экран');
     currentScreen = 'main';
@@ -165,7 +198,7 @@ function filterAdsByCategory(category) {
     }
 }
 
-// 3. ФУНКЦИЯ СОЗДАНИЯ ОБЪЯВЛЕНИЯ
+// 4. ФУНКЦИЯ СОЗДАНИЯ ОБЪЯВЛЕНИЯ
 function showCreateAdForm() {
     console.log('📝 Показ формы создания объявления');
     
@@ -174,12 +207,10 @@ function showCreateAdForm() {
         return;
     }
     
-    // Закрываем предыдущее модальное окно, если есть
     if (currentModal) {
         document.body.removeChild(currentModal);
     }
     
-    // Создаем модальное окно
     currentModal = document.createElement('div');
     currentModal.className = 'modal';
     currentModal.style.cssText = `
@@ -314,10 +345,8 @@ function showCreateAdForm() {
         </div>
     `;
     
-    // Добавляем модальное окно на страницу
     document.body.appendChild(currentModal);
     
-    // Обработчик подсчета символов
     const textarea = currentModal.querySelector('#adDescription');
     const charCount = currentModal.querySelector('#charCount');
     
@@ -326,7 +355,6 @@ function showCreateAdForm() {
         charCount.textContent = `${length}/500 символов`;
     });
     
-    // Обработчик предпросмотра фото
     const fileInput = currentModal.querySelector('#adPhotos');
     const photoPreview = currentModal.querySelector('#photoPreview');
     
@@ -390,7 +418,6 @@ function showCreateAdForm() {
             reader.readAsDataURL(file);
         });
         
-        // Обновляем input
         const dataTransfer = new DataTransfer();
         files.forEach(file => dataTransfer.items.add(file));
         this.files = dataTransfer.files;
@@ -401,7 +428,6 @@ async function submitAdForm() {
     try {
         console.log('📤 Отправка формы объявления...');
         
-        // Собираем данные
         const title = document.getElementById('adTitle')?.value.trim();
         const category = document.getElementById('adCategory')?.value;
         const price = parseInt(document.getElementById('adPrice')?.value);
@@ -409,7 +435,6 @@ async function submitAdForm() {
         const contact = document.getElementById('adContact')?.value.trim();
         const fileInput = document.getElementById('adPhotos');
         
-        // Валидация
         if (!title || !category || !price || !description) {
             throw new Error('Заполните все обязательные поля');
         }
@@ -422,7 +447,6 @@ async function submitAdForm() {
             throw new Error('Описание не должно превышать 500 символов');
         }
         
-        // Конвертируем фото в base64
         const photoUrls = [];
         if (fileInput && fileInput.files) {
             const files = Array.from(fileInput.files).slice(0, 3);
@@ -433,7 +457,6 @@ async function submitAdForm() {
             }
         }
         
-        // Создаем объект объявления
         const adData = {
             title,
             category,
@@ -443,10 +466,7 @@ async function submitAdForm() {
             photoUrls
         };
         
-        // Создаем объявление
         await createNewAd(adData);
-        
-        // Закрываем модальное окно
         closeModal();
         
     } catch (error) {
@@ -455,11 +475,10 @@ async function submitAdForm() {
     }
 }
 
-// 4. ИНИЦИАЛИЗАЦИЯ UI
+// 5. ИНИЦИАЛИЗАЦИЯ UI
 function initializeUI() {
     console.log('🎨 Инициализация UI...');
     
-    // Проверяем существование элементов
     const navMain = document.getElementById('navMain');
     const navProfile = document.getElementById('navProfile');
     const navFAQ = document.getElementById('navFAQ');
@@ -476,15 +495,12 @@ function initializeUI() {
         return;
     }
     
-    // Настраиваем кнопки навигации
     navMain.addEventListener('click', showMainScreen);
     navProfile.addEventListener('click', showProfileScreen);
     navFAQ.addEventListener('click', loadFAQ);
     
-    // Кнопка создания объявления
     createAdBtn.addEventListener('click', showCreateAdForm);
     
-    // Кнопки фильтрации
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             const category = e.target.dataset.category;
@@ -493,34 +509,6 @@ function initializeUI() {
     });
     
     console.log('✅ UI инициализирован');
-}
-
-// 5. FIREBASE ИНИЦИАЛИЗАЦИЯ (ИЗМЕНЕНА - только один раз)
-function initializeFirebase() {
-    try {
-        console.log('🚀 Инициализация Firebase...');
-        
-        if (typeof firebase === 'undefined') {
-            throw new Error('Firebase не загружен. Проверьте CDN в index.html');
-        }
-        
-        // Проверяем, не инициализирован ли Firebase уже
-        if (!firebaseApp) {
-            firebaseApp = firebase.initializeApp(firebaseConfig);
-            console.log('✅ Firebase инициализирован');
-        } else {
-            console.log('✅ Firebase уже инициализирован');
-        }
-        
-        // Возвращаем сервисы Firebase
-        return {
-            auth: firebase.auth(),
-            database: firebase.database()
-        };
-    } catch (error) {
-        console.error('❌ Ошибка инициализации Firebase:', error);
-        throw error;
-    }
 }
 
 // 6. TELEGRAM ИНИЦИАЛИЗАЦИЯ
@@ -593,8 +581,8 @@ async function getOrCreateUser(tgUser, firebase) {
 
 async function authenticateUser() {
     try {
-        // Используем уже инициализированный Firebase
-        const firebase = initializeFirebase(); // Эта функция теперь проверяет инициализацию
+        // Инициализируем Firebase (только один раз)
+        const firebase = initializeFirebase();
         const tg = initializeTelegram();
         
         if (!tg || !tg.initDataUnsafe || !tg.initDataUnsafe.user) {
@@ -1434,7 +1422,7 @@ function showBlockedScreen() {
     `;
 }
 
-// 12. ЗАГЛУШКИ ДЛЯ НЕРЕАЛИЗОВАННЫХ ФУНКЦИЙ
+// 12. ЗАГЛУШКИ
 function loadMyAds() {
     showError('Мои объявления в разработке');
 }
