@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Навигация -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
@@ -36,7 +35,6 @@
         </div>
     </nav>
 
-    <!-- Основной контент -->
     <main class="main-content">
         <!-- Страница Ленты -->
         <div id="feed-page" class="page active">
@@ -61,9 +59,7 @@
                 </button>
             </div>
             
-            <div id="ads-container" class="ads-grid">
-                <!-- Объявления будут загружаться здесь -->
-            </div>
+            <div id="ads-container" class="ads-grid"></div>
             
             <div id="loading-spinner" class="loading-spinner">
                 <i class="fas fa-spinner fa-spin"></i>
@@ -82,17 +78,7 @@
             <div class="page-header">
                 <h1>Мой профиль</h1>
             </div>
-            
-            <div id="profile-info" class="profile-info">
-                <!-- Информация профиля будет загружена -->
-            </div>
-            
-            <div id="my-ads-container">
-                <h2>Мои объявления</h2>
-                <div id="my-ads-list" class="ads-list">
-                    <!-- Мои объявления будут здесь -->
-                </div>
-            </div>
+            <div id="profile-info" class="profile-info"></div>
         </div>
 
         <!-- Страница FAQ -->
@@ -100,192 +86,35 @@
             <div class="page-header">
                 <h1>FAQ & Помощь</h1>
             </div>
-            
-            <div class="faq-container">
-                <div class="stats-card">
-                    <h3><i class="fas fa-chart-line"></i> Статистика сервера</h3>
-                    <div id="stats-content">
-                        <!-- Статистика будет загружена -->
-                    </div>
-                </div>
+            <div class="faq-content">
+                <h3>Как пользоваться приложением?</h3>
+                <p>1. Нажмите "Разместить объявление" чтобы добавить товар</p>
+                <p>2. Выберите категорию и заполните информацию</p>
+                <p>3. Другие пользователи увидят ваше объявление</p>
                 
-                <div class="faq-section">
-                    <h3><i class="fas fa-question-circle"></i> Частые вопросы</h3>
-                    <div class="faq-item">
-                        <h4>Как разместить объявление?</h4>
-                        <p>Нажмите кнопку "Разместить объявление" на главной странице, заполните все поля и подтвердите публикацию.</p>
-                    </div>
-                    <div class="faq-item">
-                        <h4>Как связаться с продавцом?</h4>
-                        <p>Нажмите кнопку "Написать продавцу" на карточке объявления. Чат откроется в Telegram.</p>
-                    </div>
-                    <div class="faq-item">
-                        <h4>Как работает система рейтингов?</h4>
-                        <p>Рейтинг рассчитывается по формуле: 0.1 + (лайки / (лайки + дизлайки)) × 4.9</p>
-                    </div>
-                </div>
+                <h3>Правила:</h3>
+                <ul>
+                    <li>Только товары для вейпинга</li>
+                    <li>Реальные фотографии</li>
+                    <li>Честные описания</li>
+                    <li>Уважительное общение</li>
+                </ul>
             </div>
         </div>
 
         <!-- Страница Админа -->
         <div id="admin-page" class="page">
-            <div class="page-header">
-                <h1><i class="fas fa-shield-alt"></i> Админ-панель</h1>
-            </div>
-            
-            <div class="admin-tabs">
-                <button class="admin-tab active" data-tab="moderation">Модерация</button>
-                <button class="admin-tab" data-tab="users">Пользователи</button>
-                <button class="admin-tab" data-tab="complaints">Жалобы</button>
-                <button class="admin-tab" data-tab="analytics">Аналитика</button>
-            </div>
-            
-            <div class="admin-content">
-                <div id="moderation-tab" class="admin-tab-content active">
-                    <!-- Модерация объявлений -->
-                </div>
-                <div id="users-tab" class="admin-tab-content">
-                    <!-- Управление пользователями -->
-                </div>
-                <div id="complaints-tab" class="admin-tab-content">
-                    <!-- Система жалоб -->
-                </div>
-                <div id="analytics-tab" class="admin-tab-content">
-                    <!-- Аналитика -->
-                </div>
-            </div>
+            <!-- Контент загружается динамически -->
         </div>
     </main>
-
-    <!-- Модальное окно создания объявления -->
-    <div id="create-ad-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Новое объявление</h2>
-                <button class="close-modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="create-ad-form">
-                    <div class="form-group">
-                        <label for="ad-title">Название товара *</label>
-                        <input type="text" id="ad-title" required maxlength="100">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="ad-category">Категория *</label>
-                        <select id="ad-category" required>
-                            <option value="">Выберите категорию</option>
-                            <option value="Жидкости">Жидкости</option>
-                            <option value="Одноразовые устройства">Одноразовые устройства</option>
-                            <option value="Под-системы">Под-системы</option>
-                            <option value="Расходники">Расходники</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="ad-price">Цена (₽) *</label>
-                        <input type="number" id="ad-price" required min="1" step="1">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="ad-description">Описание *</label>
-                        <textarea id="ad-description" rows="4" required maxlength="500"></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="ad-contact">Контакт (Telegram username) *</label>
-                        <input type="text" id="ad-contact" required placeholder="@username">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Фотографии (макс. 3)</label>
-                        <div id="photo-upload-area" class="photo-upload">
-                            <div class="photo-placeholder" id="photo-upload-btn">
-                                <i class="fas fa-camera"></i>
-                                <span>Добавить фото</span>
-                            </div>
-                            <input type="file" id="photo-input" accept="image/*" multiple style="display: none;">
-                        </div>
-                        <div id="photo-preview" class="photo-preview"></div>
-                    </div>
-                    
-                    <div class="form-actions">
-                        <button type="button" class="btn-secondary close-modal">Отмена</button>
-                        <button type="submit" class="btn-primary" id="publish-btn">
-                            <i class="fas fa-paper-plane"></i> Опубликовать
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Модальное окно жалобы -->
-    <div id="complaint-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Пожаловаться на объявление</h2>
-                <button class="close-modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="complaint-form">
-                    <input type="hidden" id="complaint-ad-id">
-                    
-                    <div class="form-group">
-                        <label for="complaint-type">Тип жалобы *</label>
-                        <select id="complaint-type" required>
-                            <option value="">Выберите тип</option>
-                            <option value="Мошенничество">Мошенничество</option>
-                            <option value="Неправильная категория">Неправильная категория</option>
-                            <option value="Запрещенные товары">Запрещенные товары</option>
-                            <option value="Спам">Спам</option>
-                            <option value="Оскорбления">Оскорбления</option>
-                            <option value="Другое">Другое</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="complaint-description">Описание проблемы *</label>
-                        <textarea id="complaint-description" rows="4" required placeholder="Опишите подробно причину жалобы..."></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Доказательства (фото, опционально)</label>
-                        <div id="complaint-photo-upload" class="photo-upload">
-                            <div class="photo-placeholder" id="complaint-photo-btn">
-                                <i class="fas fa-paperclip"></i>
-                                <span>Прикрепить фото</span>
-                            </div>
-                            <input type="file" id="complaint-photo-input" accept="image/*" style="display: none;">
-                        </div>
-                        <div id="complaint-photo-preview" class="photo-preview"></div>
-                    </div>
-                    
-                    <div class="form-actions">
-                        <button type="button" class="btn-secondary close-modal">Отмена</button>
-                        <button type="submit" class="btn-danger">
-                            <i class="fas fa-exclamation-triangle"></i> Отправить жалобу
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 
     <!-- Уведомления -->
     <div id="notification" class="notification"></div>
 
-    <!-- Скрипты -->
+    <!-- Подключаем только один файл JS -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="config.js"></script>
-    <script src="firebase.js"></script>
-    <script src="auth.js"></script>
-    <script src="ads.js"></script>
-    <script src="profile.js"></script>
-    <script src="faq.js"></script>
-    <script src="admin.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
