@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Firebase Connection Test</title>
+</head>
+<body>
+    <h1>Firebase Connection Test</h1>
+    <div id="status">Проверка подключения...</div>
+    <div id="result"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
+    
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBgPG4EXFQHoIOVLt2_BdCmiUJEWTXsGN8",
+            authDomain: "telegram-market-vape.firebaseapp.com",
+            databaseURL: "https://telegram-market-vape-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "telegram-market-vape",
+            storageBucket: "telegram-market-vape.appspot.com",
+            messagingSenderId: "35870048384",
+            appId: "1:35870048384:web:acd6501459aa39180b6665",
+            measurementId: "G-99R2PPBNF8"
+        };
+
+        try {
+            // Инициализация Firebase
+            const app = firebase.initializeApp(firebaseConfig);
+            const db = firebase.database();
+            
+            document.getElementById('status').innerHTML = '✅ Firebase инициализирован!';
+            
+            // Тест записи данных
+            const testRef = db.ref('testConnection');
+            const testData = {
+                timestamp: Date.now(),
+                message: 'Test connection successful',
+                status: 'connected'
+            };
+            
+            testRef.set(testData)
+                .then(() => {
+                    document.getElementById('result').innerHTML = `
+                        <p>✅ Данные успешно записаны в Firebase!</p>
+                        <p>Путь: /testConnection</p>
+                        <p>Время: ${new Date(testData.timestamp).toLocaleString()}</p>
+                    `;
+                    
+                    // Чтение данных обратно
+                    return testRef.once('value');
+                })
+                .then((snapshot) => {
+                    const data = snapshot.val();
+                    document.getElementById('result').innerHTML += `
+                        <p>✅ Данные успешно прочитаны:</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                    
+                    // Очистка тестовых данных
+                    return testRef.remove();
+                })
+                .then(() => {
+                    console.log('Тестовые данные удалены');
+                })
+                .catch((error) => {
+                    document.getElementById('result').innerHTML = `
+                        <p style="color: red;">❌ Ошибка: ${error.message}</p>
+                        <pre>${error.stack}</pre>
+                    `;
+                });
+                
+        } catch (error) {
+            document.getElementById('status').innerHTML = '❌ Ошибка инициализации Firebase';
+            document.getElementById('result').innerHTML = `
+                <p style="color: red;">${error.message}</p>
+                <pre>${error.stack}</pre>
+            `;
+        }
+    </script>
+</body>
+</html>
