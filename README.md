@@ -1,2 +1,27 @@
-# telegram_market_vape
-Мини-приложение для продажи VAPE товаров
+# Vape Market - Telegram Mini App
+
+Барахолка для покупки и продажи вейп-товаров в Telegram.
+
+## Особенности
+
+- 🔐 Авторизация через Telegram
+- 📦 Система объявлений с фотографиями
+- ⭐ Система рейтингов и оценок
+- ⚠️ Система жалоб и модерации
+- 👑 Админ-панель для управления
+- 📱 Адаптивный дизайн
+- ⚡ Реальное время обновления
+
+## Технологии
+
+- HTML5, CSS3, Vanilla JavaScript
+- Firebase Realtime Database
+- Telegram Web App SDK
+- PWA (Progressive Web App)
+
+## Установка и запуск
+
+1. Клонируйте репозиторий:
+```bash
+git clone https://github.com/nukm0/telegram_market_vape.git
+cd telegram_market_vape
