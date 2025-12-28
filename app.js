@@ -13,7 +13,13 @@ const firebaseConfig = {
 const appConfig = {
     appName: "Vape Market",
     adminIds: [998579758],
-    categories: ["Жидкости", "Одноразовые устройства", "Под-системы", "Расходники"],
+    categories: ["Жидкости", "Одноразовые", "Под-системы", "Расходники"],
+    categoryShort: {
+        "Жидкости": "Жидкость",
+        "Одноразовые": "Одноразово", 
+        "Под-системы": "Под-системы",
+        "Расходники": "Расходники"
+    },
     complaintTypes: ["Мошенничество", "Неправильная категория", "Запрещенные товары", "Спам", "Оскорбления", "Другое"],
     maxPhotos: 3,
     ratingFormula: (likes, dislikes) => {
@@ -28,9 +34,7 @@ let currentUser = null;
 let userData = null;
 let tg = window.Telegram.WebApp;
 let ads = [];
-let myAds = [];
 let currentFilters = { category: 'all' };
-let unsubscribeAds = null;
 
 // ========== FIREBASE INIT ==========
 function initializeFirebase() {
@@ -132,228 +136,607 @@ async function updateUserData() {
     await updateData(`users/${userData.id}`, updates);
 }
 
+// ========== MAIN APP INIT ==========
+async function initializeApp() {
+    console.log('🚀 Инициализация приложения...');
+    
+    try {
+        // 1. Инициализируем Firebase
+        if (!initializeFirebase()) {
+            throw new Error('Не удалось инициализировать Firebase');
+        }
+        
+        // 2. Инициализируем Telegram
+        tg.ready();
+        
+        // 3. Авторизуем пользователя
+        if (!(await initializeAuth())) {
+            throw new Error('Ошибка авторизации');
+        }
+        
+        // 4. Инициализируем UI
+        initializeNavigation();
+        initializeEventHandlers();
+        
+        // 5. Загружаем объявления
+        await loadAds();
+        
+        console.log('✅ Приложение инициализировано');
+        
+    } catch (error) {
+        console.error('❌ Ошибка инициализации:', error);
+        showNotification('Ошибка загрузки приложения', 'error');
+    }
+}
+
+// ========== NAVIGATION ==========
+function initializeNavigation() {
+    const navLinks = document.querySelectorAll('.nav-link');
+    const pages = document.querySelectorAll('.page');
+    
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            const pageName = link.getAttribute('data-page');
+            
+            // Обновляем активную ссылку
+            navLinks.forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+            
+            // Показываем страницу
+            pages.forEach(page => {
+                page.classList.remove('active');
+                if (page.id === `${pageName}-page`) {
+                    page.classList.add('active');
+                    
+                    // Загружаем данные для страницы
+                    switch (pageName) {
+                        case 'feed':
+                            loadAds();
+                            break;
+                        case 'profile':
+                            loadProfile();
+                            break;
+                        case 'faq':
+                            loadFAQ();
+                            break;
+                        case 'admin':
+                            if (isAdmin()) {
+                                loadAdminPanel();
+                            }
+                            break;
+                    }
+                }
+            });
+        });
+    });
+}
+
 // ========== ADS SYSTEM ==========
 async function loadAds() {
-    const loadingSpinner = document.getElementById('loading-spinner');
-    const noAds = document.getElementById('no-ads');
-    const adsContainer = document.getElementById('ads-container');
-    
-    if (loadingSpinner) loadingSpinner.style.display = 'flex';
-    if (adsContainer) adsContainer.innerHTML = '';
+    showLoading(true);
     
     try {
         const snapshot = await db.ref('ads').once('value');
         const adsData = snapshot.val();
         
         if (!adsData) {
-            if (loadingSpinner) loadingSpinner.style.display = 'none';
-            if (noAds) noAds.style.display = 'block';
+            showNoAds();
             return;
         }
         
-        ads = Object.entries(adsData).map(([id, ad]) => ({
-            id,
-            ...ad
-        })).filter(ad => !ad.blocked);
+        ads = Object.entries(adsData)
+            .map(([id, ad]) => ({ id, ...ad }))
+            .filter(ad => !ad.blocked);
         
-        applyFilters();
-        
-        if (loadingSpinner) loadingSpinner.style.display = 'none';
-        if (noAds) noAds.style.display = ads.length === 0 ? 'block' : 'none';
+        renderAds();
         
     } catch (error) {
-        console.error('❌ Ошибка загрузки объявлений:', error);
-        if (loadingSpinner) loadingSpinner.style.display = 'none';
+        console.error('❌ Ошибка загрузки:', error);
         showNotification('Ошибка загрузки объявлений', 'error');
+    } finally {
+        showLoading(false);
     }
 }
 
-function applyFilters() {
+function renderAds() {
+    const container = document.getElementById('ads-container');
+    if (!container) return;
+    
     let filteredAds = [...ads];
     
+    // Фильтр по категории
     if (currentFilters.category !== 'all') {
         filteredAds = filteredAds.filter(ad => ad.category === currentFilters.category);
     }
     
+    // Сортировка по дате
     filteredAds.sort((a, b) => b.createdAt - a.createdAt);
     
-    renderAds(filteredAds);
-}
-
-function renderAds(adsToRender) {
-    const adsContainer = document.getElementById('ads-container');
-    if (!adsContainer) return;
-    
-    if (adsToRender.length === 0) {
-        adsContainer.innerHTML = `
-            <div class="no-ads">
-                <i class="fas fa-search"></i>
-                <h3>Объявлений не найдено</h3>
-                <p>Попробуйте изменить фильтры</p>
+    if (filteredAds.length === 0) {
+        container.innerHTML = `
+            <div class="no-ads-message">
+                <i class="fas fa-box-open"></i>
+                <h3>Объявлений пока нет</h3>
+                <p>Будьте первым!</p>
             </div>
         `;
         return;
     }
     
-    adsContainer.innerHTML = adsToRender.map(ad => createAdCard(ad)).join('');
-    
-    // Добавляем обработчики
-    adsToRender.forEach(ad => {
-        const likeBtn = document.getElementById(`like-btn-${ad.id}`);
-        const dislikeBtn = document.getElementById(`dislike-btn-${ad.id}`);
-        
-        if (likeBtn && dislikeBtn && currentUser) {
-            checkUserRating(ad.id).then(rating => {
-                if (rating === 'like') {
-                    likeBtn.classList.add('liked');
-                    dislikeBtn.classList.remove('active');
-                } else if (rating === 'dislike') {
-                    dislikeBtn.classList.add('active');
-                    likeBtn.classList.remove('liked');
-                }
-            });
-            
-            likeBtn.addEventListener('click', () => rateAd(ad.id, 'like'));
-            dislikeBtn.addEventListener('click', () => rateAd(ad.id, 'dislike'));
-        }
-        
-        const complaintBtn = document.getElementById(`complaint-btn-${ad.id}`);
-        if (complaintBtn) {
-            complaintBtn.addEventListener('click', () => openComplaintModal(ad.id));
-        }
-        
-        const contactBtn = document.getElementById(`contact-btn-${ad.id}`);
-        if (contactBtn) {
-            contactBtn.addEventListener('click', () => contactSeller(ad));
-        }
-    });
-}
-
-function createAdCard(ad) {
-    const isMyAd = ad.sellerId === getUserId();
-    const contactBtnDisabled = isMyAd ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : '';
-    const complaintBtnDisabled = isMyAd ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : '';
-    
-    const firstPhoto = ad.photoUrls && ad.photoUrls.length > 0 
-        ? ad.photoUrls[0] 
-        : 'https://via.placeholder.com/400x200/8a2be2/ffffff?text=Vape+Market';
-    
-    const rating = appConfig.ratingFormula(ad.likes || 0, ad.dislikes || 0);
-    
-    return `
+    container.innerHTML = filteredAds.map(ad => `
         <div class="ad-card" data-id="${ad.id}">
-            <img src="${firstPhoto}" alt="${ad.title}" class="ad-image">
-            <div class="ad-info">
-                <div class="ad-title">${escapeHtml(ad.title)}</div>
+            <div class="ad-image">
+                ${ad.photoUrls && ad.photoUrls.length > 0 
+                    ? `<img src="${ad.photoUrls[0]}" alt="${ad.title}">`
+                    : `<div class="no-photo"><i class="fas fa-image"></i></div>`
+                }
+                <div class="ad-badge">${appConfig.categoryShort[ad.category] || ad.category}</div>
+            </div>
+            <div class="ad-content">
+                <h3 class="ad-title">${escapeHtml(ad.title)}</h3>
                 <div class="ad-price">${ad.price} ₽</div>
-                <span class="ad-category">${ad.category}</span>
-                <div class="ad-description">${escapeHtml(ad.description)}</div>
+                <div class="ad-description">${escapeHtml(ad.description.substring(0, 80))}${ad.description.length > 80 ? '...' : ''}</div>
                 <div class="ad-footer">
                     <div class="seller-info">
-                        ${ad.sellerPhoto ? 
-                            `<img src="${ad.sellerPhoto}" alt="${ad.sellerName}" class="seller-avatar">` : 
-                            `<div class="seller-avatar"><i class="fas fa-user"></i></div>`
-                        }
-                        <div>
-                            <div class="seller-name">${escapeHtml(ad.sellerName)}</div>
-                            <div class="rating">
-                                <i class="fas fa-star"></i>
-                                ${rating.toFixed(1)}
-                            </div>
-                        </div>
+                        <span class="seller-name">${escapeHtml(ad.sellerName)}</span>
+                        <span class="seller-contact">${ad.contact}</span>
                     </div>
-                    <div class="ad-actions">
-                        <button class="action-btn" id="like-btn-${ad.id}" title="Лайк">
-                            <i class="fas fa-thumbs-up"></i> ${ad.likes || 0}
-                        </button>
-                        <button class="action-btn" id="dislike-btn-${ad.id}" title="Дизлайк">
-                            <i class="fas fa-thumbs-down"></i> ${ad.dislikes || 0}
-                        </button>
-                        <button class="action-btn" id="complaint-btn-${ad.id}" ${complaintBtnDisabled} title="Пожаловаться">
-                            <i class="fas fa-flag"></i>
-                        </button>
-                        <button class="action-btn" id="contact-btn-${ad.id}" ${contactBtnDisabled} title="Написать продавцу">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
+                    <div class="ad-stats">
+                        <span><i class="fas fa-thumbs-up"></i> ${ad.likes || 0}</span>
+                        <span><i class="fas fa-thumbs-down"></i> ${ad.dislikes || 0}</span>
                     </div>
                 </div>
             </div>
         </div>
+    `).join('');
+}
+
+// ========== PROFILE PAGE ==========
+async function loadProfile() {
+    const container = document.getElementById('profile-info');
+    if (!container || !currentUser) return;
+    
+    const userData = await getData(`users/${getUserId()}`);
+    if (!userData) return;
+    
+    const rating = appConfig.ratingFormula(userData.likesCount || 0, userData.dislikesCount || 0);
+    
+    container.innerHTML = `
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    ${userData.photoUrl 
+                        ? `<img src="${userData.photoUrl}" alt="${userData.firstName}">`
+                        : `<div class="avatar-placeholder">${getInitials(userData.firstName, userData.lastName)}</div>`
+                    }
+                </div>
+                <div class="profile-info">
+                    <h2 class="profile-name">${userData.firstName} ${userData.lastName || ''}</h2>
+                    <div class="profile-username">@${userData.username}</div>
+                    <div class="profile-rating">
+                        <i class="fas fa-star"></i>
+                        <span>${rating.toFixed(1)}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stats-tabs">
+                <div class="stat-tab active" data-stat="ads">
+                    <div class="stat-value">${userData.adsCount || 0}</div>
+                    <div class="stat-label">Объявления</div>
+                </div>
+                <div class="stat-tab" data-stat="likes">
+                    <div class="stat-value">${userData.likesCount || 0}</div>
+                    <div class="stat-label">Лайки</div>
+                </div>
+                <div class="stat-tab" data-stat="dislikes">
+                    <div class="stat-value">${userData.dislikesCount || 0}</div>
+                    <div class="stat-label">Дизлайки</div>
+                </div>
+            </div>
+            
+            <div class="my-ads-section">
+                <h3><i class="fas fa-box"></i> Мои объявления</h3>
+                <div class="my-ads-list" id="my-ads-list">
+                    <!-- Объявления загружаются динамически -->
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Загружаем мои объявления
+    await loadMyAds();
+}
+
+async function loadMyAds() {
+    const container = document.getElementById('my-ads-list');
+    if (!container || !currentUser) return;
+    
+    try {
+        const snapshot = await db.ref('ads').once('value');
+        const adsData = snapshot.val();
+        
+        if (!adsData) {
+            container.innerHTML = '<div class="empty-state">У вас пока нет объявлений</div>';
+            return;
+        }
+        
+        const myAds = Object.entries(adsData)
+            .filter(([id, ad]) => ad.sellerId === getUserId())
+            .map(([id, ad]) => ({ id, ...ad }))
+            .sort((a, b) => b.createdAt - a.createdAt);
+        
+        if (myAds.length === 0) {
+            container.innerHTML = '<div class="empty-state">У вас пока нет объявлений</div>';
+            return;
+        }
+        
+        container.innerHTML = myAds.map(ad => `
+            <div class="my-ad-item" data-id="${ad.id}">
+                <div class="my-ad-image">
+                    ${ad.photoUrls && ad.photoUrls.length > 0 
+                        ? `<img src="${ad.photoUrls[0]}" alt="${ad.title}">`
+                        : `<div class="no-photo-small"><i class="fas fa-image"></i></div>`
+                    }
+                </div>
+                <div class="my-ad-info">
+                    <h4>${escapeHtml(ad.title)}</h4>
+                    <div class="my-ad-price">${ad.price} ₽</div>
+                    <div class="my-ad-stats">
+                        <span><i class="fas fa-thumbs-up"></i> ${ad.likes || 0}</span>
+                        <span><i class="fas fa-thumbs-down"></i> ${ad.dislikes || 0}</span>
+                    </div>
+                </div>
+                <div class="my-ad-actions">
+                    <button class="btn-icon" onclick="editAd('${ad.id}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-icon btn-danger" onclick="deleteAd('${ad.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+        
+    } catch (error) {
+        console.error('❌ Ошибка загрузки моих объявлений:', error);
+        container.innerHTML = '<div class="empty-state">Ошибка загрузки</div>';
+    }
+}
+
+// ========== FAQ PAGE ==========
+function loadFAQ() {
+    const container = document.getElementById('faq-content');
+    if (!container) return;
+    
+    container.innerHTML = `
+        <div class="faq-card">
+            <h2><i class="fas fa-question-circle"></i> Помощь</h2>
+            
+            <div class="faq-section">
+                <h3>Частые вопросы</h3>
+                <div class="faq-items">
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Как добавить объявление?</span>
+                        </div>
+                        <div class="faq-answer">
+                            Нажмите кнопку "Разместить объявление" на главной странице, заполните все поля и подтвердите публикацию.
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <i class="fas fa-star"></i>
+                            <span>Как работает система рейтинга?</span>
+                        </div>
+                        <div class="faq-answer">
+                            Рейтинг рассчитывается по формуле: 0.1 + (лайки / (лайки + дизлайки)) × 4.9
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <i class="fas fa-image"></i>
+                            <span>Как загрузить фото?</span>
+                        </div>
+                        <div class="faq-answer">
+                            При создании объявления нажмите "Загрузить фотографии". Можно загрузить до 3 фотографий.
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <i class="fas fa-paper-plane"></i>
+                            <span>Как написать продавцу?</span>
+                        </div>
+                        <div class="faq-answer">
+                            Нажмите кнопку "Написать продавцу" на карточке объявления. Чат откроется в Telegram.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stats-section">
+                <h3><i class="fas fa-chart-bar"></i> Статистика сервера</h3>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-title">Пользователей</div>
+                        <div class="stat-value" id="users-count">--</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-title">Объявления</div>
+                        <div class="stat-value" id="ads-count">--</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-title">Активные</div>
+                        <div class="stat-value" id="active-count">--</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-title">Сводная</div>
+                        <div class="stat-value" id="summary-count">--</div>
+                    </div>
+                </div>
+                <div class="stats-note">
+                    <i class="fas fa-info-circle"></i>
+                    Данные обновляются в реальном времени
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Загружаем статистику
+    loadStats();
+}
+
+async function loadStats() {
+    try {
+        const [usersData, adsData] = await Promise.all([
+            getData('users'),
+            getData('ads')
+        ]);
+        
+        const usersCount = usersData ? Object.keys(usersData).length : 0;
+        const adsCount = adsData ? Object.keys(adsData).length : 0;
+        const activeUsers = usersData ? Object.values(usersData).filter(u => !u.blocked).length : 0;
+        const activeAds = adsData ? Object.values(adsData).filter(a => !a.blocked).length : 0;
+        
+        // Обновляем статистику
+        document.getElementById('users-count').textContent = usersCount;
+        document.getElementById('ads-count').textContent = adsCount;
+        document.getElementById('active-count').textContent = activeUsers;
+        document.getElementById('summary-count').textContent = activeAds;
+        
+    } catch (error) {
+        console.error('❌ Ошибка загрузки статистики:', error);
+    }
+}
+
+// ========== CREATE AD MODAL ==========
+function showCreateAdModal() {
+    const modalHTML = `
+        <div class="modal active" id="create-ad-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><i class="fas fa-plus"></i> Разместить объявление</h2>
+                    <button class="close-modal" onclick="closeModal()">&times;</button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="photo-upload-section">
+                        <div class="photo-upload-area" id="photo-upload-area">
+                            <i class="fas fa-camera"></i>
+                            <span>Загрузить фотографии</span>
+                            <input type="file" id="photo-input" accept="image/*" multiple style="display: none;">
+                        </div>
+                        <div class="photo-count">Можно загрузить до 3 фотографий. Выбрано: <span id="photo-count">0/3</span></div>
+                        <div class="photo-preview" id="photo-preview"></div>
+                    </div>
+                    
+                    <form id="ad-form">
+                        <div class="form-group">
+                            <label for="ad-title">Название товара</label>
+                            <input type="text" id="ad-title" placeholder="Введите название" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Выберите категорию</label>
+                            <div class="category-buttons">
+                                ${appConfig.categories.map(category => `
+                                    <button type="button" class="category-btn" data-category="${category}">
+                                        ${appConfig.categoryShort[category] || category}
+                                    </button>
+                                `).join('')}
+                            </div>
+                            <input type="hidden" id="ad-category" required>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="ad-price">Цена (₽)</label>
+                                <input type="number" id="ad-price" placeholder="0" min="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="ad-contact">Контакт</label>
+                                <input type="text" id="ad-contact" value="@${currentUser?.username || ''}" placeholder="@username" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="ad-description">Описание товара</label>
+                            <textarea id="ad-description" rows="3" placeholder="Опишите ваш товар..." required></textarea>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="closeModal()">✘ Отмена</button>
+                            <button type="submit" class="btn-primary">✔ Опубликовать</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const container = document.createElement('div');
+    container.innerHTML = modalHTML;
+    document.body.appendChild(container.firstElementChild);
+    
+    // Инициализируем модальное окно
+    initializeCreateAdModal();
+}
+
+function initializeCreateAdModal() {
+    // Категории
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('ad-category').value = this.dataset.category;
+        });
+    });
+    
+    // Загрузка фото
+    const uploadArea = document.getElementById('photo-upload-area');
+    const photoInput = document.getElementById('photo-input');
+    const photoPreview = document.getElementById('photo-preview');
+    const photoCount = document.getElementById('photo-count');
+    
+    uploadArea.addEventListener('click', () => photoInput.click());
+    
+    photoInput.addEventListener('change', function() {
+        const files = Array.from(this.files).slice(0, appConfig.maxPhotos);
+        photoPreview.innerHTML = '';
+        
+        files.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'preview-item';
+                previewItem.innerHTML = `
+                    <img src="${e.target.result}" alt="Preview">
+                    <button type="button" class="remove-photo" data-index="${index}">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                photoPreview.appendChild(previewItem);
+                
+                // Обработчик удаления фото
+                previewItem.querySelector('.remove-photo').addEventListener('click', function() {
+                    previewItem.remove();
+                    updatePhotoCount();
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+        
+        updatePhotoCount();
+    });
+    
+    function updatePhotoCount() {
+        const count = photoPreview.children.length;
+        photoCount.textContent = `${count}/${appConfig.maxPhotos}`;
+    }
+    
+    // Форма
+    const form = document.getElementById('ad-form');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const adData = {
+            title: document.getElementById('ad-title').value,
+            category: document.getElementById('ad-category').value,
+            price: parseInt(document.getElementById('ad-price').value),
+            description: document.getElementById('ad-description').value,
+            contact: document.getElementById('ad-contact').value
+        };
+        
+        if (!adData.category) {
+            showNotification('Выберите категорию', 'error');
+            return;
+        }
+        
+        await createAd(adData);
+        closeModal();
+    });
+}
+
+async function createAd(adData) {
+    if (!currentUser) return false;
+    
+    const adId = generateId();
+    const ad = {
+        id: adId,
+        sellerId: getUserId(),
+        sellerName: currentUser.firstName + (currentUser.lastName ? ' ' + currentUser.lastName : ''),
+        sellerUsername: currentUser.username,
+        sellerPhoto: currentUser.photoUrl,
+        title: adData.title.trim(),
+        category: adData.category,
+        price: adData.price,
+        description: adData.description.trim(),
+        contact: adData.contact.trim(),
+        photoUrls: [], // В реальном приложении загружаем фото
+        likes: 0,
+        dislikes: 0,
+        complaints: 0,
+        verified: false,
+        blocked: false,
+        createdAt: Date.now()
+    };
+    
+    try {
+        await setData(`ads/${adId}`, ad);
+        await updateCounter(`users/${getUserId()}/adsCount`, 1);
+        
+        showNotification('Объявление успешно создано!', 'success');
+        await loadAds();
+        
+        return true;
+    } catch (error) {
+        console.error('❌ Ошибка создания объявления:', error);
+        showNotification('Ошибка создания объявления', 'error');
+        return false;
+    }
+}
+
+// ========== UTILITY FUNCTIONS ==========
+function showLoading(show) {
+    const loading = document.getElementById('loading-spinner');
+    const noAds = document.getElementById('no-ads');
+    
+    if (loading) loading.style.display = show ? 'flex' : 'none';
+    if (noAds && !show) noAds.style.display = 'none';
+}
+
+function showNoAds() {
+    const container = document.getElementById('ads-container');
+    if (!container) return;
+    
+    container.innerHTML = `
+        <div class="no-ads-message">
+            <i class="fas fa-box-open"></i>
+            <h3>Объявлений пока нет</h3>
+            <p>Будьте первым!</p>
+        </div>
     `;
 }
 
-// ========== RATINGS ==========
-async function checkUserRating(adId) {
-    try {
-        const snapshot = await db.ref(`ratings/${adId}/${getUserId()}`).once('value');
-        return snapshot.val();
-    } catch (error) {
-        console.error('❌ Ошибка проверки оценки:', error);
-        return null;
-    }
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
-async function rateAd(adId, rating) {
-    if (!currentUser) {
-        showNotification('Авторизуйтесь для оценки', 'warning');
-        return;
-    }
-    
-    const ad = ads.find(a => a.id === adId);
-    if (!ad) {
-        showNotification('Объявление не найдено', 'error');
-        return;
-    }
-    
-    if (ad.sellerId === getUserId()) {
-        showNotification('Нельзя оценивать свои объявления', 'warning');
-        return;
-    }
-    
-    const currentRating = await checkUserRating(adId);
-    
-    if (currentRating === rating) {
-        showNotification('Вы уже поставили эту оценку', 'info');
-        return;
-    }
-    
-    try {
-        await setData(`ratings/${adId}/${getUserId()}`, rating);
-        
-        const updates = {};
-        
-        if (currentRating === 'like') {
-            updates['ads/' + adId + '/likes'] = (ad.likes || 1) - 1;
-            updates['ads/' + adId + '/dislikes'] = (ad.dislikes || 0) + 1;
-            await updateCounter(`users/${ad.sellerId}/likesCount`, -1);
-            await updateCounter(`users/${ad.sellerId}/dislikesCount`, 1);
-            
-        } else if (currentRating === 'dislike') {
-            updates['ads/' + adId + '/dislikes'] = (ad.dislikes || 1) - 1;
-            updates['ads/' + adId + '/likes'] = (ad.likes || 0) + 1;
-            await updateCounter(`users/${ad.sellerId}/dislikesCount`, -1);
-            await updateCounter(`users/${ad.sellerId}/likesCount`, 1);
-            
-        } else {
-            if (rating === 'like') {
-                updates['ads/' + adId + '/likes'] = (ad.likes || 0) + 1;
-                await updateCounter(`users/${ad.sellerId}/likesCount`, 1);
-            } else {
-                updates['ads/' + adId + '/dislikes'] = (ad.dislikes || 0) + 1;
-                await updateCounter(`users/${ad.sellerId}/dislikesCount`, 1);
-            }
-        }
-        
-        await updateData('/', updates);
-        showNotification('Оценка сохранена', 'success');
-        
-    } catch (error) {
-        console.error('❌ Ошибка оценки:', error);
-        showNotification('Ошибка сохранения оценки', 'error');
-    }
+function getInitials(firstName, lastName) {
+    const first = firstName ? firstName[0].toUpperCase() : '';
+    const last = lastName ? lastName[0].toUpperCase() : '';
+    return first + last;
 }
 
-// ========== FIREBASE HELPERS ==========
 function generateId() {
     return 'ad_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }
@@ -400,7 +783,6 @@ async function updateCounter(path, delta) {
     }
 }
 
-// ========== UTILITIES ==========
 function getCurrentUser() {
     return currentUser;
 }
@@ -413,16 +795,15 @@ function isAdmin() {
     return appConfig.adminIds.includes(parseInt(userData?.id || 0));
 }
 
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
 function showNotification(message, type = 'info') {
-    const notification = document.getElementById('notification');
-    if (!notification) return;
+    // Создаем уведомление если его нет
+    let notification = document.getElementById('notification');
+    if (!notification) {
+        notification = document.createElement('div');
+        notification.id = 'notification';
+        notification.className = 'notification';
+        document.body.appendChild(notification);
+    }
     
     notification.textContent = message;
     notification.className = `notification ${type}`;
@@ -433,251 +814,26 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// ========== INITIALIZATION ==========
-async function initializeApp() {
-    try {
-        console.log('🚀 Инициализация приложения...');
-        
-        if (!initializeFirebase()) {
-            throw new Error('Не удалось инициализировать Firebase');
-        }
-        
-        tg.ready();
-        
-        if (!(await initializeAuth())) {
-            throw new Error('Ошибка авторизации');
-        }
-        
-        initializeNavigation();
-        initializeEventHandlers();
-        
-        await loadAds();
-        
-        console.log('✅ Приложение инициализировано');
-        
-    } catch (error) {
-        console.error('❌ Ошибка инициализации приложения:', error);
-        showNotification('Ошибка загрузки приложения', 'error');
-    }
+function closeModal() {
+    const modal = document.getElementById('create-ad-modal');
+    if (modal) modal.remove();
 }
 
-function initializeNavigation() {
-    const navLinks = document.querySelectorAll('.nav-link');
-    const pages = document.querySelectorAll('.page');
-    
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            
-            const pageName = link.getAttribute('data-page');
-            
-            navLinks.forEach(l => l.classList.remove('active'));
-            link.classList.add('active');
-            
-            pages.forEach(page => {
-                page.classList.remove('active');
-                if (page.id === `${pageName}-page`) {
-                    page.classList.add('active');
-                    
-                    switch (pageName) {
-                        case 'feed':
-                            loadAds();
-                            break;
-                        case 'profile':
-                            loadProfile();
-                            break;
-                    }
-                }
-            });
-        });
-    });
-}
-
+// ========== EVENT HANDLERS ==========
 function initializeEventHandlers() {
-    // Фильтры
+    // Фильтр категорий
     const categoryFilter = document.getElementById('category-filter');
     if (categoryFilter) {
         categoryFilter.addEventListener('change', (e) => {
             currentFilters.category = e.target.value;
-            applyFilters();
+            renderAds();
         });
     }
     
     // Кнопка создания объявления
     const createAdBtn = document.getElementById('create-ad-btn');
     if (createAdBtn) {
-        createAdBtn.addEventListener('click', () => {
-            showSimpleCreateForm();
-        });
-    }
-}
-
-// ========== SIMPLE CREATE FORM ==========
-function showSimpleCreateForm() {
-    const formHTML = `
-        <div class="modal active" id="simple-create-modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>Новое объявление</h2>
-                    <button class="close-modal" onclick="document.getElementById('simple-create-modal').remove()">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <form id="simple-ad-form">
-                        <div class="form-group">
-                            <label>Название товара *</label>
-                            <input type="text" id="simple-title" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Категория *</label>
-                            <select id="simple-category" required>
-                                <option value="">Выберите</option>
-                                ${appConfig.categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Цена (₽) *</label>
-                            <input type="number" id="simple-price" required min="1">
-                        </div>
-                        <div class="form-group">
-                            <label>Описание *</label>
-                            <textarea id="simple-description" rows="3" required></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>Контакт (Telegram)</label>
-                            <input type="text" id="simple-contact" value="@${currentUser?.username || ''}">
-                        </div>
-                        <div class="form-actions">
-                            <button type="button" class="btn-secondary" onclick="document.getElementById('simple-create-modal').remove()">Отмена</button>
-                            <button type="submit" class="btn-primary">Опубликовать</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    const container = document.createElement('div');
-    container.innerHTML = formHTML;
-    document.body.appendChild(container.firstElementChild);
-    
-    const form = document.getElementById('simple-ad-form');
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const adData = {
-            title: document.getElementById('simple-title').value,
-            category: document.getElementById('simple-category').value,
-            price: parseInt(document.getElementById('simple-price').value),
-            description: document.getElementById('simple-description').value,
-            contact: document.getElementById('simple-contact').value || `@${currentUser?.username}`
-        };
-        
-        await createSimpleAd(adData);
-        document.getElementById('simple-create-modal').remove();
-    });
-}
-
-async function createSimpleAd(adData) {
-    if (!currentUser) return false;
-    
-    const adId = generateId();
-    const ad = {
-        id: adId,
-        sellerId: getUserId(),
-        sellerName: currentUser.firstName + (currentUser.lastName ? ' ' + currentUser.lastName : ''),
-        sellerUsername: currentUser.username,
-        sellerPhoto: currentUser.photoUrl,
-        title: adData.title.trim(),
-        category: adData.category,
-        price: adData.price,
-        description: adData.description.trim(),
-        contact: adData.contact.trim(),
-        photoUrls: [],
-        likes: 0,
-        dislikes: 0,
-        complaints: 0,
-        verified: false,
-        blocked: false,
-        createdAt: Date.now()
-    };
-    
-    try {
-        await setData(`ads/${adId}`, ad);
-        await updateCounter(`users/${getUserId()}/adsCount`, 1);
-        
-        currentUser.adsCount = (currentUser.adsCount || 0) + 1;
-        
-        showNotification('Объявление создано!', 'success');
-        await loadAds();
-        
-        return true;
-    } catch (error) {
-        console.error('❌ Ошибка создания объявления:', error);
-        showNotification('Ошибка создания', 'error');
-        return false;
-    }
-}
-
-// ========== PROFILE ==========
-async function loadProfile() {
-    const profileContainer = document.getElementById('profile-info');
-    if (!profileContainer || !currentUser) return;
-    
-    const userData = await getData(`users/${getUserId()}`);
-    if (!userData) return;
-    
-    const rating = appConfig.ratingFormula(userData.likesCount || 0, userData.dislikesCount || 0);
-    
-    profileContainer.innerHTML = `
-        <div class="profile-header">
-            <div class="profile-avatar">
-                ${userData.photoUrl ? 
-                    `<img src="${userData.photoUrl}" alt="${userData.firstName}">` : 
-                    `<i class="fas fa-user"></i>`
-                }
-            </div>
-            <div class="profile-details">
-                <h2>${escapeHtml(userData.firstName)} ${userData.lastName ? escapeHtml(userData.lastName) : ''}</h2>
-                <div class="profile-username">@${userData.username}</div>
-                <div class="profile-rating">
-                    <i class="fas fa-star"></i>
-                    <span>Рейтинг: ${rating.toFixed(1)}</span>
-                </div>
-            </div>
-        </div>
-        <div class="stats-grid">
-            <div class="stat-item">
-                <div class="stat-value">${userData.adsCount || 0}</div>
-                <div class="stat-label">Объявлений</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">${userData.likesCount || 0}</div>
-                <div class="stat-label">Лайков</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">${userData.dislikesCount || 0}</div>
-                <div class="stat-label">Дизлайков</div>
-            </div>
-        </div>
-    `;
-}
-
-// ========== CONTACT SELLER ==========
-function contactSeller(ad) {
-    if (ad.sellerId === getUserId()) {
-        showNotification('Это ваше объявление', 'info');
-        return;
-    }
-    
-    const message = `Здравствуйте! Я пишу по поводу вашего объявления "${ad.title}" на Vape Market`;
-    const username = ad.sellerUsername.startsWith('@') ? ad.sellerUsername : `@${ad.sellerUsername}`;
-    
-    const url = `https://t.me/${username.replace('@', '')}?text=${encodeURIComponent(message)}`;
-    
-    if (window.Telegram && window.Telegram.WebApp) {
-        window.Telegram.WebApp.openTelegramLink(url);
-    } else {
-        window.open(url, '_blank');
+        createAdBtn.addEventListener('click', showCreateAdModal);
     }
 }
 
@@ -686,165 +842,6 @@ function toggleAdminPanel() {
     const adminLink = document.getElementById('admin-link');
     if (adminLink && isAdmin()) {
         adminLink.style.display = 'flex';
-        
-        adminLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            showAdminPanel();
-        });
-    }
-}
-
-function showAdminPanel() {
-    const pages = document.querySelectorAll('.page');
-    const navLinks = document.querySelectorAll('.nav-link');
-    
-    pages.forEach(page => page.classList.remove('active'));
-    navLinks.forEach(link => link.classList.remove('active'));
-    
-    document.getElementById('admin-page').classList.add('active');
-    document.querySelector('[data-page="admin"]').classList.add('active');
-    
-    loadAdminContent();
-}
-
-async function loadAdminContent() {
-    const container = document.getElementById('admin-page');
-    if (!container) return;
-    
-    try {
-        const [adsData, usersData] = await Promise.all([
-            getData('ads'),
-            getData('users')
-        ]);
-        
-        const unverifiedAds = Object.entries(adsData || {})
-            .filter(([id, ad]) => !ad.verified && !ad.blocked)
-            .map(([id, ad]) => ({ id, ...ad }));
-        
-        const users = Object.entries(usersData || {})
-            .map(([id, user]) => ({ id, ...user }));
-        
-        container.innerHTML = `
-            <div class="page-header">
-                <h1><i class="fas fa-shield-alt"></i> Админ-панель</h1>
-            </div>
-            
-            <div class="admin-stats">
-                <div class="stat-card">
-                    <h3><i class="fas fa-box"></i> На модерации</h3>
-                    <div class="stat-value">${unverifiedAds.length}</div>
-                </div>
-                <div class="stat-card">
-                    <h3><i class="fas fa-users"></i> Пользователей</h3>
-                    <div class="stat-value">${users.length}</div>
-                </div>
-            </div>
-            
-            ${unverifiedAds.length > 0 ? `
-                <div class="moderation-section">
-                    <h3>Объявления на проверку</h3>
-                    <div class="moderation-list">
-                        ${unverifiedAds.slice(0, 5).map(ad => `
-                            <div class="moderation-item">
-                                <div class="ad-preview">
-                                    <strong>${escapeHtml(ad.title)}</strong>
-                                    <span>${ad.price} ₽</span>
-                                    <span>${ad.category}</span>
-                                </div>
-                                <div class="moderation-actions">
-                                    <button class="btn-success" onclick="verifyAd('${ad.id}')">
-                                        <i class="fas fa-check"></i> Одобрить
-                                    </button>
-                                    <button class="btn-danger" onclick="rejectAd('${ad.id}')">
-                                        <i class="fas fa-ban"></i> Заблокировать
-                                    </button>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            ` : ''}
-            
-            <div class="users-section">
-                <h3>Недавние пользователи</h3>
-                <div class="users-list">
-                    ${users.slice(0, 5).map(user => `
-                        <div class="user-item">
-                            <div class="user-info">
-                                <strong>${escapeHtml(user.firstName)}</strong>
-                                <span>@${user.username}</span>
-                                <span>Объявлений: ${user.adsCount || 0}</span>
-                            </div>
-                            <div class="user-actions">
-                                <button class="btn-${user.blocked ? 'success' : 'danger'}" 
-                                        onclick="toggleUserBlock('${user.id}', ${!user.blocked})">
-                                    ${user.blocked ? 'Разблокировать' : 'Заблокировать'}
-                                </button>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        `;
-        
-    } catch (error) {
-        console.error('❌ Ошибка загрузки админ-панели:', error);
-        container.innerHTML = '<p>Ошибка загрузки данных</p>';
-    }
-}
-
-async function verifyAd(adId) {
-    if (!isAdmin()) return;
-    
-    try {
-        await updateData(`ads/${adId}`, {
-            verified: true,
-            verifiedAt: Date.now()
-        });
-        
-        showNotification('Объявление одобрено', 'success');
-        loadAdminContent();
-        
-    } catch (error) {
-        console.error('❌ Ошибка верификации:', error);
-        showNotification('Ошибка', 'error');
-    }
-}
-
-async function rejectAd(adId) {
-    if (!isAdmin()) return;
-    
-    try {
-        await updateData(`ads/${adId}`, {
-            blocked: true,
-            blockedAt: Date.now(),
-            blockReason: 'Заблокировано администратором'
-        });
-        
-        showNotification('Объявление заблокировано', 'success');
-        loadAdminContent();
-        
-    } catch (error) {
-        console.error('❌ Ошибка блокировки:', error);
-        showNotification('Ошибка', 'error');
-    }
-}
-
-async function toggleUserBlock(userId, block) {
-    if (!isAdmin()) return;
-    
-    try {
-        await updateData(`users/${userId}`, {
-            blocked: block,
-            blockedAt: block ? Date.now() : null
-        });
-        
-        showNotification(`Пользователь ${block ? 'заблокирован' : 'разблокирован'}`, 'success');
-        loadAdminContent();
-        
-    } catch (error) {
-        console.error('❌ Ошибка блокировки пользователя:', error);
-        showNotification('Ошибка', 'error');
     }
 }
 
