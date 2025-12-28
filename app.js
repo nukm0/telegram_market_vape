@@ -1,10 +1,6 @@
 // ============================================
 // ОБЪЕДИНЕННЫЙ APP.JS ДЛЯ VAPE MARKET
-// Объединяет: auth.js, ads.js, admin.js, complaints.js, faq.js
 // ============================================
-
-// Инициализация приложения
-document.addEventListener('DOMContentLoaded', initializeApp);
 
 // Глобальные переменные
 let currentUser = null;
@@ -12,8 +8,150 @@ let allAds = [];
 let currentScreen = 'main';
 
 // ============================================
-// ФУНКЦИИ ИЗ AUTH.JS
+// 1. ДОЖДИТЕСЬ ПОЛНОЙ ЗАГРУЗКИ DOM
 // ============================================
+
+// ВАЖНО: Это должно быть В НАЧАЛЕ файла, сразу после объявления переменных
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ DOM загружен, начинаем инициализацию');
+    initializeApp();
+});
+
+// ============================================
+// 2. ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ
+// ============================================
+
+async function initializeApp() {
+    try {
+        console.log('🚀 Инициализация приложения...');
+        
+        // 2.1 Проверяем, что Firebase загружен
+        console.log('🔍 Проверка Firebase...');
+        if (typeof firebase === 'undefined') {
+            throw new Error('Firebase не загружен. Проверьте CDN в index.html');
+        }
+        console.log('✅ Firebase доступен');
+        
+        // 2.2 Инициализируем Firebase
+        console.log('🔥 Инициализация Firebase...');
+        firebase.initializeApp(firebaseConfig);
+        console.log('✅ Firebase инициализирован');
+        
+        // 2.3 Инициализируем UI (кнопки, обработчики)
+        console.log('🎨 Инициализация UI...');
+        initializeUI();
+        
+        // 2.4 Авторизуем пользователя
+        console.log('🔐 Авторизация пользователя...');
+        const user = await authenticateUser();
+        
+        if (!user) {
+            throw new Error('Не удалось авторизовать пользователя');
+        }
+        
+        // 2.5 Загружаем объявления
+        console.log('📦 Загрузка объявлений...');
+        await loadAllAds();
+        
+        console.log('🎉 Приложение успешно инициализировано!');
+        
+    } catch (error) {
+        console.error('❌ Ошибка инициализации:', error);
+        showErrorScreen('Ошибка загрузки приложения. Пожалуйста, попробуйте позже.');
+    }
+}
+
+// ============================================
+// 3. ИНИЦИАЛИЗАЦИЯ UI (ДОБАВЛЕНИЕ ОБРАБОТЧИКОВ)
+// ============================================
+
+function initializeUI() {
+    console.log('🎨 Инициализация UI...');
+    
+    // 3.1 Проверяем существование элементов ДО добавления обработчиков
+    const navMain = document.getElementById('navMain');
+    const navProfile = document.getElementById('navProfile');
+    const navFAQ = document.getElementById('navFAQ');
+    const createAdBtn = document.getElementById('createAdBtn');
+    
+    console.log('🔍 Поиск элементов DOM:');
+    console.log('- navMain:', navMain ? 'найден' : 'НЕ НАЙДЕН');
+    console.log('- navProfile:', navProfile ? 'найден' : 'НЕ НАЙДЕН');
+    console.log('- navFAQ:', navFAQ ? 'найден' : 'НЕ НАЙДЕН');
+    console.log('- createAdBtn:', createAdBtn ? 'найден' : 'НЕ НАЙДЕН');
+    
+    if (!navMain || !navProfile || !navFAQ || !createAdBtn) {
+        console.error('❌ Не найдены элементы DOM. Проверьте HTML структуру.');
+        return;
+    }
+    
+    // 3.2 Настраиваем кнопки навигации
+    navMain.addEventListener('click', function() {
+        console.log('🏠 Нажата кнопка "Главная"');
+        showMainScreen();
+    });
+    
+    navProfile.addEventListener('click', function() {
+        console.log('👤 Нажата кнопка "Профиль"');
+        showProfileScreen();
+    });
+    
+    navFAQ.addEventListener('click', function() {
+        console.log('❓ Нажата кнопка "Помощь"');
+        loadFAQ();
+    });
+    
+    // 3.3 Кнопка создания объявления
+    createAdBtn.addEventListener('click', function() {
+        console.log('➕ Нажата кнопка "Новое объявление"');
+        showCreateAdForm();
+    });
+    
+    // 3.4 Кнопки фильтрации
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    console.log(`🔍 Найдено кнопок фильтрации: ${filterButtons.length}`);
+    
+    filterButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            const category = e.target.dataset.category;
+            console.log(`🎯 Выбрана категория: ${category}`);
+            filterAdsByCategory(category);
+        });
+    });
+    
+    // 3.5 Добавляем кнопку админа (если пользователь админ)
+    // Эта часть будет выполнена позже, после авторизации
+    console.log('✅ UI элементы найдены и обработчики добавлены');
+}
+
+// ============================================
+// 4. ФУНКЦИЯ ИНИЦИАЛИЗАЦИИ FIREBASE (ОБНОВЛЕННАЯ)
+// ============================================
+
+// Найдите старую функцию initializeFirebase() и ЗАМЕНИТЕ её на эту:
+function initializeFirebase() {
+    try {
+        console.log('🚀 Инициализация Firebase...');
+        
+        // Проверяем наличие firebase
+        if (typeof firebase === 'undefined') {
+            throw new Error('Firebase не загружен. Проверьте CDN в index.html');
+        }
+        
+        // Инициализируем Firebase
+        firebase.initializeApp(firebaseConfig);
+        console.log('✅ Firebase инициализирован');
+        
+        // Возвращаем методы для работы
+        return {
+            auth: firebase.auth(),
+            database: firebase.database()
+        };
+    } catch (error) {
+        console.error('❌ Ошибка инициализации Firebase:', error);
+        throw error;
+    }
+}
 
 // Инициализация Firebase
 function initializeFirebase() {
