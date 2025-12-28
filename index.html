@@ -3,99 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vape Market - Барахолка для вейпов</title>
+    <title>Vape Market</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase COMPAT версия (глобальная) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    <!-- Навигация -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">
-                <i class="fas fa-smoking"></i>
-                <span>Vape Market</span>
-            </div>
-            <div class="nav-links">
-                <a href="#" class="nav-link active" data-page="feed">
-                    <i class="fas fa-home"></i>
-                    <span>Объявления</span>
-                </a>
-                <a href="#" class="nav-link" data-page="profile">
-                    <i class="fas fa-user"></i>
-                    <span>Кабинет</span>
-                </a>
-                <a href="#" class="nav-link" data-page="faq">
-                    <i class="fas fa-question-circle"></i>
-                    <span>Помощь</span>
-                </a>
-                <a href="#" class="nav-link" data-page="admin" id="admin-link" style="display: none;">
-                    <i class="fas fa-shield-alt"></i>
-                    <span>Админ</span>
-                </a>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Основной контент -->
-    <main class="main-content">
-        <!-- Страница Ленты -->
-        <div id="feed-page" class="page active">
-            <div class="page-header">
-                <h1>Vape Market</h1>
-                <button id="create-ad-btn" class="btn-primary">
-                    <i class="fas fa-plus"></i> Разместить объявление
-                </button>
-            </div>
-            
-            <div class="filters">
-                <select id="category-filter" class="filter-select">
-                    <option value="all">Все</option>
-                    <option value="Жидкости">Жидкость</option>
-                    <option value="Одноразовые">Одноразово</option>
-                    <option value="Под-системы">Под-системы</option>
-                    <option value="Расходники">Расходники</option>
-                </select>
-            </div>
-            
-            <div id="ads-container" class="ads-grid"></div>
-            
-            <div id="loading-spinner" class="loading-spinner">
-                <i class="fas fa-spinner fa-spin"></i>
-                <span>Загрузка...</span>
-            </div>
-        </div>
-
-        <!-- Страница Профиля -->
-        <div id="profile-page" class="page">
-            <div class="page-header">
-                <h1>Личный кабинет</h1>
-            </div>
-            <div id="profile-info" class="profile-info"></div>
-        </div>
-
-        <!-- Страница FAQ -->
-        <div id="faq-page" class="page">
-            <div class="page-header">
-                <h1>Помощь</h1>
-            </div>
-            <div id="faq-content" class="faq-content"></div>
-        </div>
-
-        <!-- Страница Админа -->
-        <div id="admin-page" class="page">
-            <div class="page-header">
-                <h1>Админ-панель</h1>
-            </div>
-            <div id="admin-content"></div>
-        </div>
-    </main>
-
-    <!-- Подключаем Firebase и Telegram SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Структура приложения -->
+    <div id="loader" class="loading" style="display: none;">Загрузка...</div>
     
-    <!-- Основной файл приложения -->
+    <!-- Навигация -->
+    <div class="nav-buttons">
+        <button id="navMain">🏠 Главная</button>
+        <button id="navProfile">👤 Профиль</button>
+        <button id="navFAQ">❓ Помощь</button>
+    </div>
+    
+    <!-- Основные экраны -->
+    <div id="mainScreen">
+        <h1>Vape Market</h1>
+        <!-- Фильтры -->
+        <div class="filters">
+            <button class="filter-btn" data-category="all">Все</button>
+            <button class="filter-btn" data-category="Жидкости">Жидкость</button>
+            <button class="filter-btn" data-category="Одноразовые">Одноразово</button>
+            <button class="filter-btn" data-category="Под-системы">Под-системы</button>
+            <button class="filter-btn" data-category="Расходники">Расходники</button>
+        </div>
+        <!-- Кнопка создания -->
+        <button id="createAdBtn" class="btn-create">+ Новое объявление</button>
+        <!-- Контейнер объявлений -->
+        <div id="adsContainer"></div>
+    </div>
+    
+    <div id="profileScreen" style="display: none;">
+        <h1>Мой профиль</h1>
+        <div id="profileContent"></div>
+    </div>
+    
+    <div id="faqScreen" style="display: none;">
+        <h1>Помощь и FAQ</h1>
+        <div id="faqContent"></div>
+    </div>
+    
+    <div id="adminScreen" style="display: none;">
+        <h1>Админ-панель</h1>
+        <div id="adminContent"></div>
+    </div>
+    
+    <!-- Подключение скриптов -->
+    <script src="config.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
