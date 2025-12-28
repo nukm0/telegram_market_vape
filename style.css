@@ -777,4 +777,921 @@ select.form-input {
 }
 
 .profile-tab.active {
-    background: linear-gradient(135deg, rgba(124
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.4) 0%, rgba(124, 58, 237, 0.3) 100%);
+}
+
+.profile-tab-content {
+    display: none;
+}
+
+.profile-tab-content.active {
+    display: block;
+}
+
+/* История просмотров */
+.history-list {
+    margin-top: 20px;
+}
+
+.history-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.history-info h4 {
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.history-info p {
+    font-size: 12px;
+    color: #D8B4FE;
+}
+
+.remove-history-btn {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(239, 68, 68, 0.2) 100%);
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    color: #EF4444;
+    padding: 5px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+/* Мои объявления */
+.my-ads-list {
+    margin-top: 20px;
+}
+
+.my-ad-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.my-ad-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+.my-ad-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+}
+
+.my-ad-price {
+    font-size: 18px;
+    font-weight: 700;
+    color: #10B981;
+}
+
+.my-ad-description {
+    font-size: 14px;
+    color: #D8B4FE;
+    margin-bottom: 10px;
+}
+
+.my-ad-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.edit-ad-btn, .delete-ad-btn {
+    flex: 1;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+
+.edit-ad-btn {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.4) 0%, rgba(59, 130, 246, 0.3) 100%);
+}
+
+.delete-ad-btn {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.4) 0%, rgba(239, 68, 68, 0.3) 100%);
+}
+
+/* FAQ страница */
+.faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.faq-item {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 15px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.faq-item:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+}
+
+.faq-question {
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 15px;
+}
+
+.faq-answer {
+    margin-top: 10px;
+    color: #D8B4FE;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Статистика сервера */
+.server-stats {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 15px;
+    margin-top: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.server-stats-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.server-stats-title {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.server-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.server-stat-item {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+}
+
+.server-stat-number {
+    font-size: 20px;
+    font-weight: 700;
+    color: #A78BFA;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.server-stat-label {
+    font-size: 11px;
+    color: #9CA3AF;
+}
+
+/* Кнопка жалобы */
+.complaint-btn {
+    width: 100%;
+    padding: 15px;
+    border-radius: 15px;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(239, 68, 68, 0.2) 100%);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: #EF4444;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.complaint-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
+    border-radius: 13px;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.complaint-btn:hover::before {
+    opacity: 1;
+}
+
+.complaint-btn:hover {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.4) 0%, rgba(239, 68, 68, 0.3) 100%);
+    transform: translateY(-2px);
+}
+
+/* Модальное окно для фото */
+.photo-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.photo-modal.active {
+    display: flex;
+}
+
+.photo-modal-img {
+    max-width: 90%;
+    max-height: 70%;
+    object-fit: contain;
+    border-radius: 10px;
+}
+
+.photo-modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.photo-modal-close:hover {
+    transform: scale(1.1);
+}
+
+.photo-modal-counter {
+    color: white;
+    margin-top: 20px;
+    font-size: 18px;
+}
+
+.photo-modal-nav {
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+    transform: translateY(-50%);
+}
+
+.photo-modal-nav-btn {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.photo-modal-nav-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Уведомления */
+.notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    transition: transform 0.5s ease;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    max-width: 90%;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.notification.show {
+    transform: translateX(-50%) translateY(0);
+}
+
+.notification.success {
+    border-left: 4px solid #10B981;
+}
+
+.notification.error {
+    border-left: 4px solid #EF4444;
+}
+
+.notification.info {
+    border-left: 4px solid #3B82F6;
+}
+
+.notification.warning {
+    border-left: 4px solid #F59E0B;
+}
+
+/* Скроллбар */
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #8B5CF6;
+    border-radius: 10px;
+}
+
+/* Скрытый input для загрузки фото */
+.hidden-file-input {
+    display: none;
+}
+
+/* Кнопки формы */
+.form-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.publish-btn {
+    flex: 2;
+    padding: 15px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.publish-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
+    border-radius: 10px;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.publish-btn:hover::before {
+    opacity: 1;
+}
+
+.publish-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
+}
+
+.cancel-btn {
+    flex: 1;
+    padding: 15px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(239, 68, 68, 0.2) 100%);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.cancel-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
+    border-radius: 10px;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.cancel-btn:hover::before {
+    opacity: 1;
+}
+
+.cancel-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Стиль для заблокированных кнопок лайка/дизлайка */
+.rate-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.rate-btn:disabled:hover {
+    transform: none;
+}
+
+.rate-btn:disabled::before {
+    display: none;
+}
+
+/* Стили для нескольких фотографий */
+.uploaded-photos-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.uploaded-photo-item {
+    width: 80px;
+    height: 80px;
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.uploaded-photo-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.remove-photo-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(239, 68, 68, 0.8);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+/* Синхронизация статус */
+.sync-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #A78BFA;
+    margin-top: 10px;
+}
+
+.sync-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #10B981;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* ============ АДМИН-ПАНЕЛЬ ============ */
+
+.admin-page-content {
+    padding: 10px;
+}
+
+.admin-section {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-section-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-section-title i {
+    color: #F59E0B;
+}
+
+.admin-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.admin-stat-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 15px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-stat-number {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    color: #A78BFA;
+    margin-bottom: 5px;
+}
+
+.admin-stat-label {
+    font-size: 12px;
+    color: #9CA3AF;
+}
+
+.admin-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.admin-action-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 15px;
+    padding: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.admin-action-btn:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.admin-action-btn i {
+    font-size: 24px;
+    color: #F59E0B;
+}
+
+.admin-action-btn span {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.admin-list-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-item-info h4 {
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.admin-item-info p {
+    font-size: 12px;
+    color: #D8B4FE;
+}
+
+.admin-item-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.admin-small-btn {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.3);
+    color: white;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.admin-small-btn:hover {
+    transform: translateY(-2px);
+}
+
+.admin-small-btn.delete {
+    background: rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 0.5);
+}
+
+.admin-small-btn.edit {
+    background: rgba(59, 130, 246, 0.3);
+    border-color: rgba(59, 130, 246, 0.5);
+}
+
+.admin-small-btn.view {
+    background: rgba(16, 185, 129, 0.3);
+    border-color: rgba(16, 185, 129, 0.5);
+}
+
+.admin-filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+    overflow-x: auto;
+    padding: 10px 0;
+}
+
+.admin-filter-btn {
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.admin-filter-btn:hover {
+    border-color: rgba(245, 158, 11, 0.5);
+}
+
+.admin-filter-btn.active {
+    background: rgba(245, 158, 11, 0.3);
+    border-color: rgba(245, 158, 11, 0.5);
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    margin-right: 5px;
+}
+
+.status-new {
+    background: rgba(59, 130, 246, 0.3);
+    color: #3B82F6;
+}
+
+.status-pending {
+    background: rgba(245, 158, 11, 0.3);
+    color: #F59E0B;
+}
+
+.status-resolved {
+    background: rgba(16, 185, 129, 0.3);
+    color: #10B981;
+}
+
+.status-rejected {
+    background: rgba(239, 68, 68, 0.3);
+    color: #EF4444;
+}
+
+.admin-back-btn {
+    padding: 10px 15px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.admin-back-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.admin-banner-card {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.banner-textarea {
+    width: 100%;
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.3);
+    color: white;
+    font-size: 14px;
+    margin-bottom: 15px;
+    resize: vertical;
+    min-height: 100px;
+}
+
+.admin-subsection {
+    display: none;
+}
+
+.admin-subsection.active {
+    display: block;
+}
+
+/* Бейдж администратора */
+.admin-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 11px;
+    font-weight: 600;
+    z-index: 100;
+    display: none;
+    align-items: center;
+    gap: 4px;
+}
+
+.admin-badge.show {
+    display: flex;
+}
+
+/* ============ ЭКРАН БЛОКИРОВКИ ============ */
+.blocked-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--gradient-dark);
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    text-align: center;
+}
+
+.blocked-icon {
+    font-size: 80px;
+    color: #EF4444;
+    margin-bottom: 30px;
+    animation: pulse 2s infinite;
+}
+
+.blocked-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: white;
+}
+
+.blocked-reason {
+    font-size: 16px;
+    color: #D8B4FE;
+    margin-bottom: 25px;
+    max-width: 400px;
+    line-height: 1.5;
+}
+
+.blocked-details {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 400px;
+    width: 100%;
+}
+
+.blocked-info-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.blocked-info-label {
+    color: #A78BFA;
+}
+
+.blocked-info-value {
+    color: white;
+    font-weight: 600;
+}
+
+.blocked-time-left {
+    font-size: 18px;
+    font-weight: 700;
+    color: #F59E0B;
+    margin-top: 10px;
+}
+
+.blocked-contact {
+    margin-top: 20px;
+    color: #D8B4FE;
+    font-size: 14px;
+}
+
+.blocked-contact a {
+    color: #A78BFA;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.blocked-contact a:hover {
+    text-decoration: underline;
+}
