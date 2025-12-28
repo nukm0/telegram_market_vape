@@ -4,8 +4,775 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Профиль - Vape Market</title>
+    
+    <!-- Стили -->
     <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <style>
+        /* Дополнительные стили для страницы профиля */
+        .profile-page {
+            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 50%, #6D28D9 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .profile-container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .profile-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .back-btn {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .profile-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .profile-avatar-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+            margin: 0 auto 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .profile-name {
+            text-align: center;
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .profile-username {
+            text-align: center;
+            color: #D8B4FE;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        
+        .profile-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #A78BFA;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #9CA3AF;
+        }
+        
+        .profile-tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            background: transparent;
+            border: none;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .tab-btn.active {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.4) 0%, rgba(124, 58, 237, 0.3) 100%);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .my-ads-list, .history-list, .complaints-list {
+            margin-top: 15px;
+        }
+        
+        .ad-item, .history-item, .complaint-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .ad-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        
+        .ad-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .ad-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: #10B981;
+        }
+        
+        .ad-description {
+            font-size: 14px;
+            color: #D8B4FE;
+            margin-bottom: 10px;
+        }
+        
+        .ad-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        
+        .action-btn.edit {
+            background: rgba(59, 130, 246, 0.3);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+        
+        .action-btn.delete {
+            background: rgba(239, 68, 68, 0.3);
+            border-color: rgba(239, 68, 68, 0.5);
+        }
+        
+        .logout-btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(239, 68, 68, 0.2) 100%);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: #EF4444;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #D8B4FE;
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+    </style>
 </head>
 <body>
     <div class="profile-page">
-        <header class="
+        <div class="profile-container">
+            <!-- Шапка профиля -->
+            <header class="profile-header">
+                <a href="../index.html" class="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    Назад
+                </a>
+                <div class="profile-title">Личный кабинет</div>
+                <div style="width: 80px;"></div> <!-- Для выравнивания -->
+            </header>
+            
+            <!-- Аватар и имя -->
+            <div class="profile-avatar-large" id="profileAvatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <h1 class="profile-name" id="profileName">Загрузка...</h1>
+            <p class="profile-username" id="profileUsername">@username</p>
+            
+            <!-- Статистика -->
+            <div class="profile-stats-grid">
+                <div class="stat-card">
+                    <span class="stat-value" id="statsAds">0</span>
+                    <span class="stat-label">Объявления</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="statsLikes">0</span>
+                    <span class="stat-label">Лайки</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="statsDislikes">0</span>
+                    <span class="stat-label">Дизлайки</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="statsRating">0.0</span>
+                    <span class="stat-label">Рейтинг</span>
+                </div>
+            </div>
+            
+            <!-- Вкладки -->
+            <div class="profile-tabs">
+                <button class="tab-btn active" onclick="switchTab('my-ads')">
+                    <i class="fas fa-box-open"></i>
+                    Мои
+                </button>
+                <button class="tab-btn" onclick="switchTab('history')">
+                    <i class="fas fa-history"></i>
+                    История
+                </button>
+                <button class="tab-btn" onclick="switchTab('complaints')">
+                    <i class="fas fa-flag"></i>
+                    Жалобы
+                </button>
+            </div>
+            
+            <!-- Вкладка "Мои объявления" -->
+            <div class="tab-content active" id="tab-my-ads">
+                <div class="my-ads-list" id="myAdsList">
+                    <div class="empty-state">
+                        <i class="fas fa-box-open"></i>
+                        <p>У вас пока нет объявлений</p>
+                        <a href="../index.html" style="color: #A78BFA; margin-top: 10px; display: inline-block;">
+                            Создать первое объявление
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Вкладка "История" -->
+            <div class="tab-content" id="tab-history">
+                <div class="history-list" id="historyList">
+                    <div class="empty-state">
+                        <i class="fas fa-history"></i>
+                        <p>История просмотров пуста</p>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="clearHistory()">
+                    <i class="fas fa-trash"></i>
+                    Очистить историю
+                </button>
+            </div>
+            
+            <!-- Вкладка "Жалобы" -->
+            <div class="tab-content" id="tab-complaints">
+                <div class="complaints-list" id="complaintsList">
+                    <div class="empty-state">
+                        <i class="fas fa-flag"></i>
+                        <p>У вас нет отправленных жалоб</p>
+                        <small style="font-size: 12px; opacity: 0.7;">
+                            Чтобы подать жалобу, нажмите на кнопку "Жалоба" в объявлении
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Кнопка выхода -->
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                Выйти из аккаунта
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // Инициализация Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBgPG4EXFQHoIOVLt2_BdCmiUJEWTXsGN8",
+            authDomain: "telegram-market-vape.firebaseapp.com",
+            databaseURL: "https://telegram-market-vape-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "telegram-market-vape",
+            storageBucket: "telegram-market-vape.appspot.com",
+            messagingSenderId: "35870048384",
+            appId: "1:35870048384:web:acd6501459aa39180b6665",
+            measurementId: "G-99R2PPBNF8"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        
+        // Глобальные переменные
+        let currentUserId = null;
+        let currentUserData = null;
+        let myAds = [];
+        let history = [];
+        let complaints = [];
+        
+        // Загрузка данных при открытии страницы
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Получаем ID пользователя из localStorage
+            currentUserId = localStorage.getItem('userId');
+            
+            if (!currentUserId) {
+                // Если нет ID, возвращаемся на главную
+                window.location.href = '../index.html';
+                return;
+            }
+            
+            // Загружаем данные пользователя
+            await loadUserData();
+            
+            // Загружаем объявления пользователя
+            await loadMyAds();
+            
+            // Загружаем историю
+            await loadHistory();
+            
+            // Загружаем жалобы
+            await loadComplaints();
+            
+            // Обновляем статистику
+            updateStats();
+        });
+        
+        // Загрузка данных пользователя
+        async function loadUserData() {
+            try {
+                const snapshot = await database.ref(`users/${currentUserId}`).once('value');
+                currentUserData = snapshot.val();
+                
+                if (currentUserData) {
+                    // Обновляем UI
+                    document.getElementById('profileName').textContent = 
+                        currentUserData.name || 'Пользователь';
+                    document.getElementById('profileUsername').textContent = 
+                        currentUserData.username ? '@' + currentUserData.username : 'Без username';
+                    
+                    // Аватар
+                    if (currentUserData.photo_url) {
+                        document.getElementById('profileAvatar').innerHTML = 
+                            `<img src="${currentUserData.photo_url}" alt="Аватар" style="width:100%;height:100%;border-radius:50%;">`;
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки данных пользователя:', error);
+            }
+        }
+        
+        // Загрузка моих объявлений
+        async function loadMyAds() {
+            try {
+                const snapshot = await database.ref('ads')
+                    .orderByChild('sellerId')
+                    .equalTo(currentUserId)
+                    .once('value');
+                
+                myAds = [];
+                snapshot.forEach((child) => {
+                    const ad = child.val();
+                    ad.id = child.key;
+                    myAds.push(ad);
+                });
+                
+                updateMyAdsList();
+            } catch (error) {
+                console.error('Ошибка загрузки объявлений:', error);
+            }
+        }
+        
+        // Обновление списка моих объявлений
+        function updateMyAdsList() {
+            const container = document.getElementById('myAdsList');
+            
+            if (myAds.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-box-open"></i>
+                        <p>У вас пока нет объявлений</p>
+                        <a href="../index.html" style="color: #A78BFA; margin-top: 10px; display: inline-block;">
+                            Создать первое объявление
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            myAds.forEach(ad => {
+                const dealType = ad.dealType === 'buy' ? 'Покупаю' : 'Продаю';
+                const dealTypeClass = ad.dealType === 'buy' ? 'buy' : 'sell';
+                
+                html += `
+                    <div class="ad-item">
+                        <div class="ad-header">
+                            <div class="ad-title">${ad.title}</div>
+                            <div class="ad-price">${ad.price.toLocaleString()} ₽</div>
+                        </div>
+                        <div class="ad-description">
+                            <span style="padding: 2px 8px; border-radius: 10px; background: ${ad.dealType === 'buy' ? 'rgba(59,130,246,0.2)' : 'rgba(16,185,129,0.2)'}; color: ${ad.dealType === 'buy' ? '#3B82F6' : '#10B981'}; font-size: 11px; margin-right: 8px;">
+                                ${dealType}
+                            </span>
+                            ${ad.description || 'Без описания'}
+                        </div>
+                        <div style="display: flex; gap: 10px; font-size: 12px; color: #D8B4FE; margin-bottom: 10px;">
+                            <div><i class="fas fa-thumbs-up"></i> ${ad.likes || 0}</div>
+                            <div><i class="fas fa-thumbs-down"></i> ${ad.dislikes || 0}</div>
+                            <div><i class="fas fa-flag"></i> ${ad.complaints || 0}</div>
+                        </div>
+                        <div class="ad-actions">
+                            <button class="action-btn edit" onclick="editAd('${ad.id}')">
+                                <i class="fas fa-edit"></i> Редактировать
+                            </button>
+                            <button class="action-btn delete" onclick="deleteAd('${ad.id}')">
+                                <i class="fas fa-trash"></i> Удалить
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Загрузка истории
+        async function loadHistory() {
+            try {
+                const snapshot = await database.ref(`userHistory/${currentUserId}`)
+                    .orderByChild('timestamp')
+                    .limitToLast(50)
+                    .once('value');
+                
+                history = [];
+                snapshot.forEach((child) => {
+                    history.unshift(child.val());
+                });
+                
+                updateHistoryList();
+            } catch (error) {
+                console.error('Ошибка загрузки истории:', error);
+            }
+        }
+        
+        // Обновление списка истории
+        function updateHistoryList() {
+            const container = document.getElementById('historyList');
+            
+            if (history.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-history"></i>
+                        <p>История просмотров пуста</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            history.forEach(item => {
+                html += `
+                    <div class="history-item">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 600; color: white; margin-bottom: 5px;">${item.title}</div>
+                                <div style="font-size: 12px; color: #D8B4FE;">
+                                    ${item.sellerUsername} • ${item.category} • ${item.price.toLocaleString()} ₽
+                                </div>
+                            </div>
+                            <div style="font-size: 11px; color: #9CA3AF;">${item.date}</div>
+                        </div>
+                        <button onclick="removeFromHistory('${item.id}')" style="margin-top: 10px; padding: 4px 10px; border-radius: 8px; background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.3); color: #EF4444; font-size: 11px; cursor: pointer;">
+                            Удалить
+                        </button>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Загрузка жалоб
+        async function loadComplaints() {
+            try {
+                const snapshot = await database.ref('complaints')
+                    .orderByChild('reporterId')
+                    .equalTo(currentUserId)
+                    .once('value');
+                
+                complaints = [];
+                snapshot.forEach((child) => {
+                    complaints.unshift(child.val());
+                });
+                
+                updateComplaintsList();
+            } catch (error) {
+                console.error('Ошибка загрузки жалоб:', error);
+            }
+        }
+        
+        // Обновление списка жалоб
+        function updateComplaintsList() {
+            const container = document.getElementById('complaintsList');
+            
+            if (complaints.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-flag"></i>
+                        <p>У вас нет отправленных жалоб</p>
+                        <small style="font-size: 12px; opacity: 0.7;">
+                            Чтобы подать жалобу, нажмите на кнопку "Жалоба" в объявлении
+                        </small>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            complaints.forEach(complaint => {
+                const date = new Date(complaint.createdAt).toLocaleDateString('ru-RU');
+                let statusClass = 'pending';
+                let statusText = 'В обработке';
+                
+                if (complaint.status === 'resolved') {
+                    statusClass = 'resolved';
+                    statusText = 'Решена';
+                } else if (complaint.status === 'rejected') {
+                    statusClass = 'rejected';
+                    statusText = 'Отклонена';
+                }
+                
+                html += `
+                    <div class="complaint-item">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <div style="font-weight: 600; color: white;">
+                                На: ${complaint.targetUsername}
+                            </div>
+                            <span style="padding: 3px 8px; border-radius: 8px; font-size: 10px; background: ${statusClass === 'resolved' ? 'rgba(16,185,129,0.2)' : statusClass === 'rejected' ? 'rgba(239,68,68,0.2)' : 'rgba(245,158,11,0.2)'}; color: ${statusClass === 'resolved' ? '#10B981' : statusClass === 'rejected' ? '#EF4444' : '#F59E0B'}">
+                                ${statusText}
+                            </span>
+                        </div>
+                        <div style="font-size: 14px; color: #D8B4FE; margin-bottom: 5px;">
+                            Причина: ${complaint.reason}
+                        </div>
+                        <div style="font-size: 12px; color: #9CA3AF;">
+                            ${date} • ${complaint.description ? 'Есть описание' : 'Без описания'}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Обновление статистики
+        function updateStats() {
+            // Количество объявлений
+            document.getElementById('statsAds').textContent = myAds.length;
+            
+            // Лайки и дизлайки
+            let totalLikes = 0;
+            let totalDislikes = 0;
+            
+            myAds.forEach(ad => {
+                totalLikes += ad.likes || 0;
+                totalDislikes += ad.dislikes || 0;
+            });
+            
+            document.getElementById('statsLikes').textContent = totalLikes;
+            document.getElementById('statsDislikes').textContent = totalDislikes;
+            
+            // Рейтинг
+            if (currentUserData && currentUserData.rating) {
+                document.getElementById('statsRating').textContent = currentUserData.rating.toFixed(1);
+            }
+        }
+        
+        // Переключение вкладок
+        function switchTab(tabName) {
+            // Скрываем все вкладки
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Убираем активный класс у всех кнопок
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Показываем выбранную вкладку
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            
+            // Активируем кнопку
+            event.target.classList.add('active');
+            
+            // Обновляем данные если нужно
+            if (tabName === 'my-ads') {
+                updateMyAdsList();
+            } else if (tabName === 'history') {
+                updateHistoryList();
+            } else if (tabName === 'complaints') {
+                updateComplaintsList();
+            }
+        }
+        
+        // Редактирование объявления
+        function editAd(adId) {
+            window.location.href = `../index.html?edit=${adId}`;
+        }
+        
+        // Удаление объявления
+        async function deleteAd(adId) {
+            if (!confirm('Вы уверены, что хотите удалить это объявление?')) {
+                return;
+            }
+            
+            try {
+                await database.ref(`ads/${adId}`).remove();
+                
+                // Обновляем список
+                myAds = myAds.filter(ad => ad.id !== adId);
+                updateMyAdsList();
+                updateStats();
+                
+                alert('Объявление удалено');
+            } catch (error) {
+                console.error('Ошибка удаления:', error);
+                alert('Ошибка при удалении объявления');
+            }
+        }
+        
+        // Удаление из истории
+        async function removeFromHistory(historyId) {
+            try {
+                // Находим и удаляем запись истории
+                const snapshot = await database.ref(`userHistory/${currentUserId}`).once('value');
+                snapshot.forEach((child) => {
+                    if (child.val().id === historyId) {
+                        database.ref(`userHistory/${currentUserId}/${child.key}`).remove();
+                    }
+                });
+                
+                // Обновляем список
+                history = history.filter(item => item.id !== historyId);
+                updateHistoryList();
+            } catch (error) {
+                console.error('Ошибка удаления из истории:', error);
+            }
+        }
+        
+        // Очистка истории
+        async function clearHistory() {
+            if (!confirm('Очистить всю историю просмотров?')) {
+                return;
+            }
+            
+            try {
+                await database.ref(`userHistory/${currentUserId}`).remove();
+                history = [];
+                updateHistoryList();
+                alert('История очищена');
+            } catch (error) {
+                console.error('Ошибка очистки истории:', error);
+                alert('Ошибка при очистке истории');
+            }
+        }
+        
+        // Выход из аккаунта
+        function logout() {
+            if (confirm('Вы действительно хотите выйти из аккаунта?')) {
+                localStorage.removeItem('userId');
+                window.location.href = '../index.html';
+            }
+        }
+        
+        // Показать уведомление
+        function showNotification(message, type = 'info') {
+            // Создаем элемент уведомления
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0,0,0,0.8);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 10px;
+                z-index: 1000;
+                border-left: 4px solid ${type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : '#3B82F6'};
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
