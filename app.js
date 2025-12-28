@@ -1,4 +1,4 @@
-// app.js - Vape Market Application
+// app.js - Vape Market Application (Исправленная версия)
 
 // ==================== FIREBASE КОНФИГУРАЦИЯ ====================
 const firebaseConfig = {
@@ -13,14 +13,15 @@ const firebaseConfig = {
 };
 
 // Инициализация Firebase
+let database;
 try {
     firebase.initializeApp(firebaseConfig);
+    database = firebase.database();
     console.log("✅ Firebase успешно инициализирован");
 } catch (error) {
     console.error("❌ Ошибка инициализации Firebase:", error);
+    showNotification("Ошибка подключения к базе данных", "error");
 }
-
-const database = firebase.database();
 
 // ==================== КОНСТАНТЫ И ПЕРЕМЕННЫЕ ====================
 const ADMIN_USERS = {
@@ -62,6 +63,10 @@ const FirebaseMarketServer = {
     // Получить все объявления
     getAllAds: async function(filters = {}) {
         try {
+            if (!database) {
+                throw new Error("Firebase не инициализирован");
+            }
+            
             console.log('🔄 Получение объявлений из Firebase...');
             
             const snapshot = await database.ref('ads').once('value');
@@ -111,13 +116,22 @@ const FirebaseMarketServer = {
             
         } catch (error) {
             console.error('❌ Ошибка загрузки объявлений:', error);
-            throw error;
+            
+            // Возвращаем тестовые данные если Firebase недоступен
+            if (error.code === 'PERMISSION_DENIED') {
+                console.warn('⚠️ Нет доступа к Firebase, используем тестовые данные');
+                return getTestAds();
+            }
+            
+            return [];
         }
     },
     
     // Получить рейтинги
     getRatings: async function() {
         try {
+            if (!database) return {};
+            
             const snapshot = await database.ref('ratings').once('value');
             return snapshot.val() || {};
         } catch (error) {
@@ -129,6 +143,8 @@ const FirebaseMarketServer = {
     // Обновить рейтинг
     updateRating: async function(sellerId, userId, rating) {
         try {
+            if (!database) return false;
+            
             await database.ref(`ratings/${sellerId}/${userId}`).set(rating);
             
             // Получаем все оценки
@@ -164,6 +180,8 @@ const FirebaseMarketServer = {
     // Регистрация пользователя
     registerUser: async function(userData) {
         try {
+            if (!database) return false;
+            
             const userRef = database.ref(`users/${userData.id}`);
             const snapshot = await userRef.once('value');
             
@@ -202,6 +220,8 @@ const FirebaseMarketServer = {
     // Добавить объявление
     addAd: async function(adData) {
         try {
+            if (!database) return null;
+            
             console.log('🔄 Добавление объявления...');
             
             // Регистрируем пользователя
@@ -254,26 +274,14 @@ const FirebaseMarketServer = {
     // Добавить в историю
     addToHistory: async function(userId, historyItem) {
         try {
+            if (!database) return false;
+            
             const historyRef = database.ref(`userHistory/${userId}`).push();
             await historyRef.set({
                 ...historyItem,
                 id: historyRef.key,
                 timestamp: new Date().toISOString()
             });
-            
-            // Ограничиваем историю 50 записями
-            const historySnapshot = await database.ref(`userHistory/${userId}`).once('value');
-            const history = [];
-            historySnapshot.forEach((child) => {
-                history.push({ key: child.key, ...child.val() });
-            });
-            
-            if (history.length > 50) {
-                const toDelete = history.slice(50);
-                for (const item of toDelete) {
-                    await database.ref(`userHistory/${userId}/${item.key}`).remove();
-                }
-            }
             
             return true;
         } catch (error) {
@@ -285,6 +293,8 @@ const FirebaseMarketServer = {
     // Получить историю пользователя
     getUserHistory: async function(userId) {
         try {
+            if (!database) return [];
+            
             const snapshot = await database.ref(`userHistory/${userId}`).once('value');
             const history = [];
             snapshot.forEach((childSnapshot) => {
@@ -300,6 +310,10 @@ const FirebaseMarketServer = {
     // Получить статистику
     getStats: async function() {
         try {
+            if (!database) {
+                return getDefaultStats();
+            }
+            
             // Получаем количество объявлений
             const adsSnapshot = await database.ref('ads').once('value');
             const totalAds = adsSnapshot.numChildren();
@@ -370,23 +384,15 @@ const FirebaseMarketServer = {
             
         } catch (error) {
             console.error('❌ Ошибка получения статистики:', error);
-            return {
-                totalUsers: 0,
-                activeUsers: 0,
-                totalAds: 0,
-                todayAds: 0,
-                totalLikes: 0,
-                totalDislikes: 0,
-                categories: { liquids: 0, disposable: 0, pod: 0, consumables: 0, other: 0 },
-                lastUpdated: new Date().toISOString(),
-                serverStatus: 'offline'
-            };
+            return getDefaultStats();
         }
     },
     
     // Добавить жалобу
     addComplaint: async function(complaintData) {
         try {
+            if (!database) return null;
+            
             const complaintRef = database.ref('complaints').push();
             await complaintRef.set({
                 ...complaintData,
@@ -416,6 +422,8 @@ const FirebaseMarketServer = {
     // Получить жалобы пользователя
     getUserComplaints: async function(userId) {
         try {
+            if (!database) return [];
+            
             const snapshot = await database.ref('complaints')
                 .orderByChild('reporterId')
                 .equalTo(userId)
@@ -434,6 +442,8 @@ const FirebaseMarketServer = {
     // Удалить объявление
     deleteAd: async function(adId, sellerId) {
         try {
+            if (!database) return false;
+            
             await database.ref(`ads/${adId}`).remove();
             
             // Уменьшаем счетчик объявлений пользователя
@@ -451,6 +461,8 @@ const FirebaseMarketServer = {
     // Обновить объявление
     updateAd: async function(adId, adData) {
         try {
+            if (!database) return false;
+            
             await database.ref(`ads/${adId}`).update(adData);
             return true;
         } catch (error) {
@@ -462,6 +474,8 @@ const FirebaseMarketServer = {
     // Очистить историю пользователя
     clearUserHistory: async function(userId) {
         try {
+            if (!database) return false;
+            
             await database.ref(`userHistory/${userId}`).remove();
             return true;
         } catch (error) {
@@ -470,6 +484,83 @@ const FirebaseMarketServer = {
         }
     }
 };
+
+// Тестовые данные для отладки
+function getTestAds() {
+    return [
+        {
+            id: 'test_ad_1',
+            sellerId: 'test_seller_1',
+            sellerName: 'Тестовый Продавец',
+            sellerUsername: '@test_seller',
+            title: 'Электронная сигарета Voopoo Drag',
+            category: 'pod',
+            dealType: 'sell',
+            price: 2500,
+            description: 'Отличное состояние, мало использовалась. Комплект полный.',
+            photos: 1,
+            photoUrls: [null],
+            likes: 5,
+            dislikes: 1,
+            complaints: 0,
+            createdAt: Date.now() - 1000000,
+            verified: false,
+            status: 'active'
+        },
+        {
+            id: 'test_ad_2',
+            sellerId: 'test_seller_2',
+            sellerName: 'Иван Иванов',
+            sellerUsername: '@ivanov',
+            title: 'Жидкость для вейпа 30ml',
+            category: 'liquids',
+            dealType: 'sell',
+            price: 800,
+            description: 'Вкусная жижа с мятой и ягодой. Новые, не открывались.',
+            photos: 1,
+            photoUrls: [null],
+            likes: 3,
+            dislikes: 0,
+            complaints: 0,
+            createdAt: Date.now() - 2000000,
+            verified: false,
+            status: 'active'
+        },
+        {
+            id: 'test_ad_3',
+            sellerId: 'test_seller_3',
+            sellerName: 'Покупатель Вася',
+            sellerUsername: '@buyer',
+            title: 'Ищу одноразовую сигарету',
+            category: 'disposable',
+            dealType: 'buy',
+            price: 500,
+            description: 'Ищу одноразку в хорошем состоянии. Могу забрать сегодня.',
+            photos: 0,
+            photoUrls: [],
+            likes: 1,
+            dislikes: 0,
+            complaints: 0,
+            createdAt: Date.now() - 3000000,
+            verified: false,
+            status: 'active'
+        }
+    ];
+}
+
+function getDefaultStats() {
+    return {
+        totalUsers: 0,
+        activeUsers: 0,
+        totalAds: 0,
+        todayAds: 0,
+        totalLikes: 0,
+        totalDislikes: 0,
+        categories: { liquids: 0, disposable: 0, pod: 0, consumables: 0, other: 0 },
+        lastUpdated: new Date().toISOString(),
+        serverStatus: 'offline'
+    };
+}
 
 // ==================== ОСНОВНЫЕ ФУНКЦИИ ====================
 
@@ -486,7 +577,11 @@ function initApp() {
             tg.setBackgroundColor('#7C3AED');
             
             tg.BackButton.show();
-            tg.BackButton.onClick(() => tg.close());
+            tg.BackButton.onClick(() => {
+                if (tg.platform !== 'unknown') {
+                    tg.close();
+                }
+            });
             
             console.log('✅ Telegram Web App настроен');
         } catch (error) {
@@ -494,8 +589,19 @@ function initApp() {
         }
     }
     
-    // Создание тестового пользователя если нет Telegram
-    if (!appData.currentUserId) {
+    // Получаем данные пользователя
+    if (tg?.initDataUnsafe?.user) {
+        const user = tg.initDataUnsafe.user;
+        appData.currentUserId = user.id.toString();
+        appData.currentUserData = {
+            id: user.id,
+            first_name: user.first_name || 'Пользователь',
+            username: user.username || '',
+            photo_url: user.photo_url || null
+        };
+        console.log('✅ Пользователь Telegram:', appData.currentUserId);
+    } else {
+        // Тестовый пользователь
         appData.currentUserId = 'test_user_' + Date.now();
         appData.currentUserData = {
             id: appData.currentUserId,
@@ -516,25 +622,16 @@ function initApp() {
         console.log('👑 Пользователь является администратором');
     }
     
-    // Регистрация пользователя
-    if (appData.currentUserData) {
-        FirebaseMarketServer.registerUser(appData.currentUserData)
-            .then(success => {
-                console.log('Регистрация пользователя:', success ? '✅ Успешно' : '❌ Ошибка');
-                loadFromServer();
-            })
-            .catch(error => {
-                console.error('Ошибка регистрации:', error);
-                loadFromServer();
-            });
-    } else {
-        loadFromServer();
-    }
+    // Обновляем UI
+    updateUserProfile();
     
-    // Настройка слушателей событий
+    // Загружаем данные
+    loadFromServer();
+    
+    // Настраиваем слушатели
     setupEventListeners();
     
-    showNotification('Приложение загружено!', 'success');
+    showNotification('Добро пожаловать в Vape Market!', 'success');
 }
 
 // Настройка слушателей событий
@@ -598,11 +695,19 @@ async function loadFromServer() {
         
     } catch (error) {
         console.error('❌ Ошибка загрузки данных:', error);
-        showNotification('Ошибка загрузки данных', 'error');
+        showNotification('Ошибка загрузки данных. Используем тестовые данные.', 'warning');
         
+        // Используем тестовые данные
+        appData.ads = getTestAds();
+        appData.filteredAds = [...appData.ads];
+        appData.userRatings = {};
+        appData.history = [];
+        appData.myComplaints = [];
+        appData.serverStats = getDefaultStats();
         appData.isDataLoaded = true;
-        appData.ads = [];
-        appData.filteredAds = [];
+        appData.lastSyncTime = new Date();
+        
+        updateSyncStatus();
         updateUIAfterDataLoad();
     }
 }
@@ -629,6 +734,8 @@ function updateUIAfterDataLoad() {
     if (document.getElementById('page-faq')?.classList.contains('active')) {
         updateServerStatsUI();
     }
+    
+    console.log('✅ UI обновлен');
 }
 
 // Обновление статуса синхронизации
@@ -688,11 +795,7 @@ function updateUserProfile() {
 // Обновление статистики профиля
 function updateProfileStats() {
     if (!appData.isDataLoaded) {
-        document.getElementById('myAdsCount').textContent = '0';
-        document.getElementById('myLikesCount').textContent = '0';
-        document.getElementById('myDislikesCount').textContent = '0';
-        document.getElementById('myComplaintsCount').textContent = '0';
-        document.getElementById('myRating').textContent = '0.0';
+        setDefaultProfileStats();
         return;
     }
     
@@ -719,6 +822,14 @@ function updateProfileStats() {
     document.getElementById('myRating').textContent = myRating.toFixed(1);
 }
 
+function setDefaultProfileStats() {
+    document.getElementById('myAdsCount').textContent = '0';
+    document.getElementById('myLikesCount').textContent = '0';
+    document.getElementById('myDislikesCount').textContent = '0';
+    document.getElementById('myComplaintsCount').textContent = '0';
+    document.getElementById('myRating').textContent = '0.0';
+}
+
 // Рассчитать рейтинг
 function calculateRating(sellerId) {
     if (!appData.userRatings[sellerId]) return 0.1;
@@ -741,17 +852,21 @@ function renderAds() {
     if (!container) return;
     
     if (!appData.isDataLoaded) {
-        container.innerHTML = `
-            <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
-                <i class="fas fa-spinner fa-spin" style="font-size: 48px; margin-bottom: 20px;"></i>
-                <h3 style="margin-bottom: 10px;">Загрузка объявлений...</h3>
-            </div>
-        `;
+        container.innerHTML = getLoadingHTML();
         return;
     }
     
     // Фильтрация объявлений
     filterAndRenderAds();
+}
+
+function getLoadingHTML() {
+    return `
+        <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
+            <i class="fas fa-spinner fa-spin" style="font-size: 48px; margin-bottom: 20px;"></i>
+            <h3 style="margin-bottom: 10px;">Загрузка объявлений...</h3>
+        </div>
+    `;
 }
 
 function filterAndRenderAds() {
@@ -783,105 +898,114 @@ function filterAndRenderAds() {
     appData.filteredAds = filtered;
     
     if (filtered.length === 0) {
-        container.innerHTML = `
-            <div class="no-results">
-                <i class="fas fa-box-open"></i>
-                <h3>Нет объявлений</h3>
-                <p>${appData.searchQuery ? 'По вашему запросу ничего не найдено' : 'В этой категории пока нет объявлений'}</p>
-            </div>
-        `;
+        container.innerHTML = getNoResultsHTML();
         return;
     }
     
     container.innerHTML = '';
     
     filtered.forEach(ad => {
-        const rating = calculateRating(ad.sellerId);
-        const userRating = appData.userRatings[ad.sellerId]?.[appData.currentUserId];
-        const isOwnAd = ad.sellerId === appData.currentUserId;
-        
-        const adElement = document.createElement('div');
-        adElement.className = 'advertisement-card';
-        adElement.id = `ad-${ad.id}`;
-        
-        // Тип сделки
-        const dealTypeBadge = ad.dealType === 'buy' ? 
-            '<span class="deal-type-badge deal-type-buy">Покупаю</span>' : 
-            '<span class="deal-type-badge deal-type-sell">Продаю</span>';
-        
-        // Описание
-        const descriptionHtml = getDescriptionHtml(ad);
-        
-        // Фото
-        const photoHtml = getPhotoHtml(ad);
-        
-        // Кнопка жалобы
-        const complaintBtn = !isOwnAd ? `
-            <button class="complaint-post-btn" onclick="openComplaintModal('${ad.id}', '${ad.sellerId}', '${ad.sellerUsername}')">
-                <i class="fas fa-flag"></i> Жалоба
-            </button>
-        ` : '';
-        
-        adElement.innerHTML = `
-            ${complaintBtn}
-            <div class="seller-header">
-                <div class="seller-avatar">
-                    ${ad.sellerAvatar ? `<img src="${ad.sellerAvatar}" alt="Аватар">` : 
-                      `<span>${ad.sellerName?.charAt(0) || 'П'}</span>`}
-                </div>
-                <div class="seller-info">
-                    <div class="seller-name">${ad.sellerName || 'Неизвестный'}</div>
-                    <div class="seller-username">${ad.sellerUsername || 'Без username'}</div>
-                    <div class="seller-stats">
-                        <div class="seller-stat stat-rating">
-                            <i class="fas fa-star"></i>
-                            <span>${rating.toFixed(1)}</span>
-                        </div>
-                        <div class="seller-stat stat-likes">
-                            <i class="fas fa-thumbs-up"></i>
-                            <span>${ad.likes || 0}</span>
-                        </div>
-                        <div class="seller-stat stat-dislikes">
-                            <i class="fas fa-thumbs-down"></i>
-                            <span>${ad.dislikes || 0}</span>
-                        </div>
+        const adElement = createAdElement(ad);
+        container.appendChild(adElement);
+    });
+}
+
+function getNoResultsHTML() {
+    return `
+        <div class="no-results">
+            <i class="fas fa-box-open"></i>
+            <h3>Нет объявлений</h3>
+            <p>${appData.searchQuery ? 'По вашему запросу ничего не найдено' : 'В этой категории пока нет объявлений'}</p>
+        </div>
+    `;
+}
+
+function createAdElement(ad) {
+    const rating = calculateRating(ad.sellerId);
+    const userRating = appData.userRatings[ad.sellerId]?.[appData.currentUserId];
+    const isOwnAd = ad.sellerId === appData.currentUserId;
+    
+    const adElement = document.createElement('div');
+    adElement.className = 'advertisement-card';
+    adElement.id = `ad-${ad.id}`;
+    
+    // Тип сделки
+    const dealTypeBadge = ad.dealType === 'buy' ? 
+        '<span class="deal-type-badge deal-type-buy">Покупаю</span>' : 
+        '<span class="deal-type-badge deal-type-sell">Продаю</span>';
+    
+    // Описание
+    const descriptionHtml = getDescriptionHtml(ad);
+    
+    // Фото
+    const photoHtml = getPhotoHtml(ad);
+    
+    // Кнопка жалобы
+    const complaintBtn = !isOwnAd ? `
+        <button class="complaint-post-btn" onclick="openComplaintModal('${ad.id}', '${ad.sellerId}', '${ad.sellerUsername}')">
+            <i class="fas fa-flag"></i> Жалоба
+        </button>
+    ` : '';
+    
+    adElement.innerHTML = `
+        ${complaintBtn}
+        <div class="seller-header">
+            <div class="seller-avatar">
+                ${ad.sellerAvatar ? `<img src="${ad.sellerAvatar}" alt="Аватар">` : 
+                  `<span>${ad.sellerName?.charAt(0) || 'П'}</span>`}
+            </div>
+            <div class="seller-info">
+                <div class="seller-name">${ad.sellerName || 'Неизвестный'}</div>
+                <div class="seller-username">${ad.sellerUsername || 'Без username'}</div>
+                <div class="seller-stats">
+                    <div class="seller-stat stat-rating">
+                        <i class="fas fa-star"></i>
+                        <span>${rating.toFixed(1)}</span>
+                    </div>
+                    <div class="seller-stat stat-likes">
+                        <i class="fas fa-thumbs-up"></i>
+                        <span>${ad.likes || 0}</span>
+                    </div>
+                    <div class="seller-stat stat-dislikes">
+                        <i class="fas fa-thumbs-down"></i>
+                        <span>${ad.dislikes || 0}</span>
                     </div>
                 </div>
             </div>
-            
-            ${photoHtml}
-            
-            <div class="product-info">
-                <div class="product-title">${dealTypeBadge} ${ad.title || 'Без названия'}</div>
-                <div class="product-category">${getCategoryName(ad.category)}</div>
-                <div class="product-price">${(ad.price || 0).toLocaleString()} ₽</div>
-                <div class="description-container">
-                    ${descriptionHtml}
-                </div>
-            </div>
-            
-            <div class="action-grid">
-                <button class="rate-btn like-btn ${userRating === 'like' ? 'active' : ''} ${isOwnAd ? 'disabled' : ''}" 
-                        onclick="rateSeller('${ad.sellerId}', 'like', '${ad.id}')"
-                        ${isOwnAd ? 'disabled' : ''}>
-                    <i class="fas fa-thumbs-up"></i>
-                </button>
-                
-                <button class="contact-btn" onclick="contactSeller('${ad.sellerUsername}', '${ad.id}', '${ad.title}', '${ad.category}', ${ad.price}, '${ad.dealType}')">
-                    <i class="fas fa-paper-plane"></i>
-                    ${ad.dealType === 'buy' ? 'Предложить товар' : 'Написать продавцу'}
-                </button>
-                
-                <button class="rate-btn dislike-btn ${userRating === 'dislike' ? 'active' : ''} ${isOwnAd ? 'disabled' : ''}" 
-                        onclick="rateSeller('${ad.sellerId}', 'dislike', '${ad.id}')"
-                        ${isOwnAd ? 'disabled' : ''}>
-                    <i class="fas fa-thumbs-down"></i>
-                </button>
-            </div>
-        `;
+        </div>
         
-        container.appendChild(adElement);
-    });
+        ${photoHtml}
+        
+        <div class="product-info">
+            <div class="product-title">${dealTypeBadge} ${ad.title || 'Без названия'}</div>
+            <div class="product-category">${getCategoryName(ad.category)}</div>
+            <div class="product-price">${(ad.price || 0).toLocaleString()} ₽</div>
+            <div class="description-container">
+                ${descriptionHtml}
+            </div>
+        </div>
+        
+        <div class="action-grid">
+            <button class="rate-btn like-btn ${userRating === 'like' ? 'active' : ''} ${isOwnAd ? 'disabled' : ''}" 
+                    onclick="rateSeller('${ad.sellerId}', 'like', '${ad.id}')"
+                    ${isOwnAd ? 'disabled' : ''}>
+                <i class="fas fa-thumbs-up"></i>
+            </button>
+            
+            <button class="contact-btn" onclick="contactSeller('${ad.sellerUsername}', '${ad.id}', '${ad.title}', '${ad.category}', ${ad.price}, '${ad.dealType}')">
+                <i class="fas fa-paper-plane"></i>
+                ${ad.dealType === 'buy' ? 'Предложить товар' : 'Написать продавцу'}
+            </button>
+            
+            <button class="rate-btn dislike-btn ${userRating === 'dislike' ? 'active' : ''} ${isOwnAd ? 'disabled' : ''}" 
+                    onclick="rateSeller('${ad.sellerId}', 'dislike', '${ad.id}')"
+                    ${isOwnAd ? 'disabled' : ''}>
+                <i class="fas fa-thumbs-down"></i>
+            </button>
+        </div>
+    `;
+    
+    return adElement;
 }
 
 function getDescriptionHtml(ad) {
@@ -1031,6 +1155,8 @@ function handlePhotoUpload(event) {
 
 function updatePhotoPreviews() {
     const container = document.getElementById('uploaded-photos-container');
+    if (!container) return;
+    
     container.innerHTML = '';
     
     appData.uploadedPhotos.forEach((photo, index) => {
@@ -1043,7 +1169,10 @@ function updatePhotoPreviews() {
         container.appendChild(photoItem);
     });
     
-    document.getElementById('photo-count').textContent = appData.uploadedPhotos.length;
+    const photoCount = document.getElementById('photo-count');
+    if (photoCount) {
+        photoCount.textContent = appData.uploadedPhotos.length;
+    }
     
     if (appData.uploadedPhotos.length === 0) {
         container.innerHTML = `
@@ -1489,14 +1618,13 @@ function openComplaintModal(adId, targetId, targetUsername) {
     if (modal) {
         modal.classList.add('active');
     } else {
-        // Если модального окна нет в HTML, создаем его
         createComplaintModal();
     }
 }
 
 function createComplaintModal() {
     const modal = document.createElement('div');
-    modal.className = 'complaint-modal active';
+    modal.className = 'complaint-modal';
     modal.id = 'complaintModal';
     modal.innerHTML = `
         <div class="complaint-form">
@@ -1528,6 +1656,11 @@ function createComplaintModal() {
     `;
     
     document.body.appendChild(modal);
+    
+    // Показываем модальное окно
+    setTimeout(() => {
+        modal.classList.add('active');
+    }, 10);
 }
 
 function selectComplaintReason(reason) {
@@ -1581,7 +1714,7 @@ function closeComplaintModal() {
     if (modal) {
         modal.classList.remove('active');
         setTimeout(() => {
-            if (modal.parentNode && modal.classList.contains('active') === false) {
+            if (modal.parentNode) {
                 modal.parentNode.removeChild(modal);
             }
         }, 300);
@@ -1614,45 +1747,7 @@ function getComplaintStatusText(status) {
 function showNotification(message, type = 'info') {
     const notification = document.getElementById('notification');
     if (!notification) {
-        // Создаем элемент уведомления если его нет
-        const notificationElement = document.createElement('div');
-        notificationElement.id = 'notification';
-        notificationElement.className = `notification ${type}`;
-        notificationElement.textContent = message;
-        notificationElement.style.cssText = `
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-100px);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 15px 25px;
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            transition: transform 0.5s ease;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            max-width: 90%;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-left: 4px solid ${type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : type === 'warning' ? '#F59E0B' : '#3B82F6'};
-        `;
-        document.body.appendChild(notificationElement);
-        
-        // Показываем
-        setTimeout(() => {
-            notificationElement.style.transform = 'translateX(-50%) translateY(0)';
-        }, 10);
-        
-        // Скрываем через 3 секунды
-        setTimeout(() => {
-            notificationElement.style.transform = 'translateX(-50%) translateY(-100px)';
-            setTimeout(() => {
-                if (notificationElement.parentNode) {
-                    notificationElement.parentNode.removeChild(notificationElement);
-                }
-            }, 500);
-        }, 3000);
+        createNotificationElement(message, type);
         return;
     }
     
@@ -1664,8 +1759,51 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
+function createNotificationElement(message, type) {
+    const notification = document.createElement('div');
+    notification.id = 'notification';
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-100px);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+        z-index: 1000;
+        transition: transform 0.5s ease;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        max-width: 90%;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-left: 4px solid ${type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : type === 'warning' ? '#F59E0B' : '#3B82F6'};
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Показываем
+    setTimeout(() => {
+        notification.style.transform = 'translateX(-50%) translateY(0)';
+    }, 10);
+    
+    // Скрываем через 3 секунды
+    setTimeout(() => {
+        notification.style.transform = 'translateX(-50%) translateY(-100px)';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 500);
+    }, 3000);
+}
+
 function updateServerStatsUI() {
     // Реализация обновления статистики сервера
+    console.log('Обновление статистики сервера');
 }
 
 function openPhotoViewer(adId, photoIndex = 0) {
@@ -1820,24 +1958,9 @@ function switchProfileTab(tab) {
 
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
 
-// Инициализация Telegram
+// Инициализация при загрузке DOM
 document.addEventListener('DOMContentLoaded', function() {
-    const tg = window.Telegram?.WebApp;
-    if (tg) {
-        const user = tg.initDataUnsafe?.user;
-        if (user && user.id) {
-            appData.currentUserId = user.id.toString();
-            appData.currentUserData = {
-                id: user.id,
-                first_name: user.first_name || 'Пользователь',
-                username: user.username || '',
-                photo_url: user.photo_url || null
-            };
-            console.log('✅ Пользователь Telegram получен:', appData.currentUserId);
-        }
-    }
-    
-    // Инициализация приложения
+    console.log('📱 DOM загружен, инициализация приложения...');
     initApp();
 });
 
