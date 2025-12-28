@@ -1,56 +1,466 @@
-// Основной файл приложения
-let tg = null;
+// ========== CONFIG ==========
+const firebaseConfig = {
+    apiKey: "AIzaSyBgPG4EXFQHoIOVLt2_BdCmiUJEWTXsGN8",
+    authDomain: "telegram-market-vape.firebaseapp.com",
+    databaseURL: "https://telegram-market-vape-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "telegram-market-vape",
+    storageBucket: "telegram-market-vape.appspot.com",
+    messagingSenderId: "35870048384",
+    appId: "1:35870048384:web:acd6501459aa39180b6665",
+    measurementId: "G-99R2PPBNF8"
+};
 
-// Инициализация приложения
+const appConfig = {
+    appName: "Vape Market",
+    adminIds: [998579758],
+    categories: ["Жидкости", "Одноразовые устройства", "Под-системы", "Расходники"],
+    complaintTypes: ["Мошенничество", "Неправильная категория", "Запрещенные товары", "Спам", "Оскорбления", "Другое"],
+    maxPhotos: 3,
+    ratingFormula: (likes, dislikes) => {
+        const total = likes + dislikes;
+        return total === 0 ? 0 : 0.1 + (likes / total) * 4.9;
+    }
+};
+
+// ========== GLOBAL VARIABLES ==========
+let db;
+let currentUser = null;
+let userData = null;
+let tg = window.Telegram.WebApp;
+let ads = [];
+let myAds = [];
+let currentFilters = { category: 'all' };
+let unsubscribeAds = null;
+
+// ========== FIREBASE INIT ==========
+function initializeFirebase() {
+    try {
+        const app = firebase.initializeApp(firebaseConfig);
+        db = firebase.database();
+        console.log('✅ Firebase инициализирован');
+        return true;
+    } catch (error) {
+        console.error('❌ Ошибка инициализации Firebase:', error);
+        showNotification('Ошибка подключения к базе данных', 'error');
+        return false;
+    }
+}
+
+// ========== AUTH ==========
+async function initializeAuth() {
+    if (!tg.initData) {
+        showNotification('Ошибка авторизации', 'error');
+        return false;
+    }
+
+    try {
+        tg.expand();
+        tg.enableClosingConfirmation();
+        
+        const tgUser = tg.initDataUnsafe.user;
+        
+        if (!tgUser) {
+            throw new Error('Данные пользователя не получены');
+        }
+
+        userData = {
+            id: tgUser.id.toString(),
+            firstName: tgUser.first_name,
+            lastName: tgUser.last_name || '',
+            username: tgUser.username || `user_${tgUser.id}`,
+            photoUrl: tgUser.photo_url || '',
+            languageCode: tgUser.language_code || 'ru'
+        };
+
+        // Проверяем, есть ли пользователь в базе
+        const userInDb = await getData(`users/${userData.id}`);
+        
+        if (!userInDb) {
+            await registerUser();
+        } else {
+            currentUser = userInDb;
+            await updateUserData();
+        }
+
+        // Проверяем блокировку
+        if (currentUser?.blocked) {
+            showBlockedScreen();
+            return false;
+        }
+
+        // Показываем админ-панель
+        toggleAdminPanel();
+        
+        return true;
+    } catch (error) {
+        console.error('❌ Ошибка авторизации:', error);
+        showNotification('Ошибка авторизации', 'error');
+        return false;
+    }
+}
+
+async function registerUser() {
+    const user = {
+        ...userData,
+        rating: 0,
+        adsCount: 0,
+        likesCount: 0,
+        dislikesCount: 0,
+        complaintsCount: 0,
+        blocked: false,
+        verified: false,
+        createdAt: Date.now(),
+        lastSeen: Date.now()
+    };
+
+    const success = await setData(`users/${userData.id}`, user);
+    if (success) {
+        currentUser = user;
+        showNotification('Добро пожаловать!', 'success');
+    }
+    return success;
+}
+
+async function updateUserData() {
+    const updates = {
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        username: userData.username,
+        photoUrl: userData.photoUrl,
+        lastSeen: Date.now()
+    };
+    await updateData(`users/${userData.id}`, updates);
+}
+
+// ========== ADS SYSTEM ==========
+async function loadAds() {
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const noAds = document.getElementById('no-ads');
+    const adsContainer = document.getElementById('ads-container');
+    
+    if (loadingSpinner) loadingSpinner.style.display = 'flex';
+    if (adsContainer) adsContainer.innerHTML = '';
+    
+    try {
+        const snapshot = await db.ref('ads').once('value');
+        const adsData = snapshot.val();
+        
+        if (!adsData) {
+            if (loadingSpinner) loadingSpinner.style.display = 'none';
+            if (noAds) noAds.style.display = 'block';
+            return;
+        }
+        
+        ads = Object.entries(adsData).map(([id, ad]) => ({
+            id,
+            ...ad
+        })).filter(ad => !ad.blocked);
+        
+        applyFilters();
+        
+        if (loadingSpinner) loadingSpinner.style.display = 'none';
+        if (noAds) noAds.style.display = ads.length === 0 ? 'block' : 'none';
+        
+    } catch (error) {
+        console.error('❌ Ошибка загрузки объявлений:', error);
+        if (loadingSpinner) loadingSpinner.style.display = 'none';
+        showNotification('Ошибка загрузки объявлений', 'error');
+    }
+}
+
+function applyFilters() {
+    let filteredAds = [...ads];
+    
+    if (currentFilters.category !== 'all') {
+        filteredAds = filteredAds.filter(ad => ad.category === currentFilters.category);
+    }
+    
+    filteredAds.sort((a, b) => b.createdAt - a.createdAt);
+    
+    renderAds(filteredAds);
+}
+
+function renderAds(adsToRender) {
+    const adsContainer = document.getElementById('ads-container');
+    if (!adsContainer) return;
+    
+    if (adsToRender.length === 0) {
+        adsContainer.innerHTML = `
+            <div class="no-ads">
+                <i class="fas fa-search"></i>
+                <h3>Объявлений не найдено</h3>
+                <p>Попробуйте изменить фильтры</p>
+            </div>
+        `;
+        return;
+    }
+    
+    adsContainer.innerHTML = adsToRender.map(ad => createAdCard(ad)).join('');
+    
+    // Добавляем обработчики
+    adsToRender.forEach(ad => {
+        const likeBtn = document.getElementById(`like-btn-${ad.id}`);
+        const dislikeBtn = document.getElementById(`dislike-btn-${ad.id}`);
+        
+        if (likeBtn && dislikeBtn && currentUser) {
+            checkUserRating(ad.id).then(rating => {
+                if (rating === 'like') {
+                    likeBtn.classList.add('liked');
+                    dislikeBtn.classList.remove('active');
+                } else if (rating === 'dislike') {
+                    dislikeBtn.classList.add('active');
+                    likeBtn.classList.remove('liked');
+                }
+            });
+            
+            likeBtn.addEventListener('click', () => rateAd(ad.id, 'like'));
+            dislikeBtn.addEventListener('click', () => rateAd(ad.id, 'dislike'));
+        }
+        
+        const complaintBtn = document.getElementById(`complaint-btn-${ad.id}`);
+        if (complaintBtn) {
+            complaintBtn.addEventListener('click', () => openComplaintModal(ad.id));
+        }
+        
+        const contactBtn = document.getElementById(`contact-btn-${ad.id}`);
+        if (contactBtn) {
+            contactBtn.addEventListener('click', () => contactSeller(ad));
+        }
+    });
+}
+
+function createAdCard(ad) {
+    const isMyAd = ad.sellerId === getUserId();
+    const contactBtnDisabled = isMyAd ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : '';
+    const complaintBtnDisabled = isMyAd ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : '';
+    
+    const firstPhoto = ad.photoUrls && ad.photoUrls.length > 0 
+        ? ad.photoUrls[0] 
+        : 'https://via.placeholder.com/400x200/8a2be2/ffffff?text=Vape+Market';
+    
+    const rating = appConfig.ratingFormula(ad.likes || 0, ad.dislikes || 0);
+    
+    return `
+        <div class="ad-card" data-id="${ad.id}">
+            <img src="${firstPhoto}" alt="${ad.title}" class="ad-image">
+            <div class="ad-info">
+                <div class="ad-title">${escapeHtml(ad.title)}</div>
+                <div class="ad-price">${ad.price} ₽</div>
+                <span class="ad-category">${ad.category}</span>
+                <div class="ad-description">${escapeHtml(ad.description)}</div>
+                <div class="ad-footer">
+                    <div class="seller-info">
+                        ${ad.sellerPhoto ? 
+                            `<img src="${ad.sellerPhoto}" alt="${ad.sellerName}" class="seller-avatar">` : 
+                            `<div class="seller-avatar"><i class="fas fa-user"></i></div>`
+                        }
+                        <div>
+                            <div class="seller-name">${escapeHtml(ad.sellerName)}</div>
+                            <div class="rating">
+                                <i class="fas fa-star"></i>
+                                ${rating.toFixed(1)}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ad-actions">
+                        <button class="action-btn" id="like-btn-${ad.id}" title="Лайк">
+                            <i class="fas fa-thumbs-up"></i> ${ad.likes || 0}
+                        </button>
+                        <button class="action-btn" id="dislike-btn-${ad.id}" title="Дизлайк">
+                            <i class="fas fa-thumbs-down"></i> ${ad.dislikes || 0}
+                        </button>
+                        <button class="action-btn" id="complaint-btn-${ad.id}" ${complaintBtnDisabled} title="Пожаловаться">
+                            <i class="fas fa-flag"></i>
+                        </button>
+                        <button class="action-btn" id="contact-btn-${ad.id}" ${contactBtnDisabled} title="Написать продавцу">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ========== RATINGS ==========
+async function checkUserRating(adId) {
+    try {
+        const snapshot = await db.ref(`ratings/${adId}/${getUserId()}`).once('value');
+        return snapshot.val();
+    } catch (error) {
+        console.error('❌ Ошибка проверки оценки:', error);
+        return null;
+    }
+}
+
+async function rateAd(adId, rating) {
+    if (!currentUser) {
+        showNotification('Авторизуйтесь для оценки', 'warning');
+        return;
+    }
+    
+    const ad = ads.find(a => a.id === adId);
+    if (!ad) {
+        showNotification('Объявление не найдено', 'error');
+        return;
+    }
+    
+    if (ad.sellerId === getUserId()) {
+        showNotification('Нельзя оценивать свои объявления', 'warning');
+        return;
+    }
+    
+    const currentRating = await checkUserRating(adId);
+    
+    if (currentRating === rating) {
+        showNotification('Вы уже поставили эту оценку', 'info');
+        return;
+    }
+    
+    try {
+        await setData(`ratings/${adId}/${getUserId()}`, rating);
+        
+        const updates = {};
+        
+        if (currentRating === 'like') {
+            updates['ads/' + adId + '/likes'] = (ad.likes || 1) - 1;
+            updates['ads/' + adId + '/dislikes'] = (ad.dislikes || 0) + 1;
+            await updateCounter(`users/${ad.sellerId}/likesCount`, -1);
+            await updateCounter(`users/${ad.sellerId}/dislikesCount`, 1);
+            
+        } else if (currentRating === 'dislike') {
+            updates['ads/' + adId + '/dislikes'] = (ad.dislikes || 1) - 1;
+            updates['ads/' + adId + '/likes'] = (ad.likes || 0) + 1;
+            await updateCounter(`users/${ad.sellerId}/dislikesCount`, -1);
+            await updateCounter(`users/${ad.sellerId}/likesCount`, 1);
+            
+        } else {
+            if (rating === 'like') {
+                updates['ads/' + adId + '/likes'] = (ad.likes || 0) + 1;
+                await updateCounter(`users/${ad.sellerId}/likesCount`, 1);
+            } else {
+                updates['ads/' + adId + '/dislikes'] = (ad.dislikes || 0) + 1;
+                await updateCounter(`users/${ad.sellerId}/dislikesCount`, 1);
+            }
+        }
+        
+        await updateData('/', updates);
+        showNotification('Оценка сохранена', 'success');
+        
+    } catch (error) {
+        console.error('❌ Ошибка оценки:', error);
+        showNotification('Ошибка сохранения оценки', 'error');
+    }
+}
+
+// ========== FIREBASE HELPERS ==========
+function generateId() {
+    return 'ad_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+async function getData(path) {
+    try {
+        const snapshot = await db.ref(path).once('value');
+        return snapshot.val();
+    } catch (error) {
+        console.error('❌ Ошибка получения данных:', error);
+        return null;
+    }
+}
+
+async function setData(path, data) {
+    try {
+        await db.ref(path).set(data);
+        return true;
+    } catch (error) {
+        console.error('❌ Ошибка записи данных:', error);
+        return false;
+    }
+}
+
+async function updateData(path, updates) {
+    try {
+        await db.ref(path).update(updates);
+        return true;
+    } catch (error) {
+        console.error('❌ Ошибка обновления данных:', error);
+        return false;
+    }
+}
+
+async function updateCounter(path, delta) {
+    try {
+        await db.ref(path).transaction((current) => {
+            return (current || 0) + delta;
+        });
+        return true;
+    } catch (error) {
+        console.error('❌ Ошибка обновления счетчика:', error);
+        return false;
+    }
+}
+
+// ========== UTILITIES ==========
+function getCurrentUser() {
+    return currentUser;
+}
+
+function getUserId() {
+    return userData?.id;
+}
+
+function isAdmin() {
+    return appConfig.adminIds.includes(parseInt(userData?.id || 0));
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.getElementById('notification');
+    if (!notification) return;
+    
+    notification.textContent = message;
+    notification.className = `notification ${type}`;
+    notification.classList.add('show');
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 3000);
+}
+
+// ========== INITIALIZATION ==========
 async function initializeApp() {
     try {
-        // Инициализация Firebase
+        console.log('🚀 Инициализация приложения...');
+        
         if (!initializeFirebase()) {
             throw new Error('Не удалось инициализировать Firebase');
         }
         
-        // Инициализация Telegram Web App
-        tg = window.Telegram.WebApp;
         tg.ready();
         
-        // Авторизация
         if (!(await initializeAuth())) {
             throw new Error('Ошибка авторизации');
         }
         
-        // Инициализация системы объявлений
-        initializeAds();
-        
-        // Инициализация системы жалоб
-        initializeComplaints();
-        
-        // Инициализация админ-панели (если пользователь админ)
-        if (isAdmin()) {
-            initializeAdminPanel();
-        }
-        
-        // Инициализация FAQ
-        initializeFAQ();
-        
-        // Инициализация навигации
         initializeNavigation();
+        initializeEventHandlers();
         
-        // Инициализация уведомлений
-        initializeNotifications();
+        await loadAds();
         
-        // Устанавливаем тему из Telegram
-        setThemeFromTelegram();
-        
-        console.log('Приложение инициализировано успешно');
+        console.log('✅ Приложение инициализировано');
         
     } catch (error) {
-        console.error('Ошибка инициализации приложения:', error);
+        console.error('❌ Ошибка инициализации приложения:', error);
         showNotification('Ошибка загрузки приложения', 'error');
-        showErrorScreen(error.message);
     }
 }
 
-// Инициализация навигации
 function initializeNavigation() {
     const navLinks = document.querySelectorAll('.nav-link');
     const pages = document.querySelectorAll('.page');
@@ -61,49 +471,158 @@ function initializeNavigation() {
             
             const pageName = link.getAttribute('data-page');
             
-            // Обновляем активную ссылку
             navLinks.forEach(l => l.classList.remove('active'));
             link.classList.add('active');
             
-            // Показываем соответствующую страницу
             pages.forEach(page => {
                 page.classList.remove('active');
                 if (page.id === `${pageName}-page`) {
                     page.classList.add('active');
                     
-                    // Загружаем данные для страницы
                     switch (pageName) {
                         case 'feed':
                             loadAds();
                             break;
                         case 'profile':
                             loadProfile();
-                            loadMyAds();
-                            break;
-                        case 'faq':
-                            loadStatistics();
-                            break;
-                        case 'admin':
-                            if (isAdmin()) {
-                                loadAdminData();
-                            }
                             break;
                     }
                 }
             });
-            
-            // Прокручиваем вверх
-            window.scrollTo(0, 0);
         });
     });
 }
 
-// Загрузка профиля
+function initializeEventHandlers() {
+    // Фильтры
+    const categoryFilter = document.getElementById('category-filter');
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', (e) => {
+            currentFilters.category = e.target.value;
+            applyFilters();
+        });
+    }
+    
+    // Кнопка создания объявления
+    const createAdBtn = document.getElementById('create-ad-btn');
+    if (createAdBtn) {
+        createAdBtn.addEventListener('click', () => {
+            showSimpleCreateForm();
+        });
+    }
+}
+
+// ========== SIMPLE CREATE FORM ==========
+function showSimpleCreateForm() {
+    const formHTML = `
+        <div class="modal active" id="simple-create-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Новое объявление</h2>
+                    <button class="close-modal" onclick="document.getElementById('simple-create-modal').remove()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="simple-ad-form">
+                        <div class="form-group">
+                            <label>Название товара *</label>
+                            <input type="text" id="simple-title" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Категория *</label>
+                            <select id="simple-category" required>
+                                <option value="">Выберите</option>
+                                ${appConfig.categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Цена (₽) *</label>
+                            <input type="number" id="simple-price" required min="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Описание *</label>
+                            <textarea id="simple-description" rows="3" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Контакт (Telegram)</label>
+                            <input type="text" id="simple-contact" value="@${currentUser?.username || ''}">
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="document.getElementById('simple-create-modal').remove()">Отмена</button>
+                            <button type="submit" class="btn-primary">Опубликовать</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const container = document.createElement('div');
+    container.innerHTML = formHTML;
+    document.body.appendChild(container.firstElementChild);
+    
+    const form = document.getElementById('simple-ad-form');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const adData = {
+            title: document.getElementById('simple-title').value,
+            category: document.getElementById('simple-category').value,
+            price: parseInt(document.getElementById('simple-price').value),
+            description: document.getElementById('simple-description').value,
+            contact: document.getElementById('simple-contact').value || `@${currentUser?.username}`
+        };
+        
+        await createSimpleAd(adData);
+        document.getElementById('simple-create-modal').remove();
+    });
+}
+
+async function createSimpleAd(adData) {
+    if (!currentUser) return false;
+    
+    const adId = generateId();
+    const ad = {
+        id: adId,
+        sellerId: getUserId(),
+        sellerName: currentUser.firstName + (currentUser.lastName ? ' ' + currentUser.lastName : ''),
+        sellerUsername: currentUser.username,
+        sellerPhoto: currentUser.photoUrl,
+        title: adData.title.trim(),
+        category: adData.category,
+        price: adData.price,
+        description: adData.description.trim(),
+        contact: adData.contact.trim(),
+        photoUrls: [],
+        likes: 0,
+        dislikes: 0,
+        complaints: 0,
+        verified: false,
+        blocked: false,
+        createdAt: Date.now()
+    };
+    
+    try {
+        await setData(`ads/${adId}`, ad);
+        await updateCounter(`users/${getUserId()}/adsCount`, 1);
+        
+        currentUser.adsCount = (currentUser.adsCount || 0) + 1;
+        
+        showNotification('Объявление создано!', 'success');
+        await loadAds();
+        
+        return true;
+    } catch (error) {
+        console.error('❌ Ошибка создания объявления:', error);
+        showNotification('Ошибка создания', 'error');
+        return false;
+    }
+}
+
+// ========== PROFILE ==========
 async function loadProfile() {
     const profileContainer = document.getElementById('profile-info');
     if (!profileContainer || !currentUser) return;
     
-    // Получаем актуальные данные пользователя
     const userData = await getData(`users/${getUserId()}`);
     if (!userData) return;
     
@@ -116,7 +635,6 @@ async function loadProfile() {
                     `<img src="${userData.photoUrl}" alt="${userData.firstName}">` : 
                     `<i class="fas fa-user"></i>`
                 }
-                ${userData.verified ? '<span class="verified-badge"><i class="fas fa-check"></i></span>' : ''}
             </div>
             <div class="profile-details">
                 <h2>${escapeHtml(userData.firstName)} ${userData.lastName ? escapeHtml(userData.lastName) : ''}</h2>
@@ -125,13 +643,8 @@ async function loadProfile() {
                     <i class="fas fa-star"></i>
                     <span>Рейтинг: ${rating.toFixed(1)}</span>
                 </div>
-                ${userData.blocked ? 
-                    '<div class="profile-status blocked"><i class="fas fa-ban"></i> Аккаунт заблокирован</div>' : 
-                    '<div class="profile-status active"><i class="fas fa-check-circle"></i> Аккаунт активен</div>'
-                }
             </div>
         </div>
-        
         <div class="stats-grid">
             <div class="stat-item">
                 <div class="stat-value">${userData.adsCount || 0}</div>
@@ -139,449 +652,201 @@ async function loadProfile() {
             </div>
             <div class="stat-item">
                 <div class="stat-value">${userData.likesCount || 0}</div>
-                <div class="stat-label">Получено лайков</div>
+                <div class="stat-label">Лайков</div>
             </div>
             <div class="stat-item">
                 <div class="stat-value">${userData.dislikesCount || 0}</div>
-                <div class="stat-label">Получено дизлайков</div>
+                <div class="stat-label">Дизлайков</div>
             </div>
-            <div class="stat-item">
-                <div class="stat-value">${userData.complaintsCount || 0}</div>
-                <div class="stat-label">Жалоб</div>
-            </div>
-        </div>
-        
-        <div class="profile-meta">
-            <div class="meta-item">
-                <i class="fas fa-calendar-alt"></i>
-                <span>Зарегистрирован: ${formatDate(userData.createdAt)}</span>
-            </div>
-            <div class="meta-item">
-                <i class="fas fa-clock"></i>
-                <span>Был онлайн: ${formatTimeAgo(userData.lastSeen)}</span>
-            </div>
-        </div>
-        
-        <div class="profile-actions">
-            <button class="btn-primary" onclick="refreshProfile()">
-                <i class="fas fa-sync-alt"></i> Обновить
-            </button>
-            <button class="btn-secondary" onclick="tg.openTelegramLink('https://t.me/${userData.username}')">
-                <i class="fab fa-telegram"></i> Мой Telegram
-            </button>
         </div>
     `;
 }
 
-// Обновление профиля
-async function refreshProfile() {
-    await updateUserData();
-    await loadProfile();
-    await loadMyAds();
-    showNotification('Профиль обновлен', 'success');
-}
-
-// Загрузка моих объявлений
-async function loadMyAds() {
-    await loadMyAds(); // Функция из ads.js
-}
-
-// Установка темы из Telegram
-function setThemeFromTelegram() {
-    if (!tg) return;
-    
-    const theme = tg.colorScheme;
-    const isDark = theme === 'dark';
-    
-    // Устанавливаем CSS переменные для темной темы
-    if (isDark) {
-        document.documentElement.style.setProperty('--bg-color', '#1a1a1a');
-        document.documentElement.style.setProperty('--text-primary', '#ffffff');
-        document.documentElement.style.setProperty('--text-secondary', '#cccccc');
-        document.documentElement.style.setProperty('--card-bg', '#2d2d2d');
-        document.documentElement.style.setProperty('--border-color', '#404040');
-        document.documentElement.style.setProperty('--secondary-color', '#404040');
+// ========== CONTACT SELLER ==========
+function contactSeller(ad) {
+    if (ad.sellerId === getUserId()) {
+        showNotification('Это ваше объявление', 'info');
+        return;
     }
     
-    // Устанавливаем background color для body
-    document.body.style.backgroundColor = isDark ? '#1a1a1a' : '#ffffff';
-}
-
-// Инициализация системы уведомлений
-function initializeNotifications() {
-    // Слушаем изменения в реальном времени для уведомлений
-    if (isAdmin()) {
-        listenToAdminNotifications();
+    const message = `Здравствуйте! Я пишу по поводу вашего объявления "${ad.title}" на Vape Market`;
+    const username = ad.sellerUsername.startsWith('@') ? ad.sellerUsername : `@${ad.sellerUsername}`;
+    
+    const url = `https://t.me/${username.replace('@', '')}?text=${encodeURIComponent(message)}`;
+    
+    if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.openTelegramLink(url);
+    } else {
+        window.open(url, '_blank');
     }
 }
 
-// Прослушивание уведомлений для админов
-function listenToAdminNotifications() {
-    listenToData('adminNotifications', (notifications) => {
-        if (!notifications) return;
+// ========== ADMIN PANEL ==========
+function toggleAdminPanel() {
+    const adminLink = document.getElementById('admin-link');
+    if (adminLink && isAdmin()) {
+        adminLink.style.display = 'flex';
         
-        // Фильтруем непрочитанные уведомления
-        const unreadNotifications = Object.values(notifications).filter(
-            n => !n.readBy || !n.readBy.includes(getUserId())
-        );
+        adminLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showAdminPanel();
+        });
+    }
+}
+
+function showAdminPanel() {
+    const pages = document.querySelectorAll('.page');
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    pages.forEach(page => page.classList.remove('active'));
+    navLinks.forEach(link => link.classList.remove('active'));
+    
+    document.getElementById('admin-page').classList.add('active');
+    document.querySelector('[data-page="admin"]').classList.add('active');
+    
+    loadAdminContent();
+}
+
+async function loadAdminContent() {
+    const container = document.getElementById('admin-page');
+    if (!container) return;
+    
+    try {
+        const [adsData, usersData] = await Promise.all([
+            getData('ads'),
+            getData('users')
+        ]);
         
-        if (unreadNotifications.length > 0) {
-            // Показываем badge на админ-кнопке
-            const adminLink = document.getElementById('admin-link');
-            if (adminLink) {
-                let badge = adminLink.querySelector('.notification-badge');
-                if (!badge) {
-                    badge = document.createElement('span');
-                    badge.className = 'notification-badge';
-                    adminLink.appendChild(badge);
-                }
-                badge.textContent = unreadNotifications.length;
-                badge.style.display = 'block';
-            }
+        const unverifiedAds = Object.entries(adsData || {})
+            .filter(([id, ad]) => !ad.verified && !ad.blocked)
+            .map(([id, ad]) => ({ id, ...ad }));
+        
+        const users = Object.entries(usersData || {})
+            .map(([id, user]) => ({ id, ...user }));
+        
+        container.innerHTML = `
+            <div class="page-header">
+                <h1><i class="fas fa-shield-alt"></i> Админ-панель</h1>
+            </div>
             
-            // Показываем уведомление о новых событиях
-            if (document.activeElement.id !== 'admin-link') {
-                showNotification(`Новых уведомлений: ${unreadNotifications.length}`, 'info');
-            }
-        }
-    });
-}
-
-// Показ галереи объявления
-function showAdGallery(adId) {
-    const ad = ads.find(a => a.id === adId);
-    if (!ad || !ad.photoUrls || ad.photoUrls.length === 0) return;
-    
-    const modalId = 'gallery-modal-' + Date.now();
-    
-    const modalHTML = `
-        <div id="${modalId}" class="modal">
-            <div class="modal-content gallery-modal">
-                <div class="modal-header">
-                    <h2>${escapeHtml(ad.title)}</h2>
-                    <button class="close-modal" onclick="document.getElementById('${modalId}').remove()">&times;</button>
+            <div class="admin-stats">
+                <div class="stat-card">
+                    <h3><i class="fas fa-box"></i> На модерации</h3>
+                    <div class="stat-value">${unverifiedAds.length}</div>
                 </div>
-                <div class="modal-body">
-                    <div class="gallery-container">
-                        <div class="gallery-main">
-                            <img id="gallery-main-img" src="${ad.photoUrls[0]}" alt="Фото товара">
-                        </div>
-                        <div class="gallery-thumbnails">
-                            ${ad.photoUrls.map((url, index) => `
-                                <img src="${url}" alt="Фото ${index + 1}" 
-                                     class="thumbnail ${index === 0 ? 'active' : ''}"
-                                     onclick="changeGalleryImage('${modalId}', ${index}, '${adId}')">
-                            `).join('')}
-                        </div>
+                <div class="stat-card">
+                    <h3><i class="fas fa-users"></i> Пользователей</h3>
+                    <div class="stat-value">${users.length}</div>
+                </div>
+            </div>
+            
+            ${unverifiedAds.length > 0 ? `
+                <div class="moderation-section">
+                    <h3>Объявления на проверку</h3>
+                    <div class="moderation-list">
+                        ${unverifiedAds.slice(0, 5).map(ad => `
+                            <div class="moderation-item">
+                                <div class="ad-preview">
+                                    <strong>${escapeHtml(ad.title)}</strong>
+                                    <span>${ad.price} ₽</span>
+                                    <span>${ad.category}</span>
+                                </div>
+                                <div class="moderation-actions">
+                                    <button class="btn-success" onclick="verifyAd('${ad.id}')">
+                                        <i class="fas fa-check"></i> Одобрить
+                                    </button>
+                                    <button class="btn-danger" onclick="rejectAd('${ad.id}')">
+                                        <i class="fas fa-ban"></i> Заблокировать
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
                 </div>
+            ` : ''}
+            
+            <div class="users-section">
+                <h3>Недавние пользователи</h3>
+                <div class="users-list">
+                    ${users.slice(0, 5).map(user => `
+                        <div class="user-item">
+                            <div class="user-info">
+                                <strong>${escapeHtml(user.firstName)}</strong>
+                                <span>@${user.username}</span>
+                                <span>Объявлений: ${user.adsCount || 0}</span>
+                            </div>
+                            <div class="user-actions">
+                                <button class="btn-${user.blocked ? 'success' : 'danger'}" 
+                                        onclick="toggleUserBlock('${user.id}', ${!user.blocked})">
+                                    ${user.blocked ? 'Разблокировать' : 'Заблокировать'}
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
             </div>
-        </div>
-    `;
-    
-    const container = document.createElement('div');
-    container.innerHTML = modalHTML;
-    document.body.appendChild(container.firstElementChild);
-    
-    const modal = document.getElementById(modalId);
-    modal.classList.add('active');
-    
-    // Закрытие по клику вне модального окна
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.remove();
-        }
-    });
-}
-
-// Смена изображения в галерее
-function changeGalleryImage(modalId, index, adId) {
-    const ad = ads.find(a => a.id === adId);
-    if (!ad || !ad.photoUrls[index]) return;
-    
-    const modal = document.getElementById(modalId);
-    if (!modal) return;
-    
-    // Обновляем главное изображение
-    const mainImg = modal.querySelector('#gallery-main-img');
-    if (mainImg) {
-        mainImg.src = ad.photoUrls[index];
+        `;
+        
+    } catch (error) {
+        console.error('❌ Ошибка загрузки админ-панели:', error);
+        container.innerHTML = '<p>Ошибка загрузки данных</p>';
     }
-    
-    // Обновляем активный thumbnail
-    const thumbnails = modal.querySelectorAll('.thumbnail');
-    thumbnails.forEach((thumb, i) => {
-        thumb.classList.toggle('active', i === index);
-    });
 }
 
-// Показ экрана ошибки
-function showErrorScreen(message) {
-    document.body.innerHTML = `
-        <div class="error-screen">
-            <div class="error-content">
-                <i class="fas fa-exclamation-triangle"></i>
-                <h2>Ошибка загрузки приложения</h2>
-                <p>${message}</p>
-                <button class="btn-primary" onclick="location.reload()">
-                    <i class="fas fa-redo"></i> Перезагрузить
-                </button>
-                <button class="btn-secondary" onclick="tg.close()">
-                    <i class="fas fa-times"></i> Закрыть
-                </button>
-            </div>
-        </div>
-    `;
+async function verifyAd(adId) {
+    if (!isAdmin()) return;
     
-    const style = document.createElement('style');
-    style.textContent = `
-        .error-screen {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background-color: var(--bg-color);
-            padding: 20px;
-        }
-        .error-content {
-            text-align: center;
-            max-width: 400px;
-        }
-        .error-content i {
-            font-size: 4rem;
-            color: var(--warning-color);
-            margin-bottom: 20px;
-        }
-        .error-content h2 {
-            color: var(--text-primary);
-            margin-bottom: 16px;
-        }
-        .error-content p {
-            color: var(--text-secondary);
-            margin-bottom: 24px;
-        }
-        .error-content button {
-            margin: 0 8px;
-        }
-    `;
-    document.head.appendChild(style);
+    try {
+        await updateData(`ads/${adId}`, {
+            verified: true,
+            verifiedAt: Date.now()
+        });
+        
+        showNotification('Объявление одобрено', 'success');
+        loadAdminContent();
+        
+    } catch (error) {
+        console.error('❌ Ошибка верификации:', error);
+        showNotification('Ошибка', 'error');
+    }
 }
 
-// Показать уведомление
-function showNotification(message, type = 'info') {
-    const notification = document.getElementById('notification');
-    if (!notification) return;
+async function rejectAd(adId) {
+    if (!isAdmin()) return;
     
-    notification.textContent = message;
-    notification.className = `notification ${type}`;
-    notification.classList.add('show');
-    
-    // Автоматическое скрытие через 3 секунды
-    setTimeout(() => {
-        notification.classList.remove('show');
-    }, 3000);
+    try {
+        await updateData(`ads/${adId}`, {
+            blocked: true,
+            blockedAt: Date.now(),
+            blockReason: 'Заблокировано администратором'
+        });
+        
+        showNotification('Объявление заблокировано', 'success');
+        loadAdminContent();
+        
+    } catch (error) {
+        console.error('❌ Ошибка блокировки:', error);
+        showNotification('Ошибка', 'error');
+    }
 }
 
-// Добавление CSS для модальных окон галереи
-document.addEventListener('DOMContentLoaded', () => {
-    const style = document.createElement('style');
-    style.textContent = `
-        .gallery-modal .modal-content {
-            max-width: 90vw;
-            max-height: 90vh;
-        }
-        .gallery-container {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-        .gallery-main {
-            width: 100%;
-            height: 60vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #000;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        .gallery-main img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-        .gallery-thumbnails {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding: 8px 0;
-        }
-        .gallery-thumbnails .thumbnail {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 4px;
-            cursor: pointer;
-            opacity: 0.6;
-            transition: opacity 0.3s;
-        }
-        .gallery-thumbnails .thumbnail.active {
-            opacity: 1;
-            border: 2px solid var(--primary-color);
-        }
-        .gallery-thumbnails .thumbnail:hover {
-            opacity: 0.8;
-        }
+async function toggleUserBlock(userId, block) {
+    if (!isAdmin()) return;
+    
+    try {
+        await updateData(`users/${userId}`, {
+            blocked: block,
+            blockedAt: block ? Date.now() : null
+        });
         
-        .wide-modal .modal-content {
-            max-width: 800px;
-        }
-        .ad-details {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
-        @media (max-width: 768px) {
-            .ad-details {
-                grid-template-columns: 1fr;
-            }
-        }
-        .ad-details-photos {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 12px;
-        }
-        .ad-details-photo {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-        .ad-details-info h3 {
-            margin-bottom: 12px;
-            color: var(--text-primary);
-        }
-        .ad-details-price {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin-bottom: 12px;
-        }
-        .ad-details-category {
-            display: inline-block;
-            background-color: var(--secondary-color);
-            color: var(--text-secondary);
-            padding: 4px 12px;
-            border-radius: 16px;
-            margin-bottom: 16px;
-        }
-        .ad-details-description,
-        .ad-details-seller,
-        .ad-details-contact,
-        .ad-details-stats,
-        .ad-details-status {
-            margin-bottom: 20px;
-        }
-        .ad-details-description h4,
-        .ad-details-seller h4,
-        .ad-details-contact h4,
-        .ad-details-stats h4,
-        .ad-details-status h4 {
-            color: var(--text-primary);
-            margin-bottom: 8px;
-            font-size: 1rem;
-        }
-        .ad-details-description p,
-        .ad-details-seller p,
-        .ad-details-contact p {
-            color: var(--text-secondary);
-            line-height: 1.5;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-        }
-        .stats-grid span {
-            padding: 8px;
-            background-color: var(--secondary-color);
-            border-radius: 8px;
-            text-align: center;
-            font-size: 0.9rem;
-        }
-        .status-badges {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .status-badges .badge {
-            padding: 6px 12px;
-            border-radius: 16px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-        .status-badges .badge.success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        .status-badges .badge.danger {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-        .status-badges .badge.warning {
-            background-color: #fff3cd;
-            color: #856404;
-        }
+        showNotification(`Пользователь ${block ? 'заблокирован' : 'разблокирован'}`, 'success');
+        loadAdminContent();
         
-        .notification-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background-color: var(--danger-color);
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 0.7rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            display: none;
-        }
-        
-        .admin-empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-secondary);
-        }
-        .admin-empty-state i {
-            font-size: 3rem;
-            margin-bottom: 16px;
-            opacity: 0.5;
-        }
-        .admin-empty-state h3 {
-            margin-bottom: 8px;
-            color: var(--text-primary);
-        }
-        
-        .btn-success {
-            background-color: var(--success-color);
-            color: white;
-        }
-        .btn-warning {
-            background-color: var(--warning-color);
-            color: white;
-        }
-    `;
-    document.head.appendChild(style);
-});
+    } catch (error) {
+        console.error('❌ Ошибка блокировки пользователя:', error);
+        showNotification('Ошибка', 'error');
+    }
+}
 
-// Запуск приложения при загрузке страницы
+// ========== START APP ==========
 document.addEventListener('DOMContentLoaded', initializeApp);
-
-// Экспорт функций для глобального использования
-window.showAdGallery = showAdGallery;
-window.changeGalleryImage = changeGalleryImage;
-window.viewAd = viewAd;
-window.refreshProfile = refreshProfile;
-window.removeComplaintPhoto = removeComplaintPhoto;
