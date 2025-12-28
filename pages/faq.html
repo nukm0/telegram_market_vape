@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Помощь - Vape Market</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        /* Дополнительные стили для FAQ */
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .faq-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .faq-header h1 {
+            background: linear-gradient(135deg, #FFFFFF 0%, #C084FC 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .faq-section {
+            background: rgba(30, 27, 75, 0.6);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(168, 85, 247, 0.2);
+        }
+        
+        .faq-question {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #FFFFFF;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .faq-answer {
+            color: #CBD5E1;
+            line-height: 1.6;
+            padding-left: 30px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-item {
+            background: rgba(168, 85, 247, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(168, 85, 247, 0.2);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #FFFFFF 0%, #C084FC 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #94A3B8;
+            font-size: 0.9rem;
+        }
+        
+        .support-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .support-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 16px;
+            background: rgba(168, 85, 247, 0.1);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 15px;
+            color: #E2E8F0;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .support-btn:hover {
+            background: rgba(168, 85, 247, 0.2);
+            transform: translateY(-2px);
+            border-color: rgba(168, 85, 247, 0.5);
+        }
+        
+        .important-note {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 25px;
+            color: #FBBF24;
+        }
+        
+        .verified-info {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            color: #4ADE80;
+        }
+    </style>
+</head>
+<body>
+    <div class="faq-container">
+        <!-- Заголовок -->
+        <div class="faq-header">
+            <h1>Помощь</h1>
+            <p style="color: #CBD5E1;">Частые вопросы и поддержка</p>
+        </div>
+
+        <!-- FAQ секция -->
+        <div class="faq-section">
+            <h2 style="color: #FFFFFF; margin-bottom: 20px;">📚 Частые вопросы</h2>
+            
+            <div class="faq-item" style="margin-bottom: 20px;">
+                <div class="faq-question">
+                    <span style="color: #C084FC;">✔</span> Как добавить объявление?
+                </div>
+                <div class="faq-answer">
+                    Нажмите кнопку "➕ Разместить" в меню, заполните форму, загрузите фото (до 3 штук) и нажмите "Опубликовать".
+                </div>
+            </div>
+            
+            <div class="faq-item" style="margin-bottom: 20px;">
+                <div class="faq-question">
+                    <span style="color: #C084FC;">✔</span> Как работает система рейтинга?
+                </div>
+                <div class="faq-answer">
+                    Рейтинг от 0.1 до 5.0 рассчитывается на основе лайков и дизлайков от других пользователей.
+                    Формула: (лайки / (лайки + дизлайки)) * 5.
+                </div>
+            </div>
+            
+            <div class="faq-item" style="margin-bottom: 20px;">
+                <div class="faq-question">
+                    <span style="color: #C084FC;">✔</span> Как загрузить фото?
+                </div>
+                <div class="faq-answer">
+                    При создании объявления можно загрузить до 3 фотографий. Нажмите "Загрузить фотографии" и выберите файлы.
+                </div>
+            </div>
+            
+            <div class="faq-item" style="margin-bottom: 20px;">
+                <div class="faq-question">
+                    <span style="color: #C084FC;">✔</span> Как написать продавцу?
+                </div>
+                <div class="faq-answer">
+                    Нажмите кнопку "Написать продавцу" в карточке объявления — откроется Telegram-чат с предзаполненным сообщением.
+                </div>
+            </div>
+            
+            <div class="faq-item" style="margin-bottom: 20px;">
+                <div class="faq-question">
+                    <span style="color: #C084FC;">✔</span> Как оплачивать товар?
+                </div>
+                <div class="faq-answer">
+                    Оплата осуществляется напрямую с продавцом через безопасную сделку в Telegram.
+                    Рекомендуем использовать защищенные методы оплаты.
+                </div>
+            </div>
+        </div>
+
+        <!-- Статистика -->
+        <div class="faq-section">
+            <h2 style="color: #FFFFFF; margin-bottom: 20px;">📊 Микро-статистика</h2>
+            <p style="color: #CBD5E1; margin-bottom: 15px;">Актуальные данные платформы:</p>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number" id="statUsers">15,432</div>
+                    <div class="stat-label">Пользователей</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="statAds">2,345</div>
+                    <div class="stat-label">Активных объявлений</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="statDeals">8,921</div>
+                    <div class="stat-label">Успешных сделок</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Кнопки поддержки -->
+        <div class="faq-section">
+            <h2 style="color: #FFFFFF; margin-bottom: 20px;">📞 Связь с поддержкой</h2>
+            
+            <div class="support-buttons">
+                <button class="support-btn" onclick="contactSupport('bug')">
+                    🐛 Баг/Ошибка
+                </button>
+                
+                <button class="support-btn" onclick="contactSupport('cooperation')">
+                    🤝 Сотрудничество
+                </button>
+                
+                <button class="support-btn" onclick="contactSupport('other')">
+                    📝 Другое
+                </button>
+            </div>
+        </div>
+
+        <!-- Важная информация -->
+        <div class="important-note">
+            <h3 style="color: #FBBF24; margin-bottom: 10px;">⚠️ Важная информация</h3>
+            <p>Объявления автоматически удаляются через <strong>14 дней</strong> после публикации для поддержания актуальности.</p>
+        </div>
+
+        <!-- Галочка проверенного продавца -->
+        <div class="verified-info">
+            <h3 style="color: #4ADE80; margin-bottom: 10px;">✅ Галочка проверенного продавца</h3>
+            <p>За качественную галочку (статус проверенного продавца) пишите администратору через кнопку "Сотрудничество".</p>
+        </div>
+    </div>
+
+    <!-- Навигация -->
+    <div class="nav-container" style="position: fixed; bottom: 0; width: 100%;">
+        <div class="nav-buttons">
+            <button class="nav-btn" onclick="window.location.href='../index.html'">
+                🏠 Главная
+            </button>
+            <button class="nav-btn" onclick="window.location.href='create-ad.html'">
+                ➕ Разместить
+            </button>
+            <button class="nav-btn" onclick="window.location.href='profile.html'">
+                👤 Кабинет
+            </button>
+            <button class="nav-btn active">
+                ❓ Помощь
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Функция связи с поддержкой
+        function contactSupport(type) {
+            const messages = {
+                bug: "🐛 Баг/Ошибка в приложении",
+                cooperation: "🤝 Предложение о сотрудничестве",
+                other: "📝 Вопрос/Предложение"
+            };
+            
+            const text = `Привет! Я с Vape Market - ${messages[type]}`;
+            const url = `https://t.me/nukm0?text=${encodeURIComponent(text)}`;
+            
+            if (window.Telegram && Telegram.WebApp) {
+                Telegram.WebApp.openTelegramLink(url);
+            } else {
+                window.open(url, '_blank');
+            }
+        }
+        
+        // Обновление статистики
+        function updateStats() {
+            // Здесь будет API запрос для получения реальной статистики
+            // Пока используем мок данные
+            const stats = {
+                users: 15432,
+                ads: 2345,
+                deals: 8921
+            };
+            
+            document.getElementById('statUsers').textContent = stats.users.toLocaleString();
+            document.getElementById('statAds').textContent = stats.ads.toLocaleString();
+            document.getElementById('statDeals').textContent = stats.deals.toLocaleString();
+        }
+        
+        // Запускаем при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+            console.log('FAQ страница загружена');
+        });
+    </script>
+</body>
+</html>
