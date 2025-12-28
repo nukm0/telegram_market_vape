@@ -2909,12 +2909,15 @@
             },
             
             // Обновить рейтинг
-            updateRating: async function(adId, raterId, type) {
+updateRating: async function(adId, raterId, type) {
     try {
-        // 1. Сохраняем оценку для КОНКРЕТНОГО объявления (adId вместо sellerId)
-        await database.ref(`ratings/${adId}/${raterId}`).set(type);
+        console.log(`🔄 Обновляю рейтинг: объявление ${adId}, пользователь ${raterId}, тип ${type}`);
         
-        // 2. Пересчитываем лайки/дизлайки ТОЛЬКО для этого объявления
+        // 1. Сохраняем оценку для объявления
+        await database.ref(`ratings/${adId}/${raterId}`).set(type);
+        console.log(`✅ Оценка сохранена в Firebase: ratings/${adId}/${raterId} = ${type}`);
+        
+        // 2. Пересчитываем лайки/дизлайки для этого объявления
         const ratingsSnapshot = await database.ref(`ratings/${adId}`).once('value');
         let adLikes = 0;
         let adDislikes = 0;
@@ -2925,16 +2928,19 @@
             if (rating === 'dislike') adDislikes++;
         });
         
+        console.log(`📊 Пересчитанные счетчики: likes=${adLikes}, dislikes=${adDislikes}`);
+        
         // 3. Обновляем счетчики в самом объявлении
         await database.ref(`ads/${adId}`).update({
             likes: adLikes,
             dislikes: adDislikes
         });
         
-        console.log(`✅ Рейтинг для объявления ${adId} обновлен: ${type}`);
+        console.log(`✅ Счетчики обновлены в объявлении ${adId}`);
         return true;
     } catch (error) {
         console.error('❌ Ошибка обновления рейтинга:', error);
+        console.error('Детали ошибки:', error.message);
         return false;
     }
 },
@@ -4383,71 +4389,90 @@
         // ==================== СИСТЕМА ЖАЛОБ ====================
         
         // Открыть модальное окно для жалобы
-        async function openComplaintModal(adId) {
-            // Проверяем блокировку перед действием
-            if (!checkBlockBeforeAction('openComplaintModal')) return;
-            
-            try {
-                // Находим объявление
-                const ad = appData.ads.find(a => a.id === adId);
-                if (!ad) {
-                    showNotification('Объявление не найдено', 'error');
-                    return;
-                }
-                
-                // Заполняем данные для жалобы
-                complaintData.targetAdId = adId;
-                complaintData.targetUserId = ad.sellerId;
-                complaintData.targetUsername = ad.sellerUsername;
-                complaintData.adTitle = ad.title;
-                complaintData.selectedType = null;
-                complaintData.description = '';
-                complaintData.attachedPhotos = [];
-                
-                // Проверяем, жаловался ли пользователь уже на это объявление
-                complaintData.hasComplainedBefore = await FirebaseMarketServer.checkIfUserComplained(
-                    appData.currentUserId, 
-                    adId
-                );
-                
-                if (complaintData.hasComplainedBefore) {
-                    showNotification('Вы уже жаловались на это объявление', 'warning');
-                    return;
-                }
-                
-                // Заполняем информацию о цели
-                document.getElementById('complaintTargetInfo').innerHTML = `
-                    <strong>Объявление:</strong> ${ad.title}<br>
-                    <strong>Продавец:</strong> ${ad.sellerName} ${ad.sellerUsername ? `(@${ad.sellerUsername})` : ''}<br>
-                    <strong>Цена:</strong> ${ad.price} ₽
-                `;
-                
-                // Заполняем типы жалоб
-                document.getElementById('complaintTypes').innerHTML = COMPLAINT_TYPES.map(type => `
-                    <div class="complaint-type-btn ${complaintData.selectedType === type.id ? 'active' : ''}" 
-                         onclick="selectComplaintType('${type.id}')">
-                        <div class="complaint-type-icon">
-                            <i class="${type.icon}"></i>
-                        </div>
-                        <div class="complaint-type-text">${type.text}</div>
-                    </div>
-                `).join('');
-                
-                // Очищаем текстовое поле
-                document.getElementById('complaintDescription').value = '';
-                
-                // Очищаем прикрепленные фото
-                updateComplaintAttachedPhotos();
-                
-                // Показываем модальное окно
-                document.getElementById('complaintModal').classList.add('active');
-                
-            } catch (error) {
-                console.error('❌ Ошибка открытия модального окна жалобы:', error);
-                showNotification('Ошибка открытия формы жалобы', 'error');
-            }
+async function openComplaintModal(adId) {
+    // Проверяем блокировку перед действием
+    if (!checkBlockBeforeAction('openComplaintModal')) return;
+    
+    try {
+        // Останавливаем всплытие события
+        if (event) {
+            event.stopPropagation();
         }
         
+        // Находим объявление - ФИКС СЕЛЕКТОРА
+        const ad = appData.ads.find(a => a.id === adId);
+        if (!ad) {
+            showNotification('Объявление не найдено', 'error');
+            return;
+        }
+        
+        console.log('🔍 Открываю жалобу на объявление:', ad);
+        
+        // Заполняем данные для жалобы
+        complaintData.targetAdId = adId;
+        complaintData.targetUserId = ad.sellerId;
+        complaintData.targetUsername = ad.sellerUsername;
+        complaintData.adTitle = ad.title;
+        complaintData.selectedType = null;
+        complaintData.description = '';
+        complaintData.attachedPhotos = [];
+        
+        // Проверяем, жаловался ли пользователь уже на это объявление
+        complaintData.hasComplainedBefore = await FirebaseMarketServer.checkIfUserComplained(
+            appData.currentUserId, 
+            adId
+        );
+        
+        if (complaintData.hasComplainedBefore) {
+            showNotification('Вы уже жаловались на это объявление', 'warning');
+            return;
+        }
+        
+        // Заполняем информацию о цели
+        document.getElementById('complaintTargetInfo').innerHTML = `
+            <strong>Объявление:</strong> ${ad.title}<br>
+            <strong>Продавец:</strong> ${ad.sellerName} ${ad.sellerUsername ? `(@${ad.sellerUsername})` : ''}<br>
+            <strong>Цена:</strong> ${ad.price} ₽
+        `;
+        
+        // Заполняем типы жалоб
+        document.getElementById('complaintTypes').innerHTML = COMPLAINT_TYPES.map(type => `
+            <div class="complaint-type-btn" onclick="selectComplaintType('${type.id}')">
+                <div class="complaint-type-icon">
+                    <i class="${type.icon}"></i>
+                </div>
+                <div class="complaint-type-text">${type.text}</div>
+            </div>
+        `).join('');
+        
+        // Очищаем текстовое поле
+        document.getElementById('complaintDescription').value = '';
+        
+        // Очищаем прикрепленные фото
+        updateComplaintAttachedPhotos();
+        
+        // Показываем модальное окно
+        document.getElementById('complaintModal').classList.add('active');
+        
+    } catch (error) {
+        console.error('❌ Ошибка открытия модального окна жалобы:', error);
+        showNotification('Ошибка открытия формы жалобы', 'error');
+    }
+}
+        // Выбрать тип жалобы
+function selectComplaintType(typeId) {
+    complaintData.selectedType = typeId;
+    
+    console.log('✅ Выбран тип жалобы:', typeId);
+    
+    // Обновляем UI
+    document.querySelectorAll('.complaint-type-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Добавляем активный класс к выбранной кнопке
+    event.target.closest('.complaint-type-btn').classList.add('active');
+}
         // Закрыть модальное окно для жалобы
         function closeComplaintModal() {
             document.getElementById('complaintModal').classList.remove('active');
@@ -5043,13 +5068,13 @@
             // Создаем HTML для фотографий
             const photosHtml = createPhotoGallery(ad);
             
-            // Создаем кнопку жалобы (только если пользователь не владелец объявления)
-            const complaintButton = ad.sellerId !== appData.currentUserId ? `
-                <button class="complaint-btn-small" onclick="openComplaintModal('${ad.id}')">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    Пожаловаться
-                </button>
-            ` : '';
+            / Создаем кнопку жалобы (только если пользователь не владелец объявления)
+const complaintButton = ad.sellerId !== appData.currentUserId ? `
+    <button class="complaint-btn-small" onclick="event.stopPropagation(); openComplaintModal('${ad.id}')">
+        <i class="fas fa-exclamation-triangle"></i>
+        Пожаловаться
+    </button>
+` : '';
             
             // Индикатор жалоб (только для админов или если есть жалобы)
             const complaintIndicator = (appData.isAdmin && ad.complaints > 0) ? `
@@ -5110,21 +5135,16 @@
                     <!-- Кнопки действий -->
                     <div class="action-grid">
                         <button class="rate-btn like-btn ${userRating === 'like' ? 'active' : ''} ${hasRated ? 'disabled' : ''}"
-                                onclick="rateAd('${ad.id}', '${ad.sellerId}', 'like')"
-                                ${hasRated ? 'disabled' : ''}>
-                            <i class="fas fa-thumbs-up"></i>
-                        </button>
-                        
-                        <button class="contact-btn" onclick="contactSeller('${ad.id}')">
-                            <i class="fas fa-paper-plane"></i>
-                            Написать продавцу
-                        </button>
-                        
-                        <button class="rate-btn dislike-btn ${userRating === 'dislike' ? 'active' : ''} ${hasRated ? 'disabled' : ''}"
-                                onclick="rateAd('${ad.id}', '${ad.sellerId}', 'dislike')"
-                                ${hasRated ? 'disabled' : ''}>
-                            <i class="fas fa-thumbs-down"></i>
-                        </button>
+        onclick="event.stopPropagation(); rateAd('${ad.id}', '${ad.sellerId}', 'like')"
+        ${hasRated ? 'disabled' : ''}>
+    <i class="fas fa-thumbs-up"></i>
+</button>
+
+<button class="rate-btn dislike-btn ${userRating === 'dislike' ? 'active' : ''} ${hasRated ? 'disabled' : ''}"
+        onclick="event.stopPropagation(); rateAd('${ad.id}', '${ad.sellerId}', 'dislike')"
+        ${hasRated ? 'disabled' : ''}>
+    <i class="fas fa-thumbs-down"></i>
+</button>
                     </div>
                 </div>
             `;
@@ -5202,36 +5222,52 @@
         // ==================== РЕЙТИНГИ ====================
         
         // Оценить объявление
-        async function rateAd(adId, sellerId, type) {
+async function rateAd(adId, sellerId, type) {
     // Проверяем блокировку перед действием
     if (!checkBlockBeforeAction('rateAd')) return;
     
-    // ВАЖНО: Проверяем рейтинг для этого КОНКРЕТНОГО объявления, а не продавца
+    // Останавливаем всплытие события
+    if (event) {
+        event.stopPropagation();
+    }
+    
+    console.log('🔍 rateAd вызвана:', { adId, sellerId, type });
+    console.log('📊 Текущие рейтинги:', appData.userRatings);
+    console.log('📋 Все объявления:', appData.ads.length);
+    
+    // ВАЖНО: Проверяем рейтинг для этого КОНКРЕТНОГО объявления
     const hasRated = appData.userRatings[adId]?.[appData.currentUserId];
     
     if (hasRated) {
+        console.log('⚠️ Пользователь уже оценил это объявление');
         showNotification('Вы уже оценили это объявление', 'warning');
         return;
     }
     
     // Проверяем, не пытается ли пользователь оценить свое объявление
     const ad = appData.ads.find(a => a.id === adId);
+    console.log('🔍 Найденное объявление:', ad);
+    
     if (ad && ad.sellerId === appData.currentUserId) {
         showNotification('Нельзя оценивать свое объявление', 'error');
         return;
     }
     
     try {
-        // Обновляем локальные данные (теперь по adId)
+        // Обновляем локальные данные
         if (!appData.userRatings[adId]) {
             appData.userRatings[adId] = {};
         }
         appData.userRatings[adId][appData.currentUserId] = type;
         
-        // ВАЖНО: Отправляем adId вместо sellerId
+        console.log('🔄 Отправляю оценку на сервер...');
+        
+        // Отправляем на сервер
         const success = await FirebaseMarketServer.updateRating(adId, appData.currentUserId, type);
         
         if (success) {
+            console.log('✅ Оценка отправлена успешно');
+            
             // Обновляем UI
             updateAdCardRating(adId);
             
@@ -5249,11 +5285,12 @@
             
             showNotification(type === 'like' ? 'Лайк поставлен!' : 'Дизлайк поставлен!', 'success');
         } else {
+            console.error('❌ Ошибка при отправке оценки');
             showNotification('Ошибка обновления рейтинга', 'error');
         }
     } catch (error) {
         console.error('❌ Ошибка оценки:', error);
-        showNotification('Ошибка оценки', 'error');
+        showNotification('Ошибка оценки: ' + error.message, 'error');
     }
 }
         
