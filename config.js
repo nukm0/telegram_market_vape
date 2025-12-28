@@ -1,4 +1,4 @@
-// Firebase конфигурация (УЖЕ ГОТОВА!)
+// config.js
 const firebaseConfig = {
     apiKey: "AIzaSyBgPG4EXFQHoIOVLt2_BdCmiUJEWTXsGN8",
     authDomain: "telegram-market-vape.firebaseapp.com",
@@ -10,11 +10,10 @@ const firebaseConfig = {
     measurementId: "G-99R2PPBNF8"
 };
 
-// Конфигурация приложения
 const appConfig = {
     appName: "Vape Market",
     adminIds: [998579758],
-    categories: ["Жидкости", "Одноразовые", "Под-системы", "Расходники"], // Исправленные категории
+    categories: ["Жидкости", "Одноразовые", "Под-системы", "Расходники"],
     categoryShort: {
         "Жидкости": "Жидкость",
         "Одноразовые": "Одноразово",
