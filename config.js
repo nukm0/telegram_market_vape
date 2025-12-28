@@ -1,4 +1,4 @@
-// Firebase конфигурация
+// Firebase конфигурация (УЖЕ ГОТОВА!)
 const firebaseConfig = {
     apiKey: "AIzaSyBgPG4EXFQHoIOVLt2_BdCmiUJEWTXsGN8",
     authDomain: "telegram-market-vape.firebaseapp.com",
@@ -13,12 +13,14 @@ const firebaseConfig = {
 // Конфигурация приложения
 const appConfig = {
     appName: "Vape Market",
-    adminIds: [998579758], // ID администраторов
+    adminIds: [998579758], // Ваш Telegram ID
     categories: ["Жидкости", "Одноразовые устройства", "Под-системы", "Расходники"],
     complaintTypes: ["Мошенничество", "Неправильная категория", "Запрещенные товары", "Спам", "Оскорбления", "Другое"],
     maxPhotos: 3,
     ratingFormula: (likes, dislikes) => {
         const total = likes + dislikes;
         return total === 0 ? 0 : 0.1 + (likes / total) * 4.9;
-    }
+    },
+    telegramBot: "@market_vape_1_bot",
+    supportContact: "@nukm0"
 };
