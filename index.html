@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Телеграмм маркет Vape</title>
+    <title>Vape Market | Площадка для вейперов</title>
     
     <!-- Стили -->
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Firebase CDN -->
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -17,384 +18,530 @@
     <!-- Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
-    <!-- PWA Manifest -->
+    <!-- PWA -->
     <link rel="manifest" href="manifest.json">
     
     <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💨</text></svg>">
 
     <style>
-        /* Быстрые стили для лоадера */
+        /* ДОПОЛНИТЕЛЬНЫЕ ИНЛАЙН СТИЛИ */
+        :root {
+            /* СВЕТЛАЯ ФИОЛЕТОВАЯ ПАЛИТРА */
+            --primary-light: #E9D5FF;
+            --primary-lighter: #D8B4FE;
+            --primary: #C084FC;
+            --primary-dark: #A855F7;
+            --primary-darker: #9333EA;
+            
+            /* ГРАДИЕНТЫ */
+            --gradient-bg: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 50%, #DDD6FE 100%);
+            --gradient-card: linear-gradient(145deg, #FFFFFF 0%, #FAF5FF 100%);
+            --gradient-button: linear-gradient(135deg, #A855F7 0%, #C084FC 100%);
+            --gradient-button-hover: linear-gradient(135deg, #9333EA 0%, #A855F7 100%);
+            --gradient-accent: linear-gradient(90deg, #C084FC, #A855F7, #9333EA);
+            
+            /* ТЕНИ */
+            --shadow-light: 0 2px 15px rgba(168, 85, 247, 0.08);
+            --shadow-medium: 0 5px 25px rgba(168, 85, 247, 0.12);
+            --shadow-heavy: 0 10px 40px rgba(168, 85, 247, 0.18);
+            --shadow-text: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        body {
+            background: var(--gradient-bg);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #1F2937;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* КОНТЕЙНЕР */
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px 16px 100px;
+        }
+        
+        /* ЛОАДЕР */
         #loader {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #4C1D95 0%, #6B21A8 100%);
+            background: var(--gradient-bg);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 9999;
             flex-direction: column;
-            gap: 20px;
+            gap: 25px;
         }
-
-        .spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top: 4px solid #C084FC;
+        
+        .loader-spinner {
+            width: 70px;
+            height: 70px;
+            border: 4px solid rgba(168, 85, 247, 0.1);
+            border-top: 4px solid var(--primary-dark);
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            animation: spin 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
         }
-
+        
+        .loader-text {
+            color: var(--primary-darker);
+            font-size: 1.2rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        .loader-text {
-            color: #E9D5FF;
-            font-size: 1.1rem;
-            font-weight: 500;
-            text-align: center;
+        
+        /* ПОЛЬЗОВАТЕЛЬСКИЕ СТИЛИ ДЛЯ АНИМАЦИЙ */
+        @keyframes slideInFromBottom {
+            0% { transform: translateY(30px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
     </style>
 </head>
 <body>
-    <!-- Лоадер -->
+    <!-- ЛОАДЕР -->
     <div id="loader">
-        <div class="spinner"></div>
+        <div class="loader-spinner"></div>
         <div class="loader-text">Загрузка Vape Market...</div>
     </div>
 
-    <!-- Основной контейнер -->
+    <!-- ОСНОВНОЙ КОНТЕЙНЕР -->
     <div class="container">
-        <!-- Главный экран -->
-        <div id="mainScreen" class="screen">
-            <!-- Заголовок -->
-            <div class="app-header">
-                <h1 class="app-title">Телеграмм маркет Vape</h1>
-                <p class="app-subtitle">Безопасные сделки через Telegram</p>
-            </div>
-
-            <!-- Фильтры категорий -->
-            <div class="filters-container">
-                <div class="filters-row">
-                    <button class="filter-category active" data-category="all">
-                        <span class="icon">📦</span>
-                        Все
-                    </button>
-                    <button class="filter-category" data-category="Жидкости">
-                        <span class="icon">💧</span>
-                        Жидкость
-                    </button>
-                    <button class="filter-category" data-category="Одноразовые">
-                        <span class="icon">🚬</span>
-                        Одноразово
-                    </button>
+        <!-- ГЛАВНЫЙ ЭКРАН -->
+        <div id="mainScreen" class="screen active-screen">
+            <!-- ШАПКА -->
+            <header class="main-header">
+                <div class="header-content">
+                    <div class="logo-container">
+                        <div class="logo-icon">💨</div>
+                        <div class="logo-text">
+                            <h1 class="app-title">Vape Market</h1>
+                            <p class="app-subtitle">Telegram площадка для вейперов</p>
+                        </div>
+                    </div>
+                    <div class="user-avatar" id="userAvatarBtn">
+                        <i class="fas fa-user"></i>
+                    </div>
                 </div>
-                <div class="filters-row">
-                    <button class="filter-category" data-category="Под-системы">
-                        <span class="icon">🔋</span>
-                        Под-системы
-                    </button>
-                    <button class="filter-category" data-category="Расходники">
-                        <span class="icon">🛠️</span>
-                        Расходники
-                    </button>
-                    <button class="filter-category" data-category="Комплектующие">
-                        <span class="icon">⚙️</span>
-                        Комплектующие
-                    </button>
-                </div>
-            </div>
+            </header>
 
-            <!-- Кнопка создания объявления -->
-            <div class="create-ad-container">
-                <button id="createAdBtn" class="create-ad-btn-large">
-                    <span class="plus-icon">+</span>
-                    Новое объявление
+            <!-- ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ КАТЕГОРИЙ -->
+            <section class="categories-section">
+                <div class="section-title">
+                    <h2>Категории</h2>
+                    <div class="scroll-hint">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+                
+                <div class="categories-scroll-container">
+                    <div class="categories-track" id="categoriesTrack">
+                        <!-- Категории будут добавляться через JS -->
+                        <div class="category-item active" data-category="all">
+                            <div class="category-icon">🔥</div>
+                            <div class="category-name">Все</div>
+                        </div>
+                        
+                        <div class="category-item" data-category="liquids">
+                            <div class="category-icon">💧</div>
+                            <div class="category-name">Жидкости</div>
+                        </div>
+                        
+                        <div class="category-item" data-category="disposable">
+                            <div class="category-icon">🚬</div>
+                            <div class="category-name">Одноразки</div>
+                        </div>
+                        
+                        <div class="category-item" data-category="pod">
+                            <div class="category-icon">🔋</div>
+                            <div class="category-name">Под-системы</div>
+                        </div>
+                        
+                        <div class="category-item" data-category="accessories">
+                            <div class="category-icon">🛠️</div>
+                            <div class="category-name">Аксессуары</div>
+                        </div>
+                        
+                        <div class="category-item" data-category="coils">
+                            <div class="category-icon">🌀</div>
+                            <div class="category-name">Койлы</div>
+                        </div>
+                        
+                        <div class="category-item" data-category="mods">
+                            <div class="category-icon">⚡</div>
+                            <div class="category-name">Моды</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- КНОПКА СОЗДАНИЯ ОБЪЯВЛЕНИЯ -->
+            <section class="create-ad-section">
+                <button id="createAdBtn" class="create-ad-btn-main">
+                    <div class="btn-icon">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <div class="btn-text">
+                        <span class="btn-title">Разместить объявление</span>
+                        <span class="btn-subtitle">Бесплатно • Быстро • Безопасно</span>
+                    </div>
+                    <div class="btn-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
                 </button>
-            </div>
+            </section>
 
-            <!-- Контейнер для объявлений -->
-            <div id="adsContainer">
-                <!-- Если нет объявлений, показываем пустое состояние -->
-                <div class="empty-state-container">
-                    <div class="empty-state-icon">📭</div>
-                    <h2 class="empty-state-title">Создать первое объявление</h2>
-                    <p class="empty-state-description">
-                        Нажмите кнопку выше, чтобы добавить товар на продажу или найти нужный товар
-                    </p>
+            <!-- ОБЪЯВЛЕНИЯ -->
+            <section class="ads-section">
+                <div class="section-header">
+                    <h2>Свежие объявления</h2>
+                    <div class="sort-controls">
+                        <button class="sort-btn active" data-sort="newest">
+                            <i class="fas fa-clock"></i> Новые
+                        </button>
+                        <button class="sort-btn" data-sort="popular">
+                            <i class="fas fa-fire"></i> Популярные
+                        </button>
+                    </div>
                 </div>
-            </div>
-
-            <!-- Информация о боте -->
-            <div class="bot-info">
-                <a href="https://t.me/market_vape_1_bot" target="_blank" class="bot-username">
-                    <span>🤖</span>
-                    @market_vape_1_bot
-                </a>
-            </div>
-        </div>
-
-        <!-- Экран профиля -->
-        <div id="profileScreen" class="screen" style="display: none;">
-            <div class="app-header">
-                <h1 class="app-title">Личный кабинет</h1>
-                <p class="app-subtitle">Ваши объявления и статистика</p>
-            </div>
-
-            <div id="profileContent">
-                <!-- Профиль будет загружен сюда -->
-                <div class="loading">
-                    <div class="loader"></div>
-                    <p>Загрузка профиля...</p>
+                
+                <div id="adsContainer" class="ads-grid">
+                    <!-- Пример объявления для демонстрации стиля -->
+                    <div class="ad-card demo-card">
+                        <div class="ad-badge">
+                            <span class="badge-type sell">Продажа</span>
+                            <span class="badge-category">Одноразки</span>
+                        </div>
+                        
+                        <div class="ad-image-placeholder">
+                            <div class="image-counter">
+                                <i class="fas fa-camera"></i> 3 фото
+                            </div>
+                        </div>
+                        
+                        <div class="ad-content">
+                            <div class="ad-header">
+                                <h3 class="ad-title">ELF Bar 5000 puffs</h3>
+                                <div class="ad-price">1 200 ₽</div>
+                            </div>
+                            
+                            <p class="ad-description">
+                                Новый, в оригинальной упаковке. Вкус: Blue Razz Ice. 
+                                Полная зарядка, 5000 затяжек.
+                            </p>
+                            
+                            <div class="ad-meta">
+                                <div class="meta-item">
+                                    <i class="fas fa-eye"></i>
+                                    <span>245</span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fas fa-heart"></i>
+                                    <span>18</span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>Москва</span>
+                                </div>
+                            </div>
+                            
+                            <div class="ad-footer">
+                                <div class="seller-info">
+                                    <div class="seller-avatar">А</div>
+                                    <div class="seller-details">
+                                        <div class="seller-name">Алексей</div>
+                                        <div class="seller-rating">
+                                            <i class="fas fa-star"></i>
+                                            <span>4.8</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button class="contact-btn">
+                                    <i class="fab fa-telegram"></i>
+                                    Написать
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Конец демо карточки -->
                 </div>
-            </div>
-        </div>
-
-        <!-- Экран FAQ -->
-        <div id="faqScreen" class="screen" style="display: none;">
-            <div class="app-header">
-                <h1 class="app-title">Помощь и FAQ</h1>
-                <p class="app-subtitle">Ответы на частые вопросы</p>
-            </div>
-
-            <div id="faqContent">
-                <!-- FAQ будет загружен сюда -->
-                <div class="loading">
-                    <div class="loader"></div>
-                    <p>Загрузка информации...</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Экран создания объявления -->
-        <div id="createAdScreen" class="screen" style="display: none;">
-            <div class="app-header">
-                <h1 class="app-title">Новое объявление</h1>
-                <p class="app-subtitle">Заполните информацию о товаре</p>
-            </div>
-
-            <div id="createAdContent">
-                <!-- Форма будет загружена сюда -->
-                <div class="loading">
-                    <div class="loader"></div>
-                    <p>Загрузка формы...</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Админ-панель (только для админов) -->
-        <div id="adminScreen" class="screen" style="display: none;">
-            <div class="app-header">
-                <h1 class="app-title">Админ-панель</h1>
-                <p class="app-subtitle">Управление приложением</p>
-            </div>
-
-            <div id="adminContent">
-                <!-- Админка будет загружена сюда -->
-                <div class="empty-state-container">
-                    <div class="empty-state-icon">🔒</div>
-                    <h2 class="empty-state-title">Доступ запрещен</h2>
-                    <p class="empty-state-description">
-                        У вас нет прав для доступа к админ-панели
-                    </p>
-                    <button onclick="showMainScreen()" class="btn btn-primary mt-3">
-                        Вернуться на главную
+                
+                <!-- Состояние "нет объявлений" -->
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-store-slash"></i>
+                    </div>
+                    <h3>Объявлений пока нет</h3>
+                    <p>Будьте первым, кто разместит объявление!</p>
+                    <button class="btn-primary" onclick="showCreateAdScreen()">
+                        <i class="fas fa-plus"></i> Создать первое объявление
                     </button>
                 </div>
-            </div>
+            </section>
         </div>
+
+        <!-- ДРУГИЕ ЭКРАНЫ (ПРОФИЛЬ, СОЗДАНИЕ, FAQ) -->
+        <div id="profileScreen" class="screen" style="display: none;"></div>
+        <div id="createAdScreen" class="screen" style="display: none;"></div>
+        <div id="faqScreen" class="screen" style="display: none;"></div>
+        <div id="adminScreen" class="screen" style="display: none;"></div>
     </div>
 
-    <!-- Нижняя навигация -->
+    <!-- НИЖНЕЕ МЕНЮ -->
     <nav class="bottom-nav">
         <a href="javascript:void(0)" class="nav-item active" onclick="showMainScreen()">
-            <span class="nav-icon">🏠</span>
-            <span class="nav-text">Главная</span>
+            <div class="nav-icon">
+                <i class="fas fa-home"></i>
+            </div>
+            <div class="nav-label">Главная</div>
         </a>
+        
         <a href="javascript:void(0)" class="nav-item" onclick="showCreateAdScreen()">
-            <span class="nav-icon">➕</span>
-            <span class="nav-text">Разместить</span>
+            <div class="nav-icon">
+                <i class="fas fa-plus-circle"></i>
+            </div>
+            <div class="nav-label">Разместить</div>
         </a>
+        
         <a href="javascript:void(0)" class="nav-item" onclick="showProfileScreen()">
-            <span class="nav-icon">👤</span>
-            <span class="nav-text">Кабинет</span>
+            <div class="nav-icon">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="nav-label">Кабинет</div>
         </a>
+        
         <a href="javascript:void(0)" class="nav-item" onclick="showFaqScreen()">
-            <span class="nav-icon">❓</span>
-            <span class="nav-text">FAQ</span>
+            <div class="nav-icon">
+                <i class="fas fa-question-circle"></i>
+            </div>
+            <div class="nav-label">Помощь</div>
         </a>
     </nav>
 
-    <!-- Подключаем конфигурацию -->
+    <!-- ПОДКЛЮЧЕНИЕ СКРИПТОВ -->
     <script src="config.js"></script>
-    
-    <!-- Подключаем основной скрипт -->
     <script src="app.js"></script>
 
     <script>
-        // Глобальные функции для навигации
+        // ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Vape Market загружается...');
+            
+            // Показать лоадер
+            showLoader(true);
+            
+            // Инициализация горизонтального скролла категорий
+            initCategoriesScroll();
+            
+            // Инициализация Telegram
+            initTelegramApp();
+            
+            // Загрузить объявления
+            setTimeout(() => {
+                loadAds();
+                showLoader(false);
+            }, 1500);
+            
+            // Анимация появления
+            document.querySelectorAll('.ad-card, .category-item, .create-ad-btn-main').forEach((el, index) => {
+                el.style.animationDelay = `${index * 0.1}s`;
+                el.classList.add('animate-in');
+            });
+        });
+        
+        // ФУНКЦИЯ ПОКАЗА ЛОАДЕРА
         function showLoader(show) {
-            document.getElementById('loader').style.display = show ? 'flex' : 'none';
+            const loader = document.getElementById('loader');
+            if (loader) {
+                loader.style.display = show ? 'flex' : 'none';
+            }
         }
-
+        
+        // ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ КАТЕГОРИЙ
+        function initCategoriesScroll() {
+            const track = document.getElementById('categoriesTrack');
+            if (!track) return;
+            
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+            
+            track.addEventListener('mousedown', (e) => {
+                isDown = true;
+                track.classList.add('active');
+                startX = e.pageX - track.offsetLeft;
+                scrollLeft = track.scrollLeft;
+            });
+            
+            track.addEventListener('mouseleave', () => {
+                isDown = false;
+                track.classList.remove('active');
+            });
+            
+            track.addEventListener('mouseup', () => {
+                isDown = false;
+                track.classList.remove('active');
+            });
+            
+            track.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - track.offsetLeft;
+                const walk = (x - startX) * 2;
+                track.scrollLeft = scrollLeft - walk;
+            });
+            
+            // Для тач-устройств
+            track.addEventListener('touchstart', (e) => {
+                isDown = true;
+                startX = e.touches[0].pageX - track.offsetLeft;
+                scrollLeft = track.scrollLeft;
+            });
+            
+            track.addEventListener('touchend', () => {
+                isDown = false;
+            });
+            
+            track.addEventListener('touchmove', (e) => {
+                if (!isDown) return;
+                const x = e.touches[0].pageX - track.offsetLeft;
+                const walk = (x - startX) * 2;
+                track.scrollLeft = scrollLeft - walk;
+            });
+            
+            // Обработчики кликов по категориям
+            document.querySelectorAll('.category-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    // Удаляем активный класс у всех
+                    document.querySelectorAll('.category-item').forEach(i => {
+                        i.classList.remove('active');
+                    });
+                    // Добавляем активный класс текущему
+                    this.classList.add('active');
+                    
+                    // Фильтрация объявлений
+                    const category = this.getAttribute('data-category');
+                    filterAdsByCategory(category);
+                });
+            });
+        }
+        
+        // ИНИЦИАЛИЗАЦИЯ TELEGRAM
+        function initTelegramApp() {
+            if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+                const tg = Telegram.WebApp;
+                tg.expand();
+                tg.setHeaderColor('#A855F7');
+                tg.setBackgroundColor('#F5F3FF');
+                tg.enableClosingConfirmation();
+                
+                console.log('✅ Telegram WebApp инициализирован');
+            } else {
+                console.log('⚠️ Режим разработки: Telegram не обнаружен');
+            }
+        }
+        
+        // ФУНКЦИИ НАВИГАЦИИ
         function showMainScreen() {
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.style.display = 'none';
             });
             document.getElementById('mainScreen').style.display = 'block';
             
-            // Обновляем активную кнопку навигации
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            document.querySelector('.bottom-nav a:nth-child(1)').classList.add('active');
-            
-            // Загружаем объявления
-            if (typeof loadAllAds === 'function') {
-                loadAllAds();
-            }
+            // Обновление активного пункта меню
+            updateNavActive('main');
         }
-
+        
         function showProfileScreen() {
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.style.display = 'none';
-            });
-            document.getElementById('profileScreen').style.display = 'block';
-            
-            // Обновляем активную кнопку навигации
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            document.querySelector('.bottom-nav a:nth-child(3)').classList.add('active');
-            
-            // Загружаем профиль
-            if (typeof loadProfile === 'function') {
-                loadProfile();
-            }
+            alert('Экран профиля в разработке');
+            // В будущем здесь будет загрузка профиля
         }
-
-        function showFaqScreen() {
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.style.display = 'none';
-            });
-            document.getElementById('faqScreen').style.display = 'block';
-            
-            // Обновляем активную кнопку навигации
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            document.querySelector('.bottom-nav a:nth-child(4)').classList.add('active');
-            
-            // Загружаем FAQ
-            if (typeof loadFaq === 'function') {
-                loadFaq();
-            }
-        }
-
+        
         function showCreateAdScreen() {
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.style.display = 'none';
-            });
-            document.getElementById('createAdScreen').style.display = 'block';
-            
-            // Обновляем активную кнопку навигации
+            alert('Экран создания объявления в разработке');
+            // В будущем здесь будет форма создания
+        }
+        
+        function showFaqScreen() {
+            alert('Экран FAQ в разработке');
+            // В будущем здесь будет FAQ
+        }
+        
+        function updateNavActive(screen) {
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
             });
-            document.querySelector('.bottom-nav a:nth-child(2)').classList.add('active');
             
-            // Показываем форму создания
-            if (typeof showCreateAdForm === 'function') {
-                showCreateAdForm();
-            }
-        }
-
-        // Инициализация при загрузке
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Vape Market загружен');
-            
-            // Скрываем лоадер через 1 секунду
-            setTimeout(() => {
-                showLoader(false);
-            }, 1000);
-            
-            // Добавляем обработчики для фильтров
-            document.querySelectorAll('.filter-category').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    // Убираем активный класс у всех кнопок
-                    document.querySelectorAll('.filter-category').forEach(b => {
-                        b.classList.remove('active');
-                    });
-                    // Добавляем активный класс текущей кнопке
-                    this.classList.add('active');
-                    
-                    // Фильтруем объявления
-                    const category = this.getAttribute('data-category');
-                    if (typeof filterAdsByCategory === 'function') {
-                        filterAdsByCategory(category);
-                    }
-                });
-            });
-            
-            // Обработчик для кнопки создания объявления
-            document.getElementById('createAdBtn')?.addEventListener('click', function() {
-                showCreateAdScreen();
-            });
-        });
-
-        // Проверка Telegram Web App
-        function checkTelegramEnvironment() {
-            if (typeof Telegram === 'undefined' || !Telegram.WebApp) {
-                console.warn('⚠️ Запуск вне Telegram');
-                // Можно добавить сообщение для пользователя
-                return false;
-            }
-            return true;
-        }
-
-        // Если запускаем в браузере, создаем мок Telegram
-        if (!checkTelegramEnvironment()) {
-            console.log('🔧 Режим разработки: создаем мок Telegram Web App');
-            
-            window.Telegram = {
-                WebApp: {
-                    expand: function() {
-                        console.log('📱 Telegram WebApp: expand()');
-                    },
-                    setHeaderColor: function(color) {
-                        console.log(`🎨 Telegram WebApp: setHeaderColor("${color}")`);
-                    },
-                    setBackgroundColor: function(color) {
-                        console.log(`🎨 Telegram WebApp: setBackgroundColor("${color}")`);
-                    },
-                    enableClosingConfirmation: function() {
-                        console.log('❌ Telegram WebApp: enableClosingConfirmation()');
-                    },
-                    openTelegramLink: function(url) {
-                        console.log(`🔗 Telegram WebApp: openTelegramLink("${url}")`);
-                        window.open(url, '_blank');
-                    },
-                    initDataUnsafe: {
-                        user: {
-                            id: 998579758,
-                            first_name: "Иван",
-                            last_name: "Иванов",
-                            username: "market_vape_1_bot",
-                            photo_url: "",
-                            language_code: "ru"
-                        }
-                    }
-                }
+            const navMap = {
+                'main': 0,
+                'create': 1,
+                'profile': 2,
+                'faq': 3
             };
             
-            console.log('✅ Мок Telegram Web App создан для разработки');
+            if (navMap[screen] !== undefined) {
+                document.querySelectorAll('.nav-item')[navMap[screen]].classList.add('active');
+            }
         }
+        
+        // ЗАГРУЗКА ОБЪЯВЛЕНИЙ (ВРЕМЕННАЯ ФУНКЦИЯ)
+        function loadAds() {
+            const adsContainer = document.getElementById('adsContainer');
+            const emptyState = document.getElementById('emptyState');
+            
+            // Здесь будет реальная загрузка из Firebase
+            // Пока просто скрываем демо карточку и показываем пустое состояние
+            
+            if (adsContainer && emptyState) {
+                // Скрываем демо карточку
+                const demoCard = document.querySelector('.demo-card');
+                if (demoCard) {
+                    demoCard.style.display = 'none';
+                }
+                
+                // Показываем пустое состояние
+                emptyState.style.display = 'block';
+            }
+        }
+        
+        // ФИЛЬТРАЦИЯ ОБЪЯВЛЕНИЙ ПО КАТЕГОРИИ
+        function filterAdsByCategory(category) {
+            console.log(`Фильтрация по категории: ${category}`);
+            // Здесь будет реальная фильтрация
+        }
+        
+        // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
+        window.showLoader = showLoader;
+        window.showMainScreen = showMainScreen;
+        window.showProfileScreen = showProfileScreen;
+        window.showCreateAdScreen = showCreateAdScreen;
+        window.showFaqScreen = showFaqScreen;
     </script>
 </body>
 </html>
