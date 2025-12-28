@@ -2909,67 +2909,35 @@
             },
             
             // Обновить рейтинг
-            updateRating: async function(sellerId, raterId, type) {
-                try {
-                    // Обновляем рейтинг в базе
-                    await database.ref(`ratings/${sellerId}/${raterId}`).set(type);
-                    
-                    // Обновляем счетчики в объявлении
-                    const userAdsSnapshot = await database.ref('ads')
-                        .orderByChild('sellerId')
-                        .equalTo(sellerId)
-                        .once('value');
-                    
-                    // Считаем общее количество лайков и дизлайков для продавца
-                    const ratingsSnapshot = await database.ref(`ratings/${sellerId}`).once('value');
-                    let totalLikes = 0;
-                    let totalDislikes = 0;
-                    
-                    ratingsSnapshot.forEach((childSnapshot) => {
-                        const rating = childSnapshot.val();
-                        if (rating === 'like') totalLikes++;
-                        if (rating === 'dislike') totalDislikes++;
-                    });
-                    
-                    // Обновляем счетчики в пользователе
-                    await database.ref(`users/${sellerId}`).update({
-                        likesCount: totalLikes,
-                        dislikesCount: totalDislikes,
-                        rating: 0.1 + (totalLikes / (totalLikes + totalDislikes || 1)) * 4.9
-                    });
-                    
-                    // Обновляем счетчики в каждом объявлении продавца
-                    userAdsSnapshot.forEach((adSnapshot) => {
-                        const adId = adSnapshot.key;
-                        const ad = adSnapshot.val();
-                        
-                        let adLikes = 0;
-                        let adDislikes = 0;
-                        
-                        // Пересчитываем рейтинги для этого объявления
-                        const adRatingsSnapshot = ratingsSnapshot;
-                        adRatingsSnapshot.forEach((ratingSnapshot) => {
-                            const rating = ratingSnapshot.val();
-                            // Для упрощения считаем все рейтинги как относящиеся к каждому объявлению
-                            // В реальном приложении нужно хранить рейтинги на уровне объявлений
-                            if (rating === 'like') adLikes++;
-                            if (rating === 'dislike') adDislikes++;
-                        });
-                        
-                        // Обновляем счетчики в объявлении
-                        database.ref(`ads/${adId}`).update({
-                            likes: adLikes,
-                            dislikes: adDislikes
-                        });
-                    });
-                    
-                    console.log(`✅ Рейтинг обновлен: ${raterId} -> ${sellerId} (${type})`);
-                    return true;
-                } catch (error) {
-                    console.error('❌ Ошибка обновления рейтинга:', error);
-                    return false;
-                }
-            },
+            updateRating: async function(adId, raterId, type) {
+    try {
+        // 1. Сохраняем оценку для КОНКРЕТНОГО объявления (adId вместо sellerId)
+        await database.ref(`ratings/${adId}/${raterId}`).set(type);
+        
+        // 2. Пересчитываем лайки/дизлайки ТОЛЬКО для этого объявления
+        const ratingsSnapshot = await database.ref(`ratings/${adId}`).once('value');
+        let adLikes = 0;
+        let adDislikes = 0;
+        
+        ratingsSnapshot.forEach((childSnapshot) => {
+            const rating = childSnapshot.val();
+            if (rating === 'like') adLikes++;
+            if (rating === 'dislike') adDislikes++;
+        });
+        
+        // 3. Обновляем счетчики в самом объявлении
+        await database.ref(`ads/${adId}`).update({
+            likes: adLikes,
+            dislikes: adDislikes
+        });
+        
+        console.log(`✅ Рейтинг для объявления ${adId} обновлен: ${type}`);
+        return true;
+    } catch (error) {
+        console.error('❌ Ошибка обновления рейтинга:', error);
+        return false;
+    }
+},
             
             // Добавить объявление
             addAd: async function(adData) {
@@ -5231,100 +5199,100 @@
         
         // Оценить объявление
         async function rateAd(adId, sellerId, type) {
-            // Проверяем блокировку перед действием
-            if (!checkBlockBeforeAction('rateAd')) return;
-            
-            // Проверяем, не оценивал ли уже пользователь этого продавца
-            const hasRated = appData.userRatings[sellerId]?.[appData.currentUserId];
-            
-            if (hasRated) {
-                showNotification('Вы уже оценили этого продавца', 'warning');
-                return;
-            }
-            
-            // Проверяем, не пытается ли пользователь оценить свое объявление
-            if (sellerId === appData.currentUserId) {
-                showNotification('Нельзя оценивать свое объявление', 'error');
-                return;
-            }
-            
-            try {
-                // Обновляем локальные данные
-                if (!appData.userRatings[sellerId]) {
-                    appData.userRatings[sellerId] = {};
-                }
-                appData.userRatings[sellerId][appData.currentUserId] = type;
-                
-                // Отправляем на сервер
-                const success = await FirebaseMarketServer.updateRating(sellerId, appData.currentUserId, type);
-                
-                if (success) {
-                    // Обновляем UI
-                    updateAdCardRating(adId);
-                    
-                    // Добавляем в историю
-                    const ad = appData.ads.find(a => a.id === adId);
-                    if (ad) {
-                        FirebaseMarketServer.addToHistory(appData.currentUserId, {
-                            type: 'rating',
-                            action: type === 'like' ? 'Лайк' : 'Дизлайк',
-                            targetId: adId,
-                            targetTitle: ad.title,
-                            sellerName: ad.sellerName,
-                            details: `Вы поставили ${type === 'like' ? '👍' : '👎'} объявлению`
-                        });
-                    }
-                    
-                    showNotification(type === 'like' ? 'Лайк поставлен!' : 'Дизлайк поставлен!', 'success');
-                } else {
-                    showNotification('Ошибка обновления рейтинга', 'error');
-                }
-            } catch (error) {
-                console.error('❌ Ошибка оценки:', error);
-                showNotification('Ошибка оценки', 'error');
-            }
+    // Проверяем блокировку перед действием
+    if (!checkBlockBeforeAction('rateAd')) return;
+    
+    // ВАЖНО: Проверяем рейтинг для этого КОНКРЕТНОГО объявления, а не продавца
+    const hasRated = appData.userRatings[adId]?.[appData.currentUserId];
+    
+    if (hasRated) {
+        showNotification('Вы уже оценили это объявление', 'warning');
+        return;
+    }
+    
+    // Проверяем, не пытается ли пользователь оценить свое объявление
+    const ad = appData.ads.find(a => a.id === adId);
+    if (ad && ad.sellerId === appData.currentUserId) {
+        showNotification('Нельзя оценивать свое объявление', 'error');
+        return;
+    }
+    
+    try {
+        // Обновляем локальные данные (теперь по adId)
+        if (!appData.userRatings[adId]) {
+            appData.userRatings[adId] = {};
         }
+        appData.userRatings[adId][appData.currentUserId] = type;
+        
+        // ВАЖНО: Отправляем adId вместо sellerId
+        const success = await FirebaseMarketServer.updateRating(adId, appData.currentUserId, type);
+        
+        if (success) {
+            // Обновляем UI
+            updateAdCardRating(adId);
+            
+            // Добавляем в историю
+            if (ad) {
+                FirebaseMarketServer.addToHistory(appData.currentUserId, {
+                    type: 'rating',
+                    action: type === 'like' ? 'Лайк' : 'Дизлайк',
+                    targetId: adId,
+                    targetTitle: ad.title,
+                    sellerName: ad.sellerName,
+                    details: `Вы поставили ${type === 'like' ? '👍' : '👎'} объявлению`
+                });
+            }
+            
+            showNotification(type === 'like' ? 'Лайк поставлен!' : 'Дизлайк поставлен!', 'success');
+        } else {
+            showNotification('Ошибка обновления рейтинга', 'error');
+        }
+    } catch (error) {
+        console.error('❌ Ошибка оценки:', error);
+        showNotification('Ошибка оценки', 'error');
+    }
+}
         
         // Обновить карточку объявления с новым рейтингом
         function updateAdCardRating(adId) {
-            const ad = appData.ads.find(a => a.id === adId);
-            if (!ad) return;
-            
-            // Пересчитываем рейтинг
-            const rating = appData.userRatings[ad.sellerId] || {};
-            const likes = Object.values(rating).filter(r => r === 'like').length;
-            const dislikes = Object.values(rating).filter(r => r === 'dislike').length;
-            
-            // Обновляем счетчики в объекте объявления
-            ad.likes = likes;
-            ad.dislikes = dislikes;
-            
-            // Обновляем UI
-            const card = document.getElementById(`ad-${adId}`);
-            if (card) {
-                // Обновляем счетчики в карточке
-                const likeCountEl = card.querySelector('.stat-likes span');
-                const dislikeCountEl = card.querySelector('.stat-dislikes span');
-                const ratingEl = card.querySelector('.stat-rating span');
-                
-                if (likeCountEl) likeCountEl.textContent = likes;
-                if (dislikeCountEl) dislikeCountEl.textContent = dislikes;
-                if (ratingEl) ratingEl.textContent = calculateRating(likes, dislikes).toFixed(1);
-                
-                // Отключаем кнопки оценки
-                const likeBtn = card.querySelector('.like-btn');
-                const dislikeBtn = card.querySelector('.dislike-btn');
-                
-                if (likeBtn) {
-                    likeBtn.classList.add('disabled');
-                    likeBtn.disabled = true;
-                }
-                if (dislikeBtn) {
-                    dislikeBtn.classList.add('disabled');
-                    dislikeBtn.disabled = true;
-                }
-            }
+    const ad = appData.ads.find(a => a.id === adId);
+    if (!ad) return;
+    
+    // ВАЖНО: Получаем рейтинги для этого объявления, а не продавца
+    const rating = appData.userRatings[adId] || {};
+    const likes = Object.values(rating).filter(r => r === 'like').length;
+    const dislikes = Object.values(rating).filter(r => r === 'dislike').length;
+    
+    // Обновляем счетчики в объекте объявления
+    ad.likes = likes;
+    ad.dislikes = dislikes;
+    
+    // Обновляем UI
+    const card = document.getElementById(`ad-${adId}`);
+    if (card) {
+        // Обновляем счетчики в карточке
+        const likeCountEl = card.querySelector('.stat-likes span');
+        const dislikeCountEl = card.querySelector('.stat-dislikes span');
+        const ratingEl = card.querySelector('.stat-rating span');
+        
+        if (likeCountEl) likeCountEl.textContent = likes;
+        if (dislikeCountEl) dislikeCountEl.textContent = dislikes;
+        if (ratingEl) ratingEl.textContent = calculateRating(likes, dislikes).toFixed(1);
+        
+        // Отключаем кнопки оценки
+        const likeBtn = card.querySelector('.like-btn');
+        const dislikeBtn = card.querySelector('.dislike-btn');
+        
+        if (likeBtn) {
+            likeBtn.classList.add('disabled');
+            likeBtn.disabled = true;
         }
+        if (dislikeBtn) {
+            dislikeBtn.classList.add('disabled');
+            dislikeBtn.disabled = true;
+        }
+    }
+}
         
         // ==================== ФОТОГРАФИИ ====================
         
