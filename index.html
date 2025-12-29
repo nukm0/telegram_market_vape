@@ -10,7 +10,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    <!-- Шапка админа -->
+    <!-- Шапка -->
     <header class="admin-header">
         <div class="admin-logo">
             <div class="logo-icon">
@@ -22,8 +22,12 @@
             <div class="user-avatar">
                 <i class="fas fa-crown"></i>
             </div>
-            <span class="username">УАдмин</span>
+            <span class="username">Админ</span>
         </div>
+        <!-- Кнопка админ панели -->
+        <button class="admin-panel-btn" id="adminPanelBtn" title="Админ панель">
+            <i class="fas fa-shield-alt"></i>
+        </button>
     </header>
 
     <!-- Контент -->
@@ -33,9 +37,6 @@
             <div class="search-box">
                 <i class="fas fa-search"></i>
                 <input type="text" id="searchInput" placeholder="Поиск товаров..." class="search-input">
-                <button class="clear-search" id="clearSearch">
-                    <i class="fas fa-times"></i>
-                </button>
             </div>
         </div>
 
@@ -43,146 +44,67 @@
         <div class="filters-container">
             <div class="filter-tabs">
                 <button class="filter-btn active" data-filter="all">
-                    <span>Все</span>
+                    Все
                 </button>
                 <button class="filter-btn" data-filter="sell">
-                    <span>Продажа</span>
+                    Продажа
                 </button>
                 <button class="filter-btn" data-filter="buy">
-                    <span>Покупка</span>
+                    Покупка
                 </button>
             </div>
         </div>
 
-        <!-- Кнопка создания объявления -->
-        <div class="create-ad-section">
-            <button class="create-ad-btn" id="createAdBtn">
-                <i class="fas fa-plus-circle"></i>
-                <span>Разместить объявление</span>
+        <!-- Рекламный баннер (только для админов) -->
+        <div id="adBanner" class="ad-banner admin-only" style="display: none;">
+            <h3><i class="fas fa-ad"></i> Рекламное место</h3>
+            <p>Текст рекламы здесь. Только для администраторов.</p>
+            <button class="action-btn" onclick="editAdBanner()" style="margin-top: 10px;">
+                <i class="fas fa-edit"></i> Изменить рекламу
             </button>
         </div>
 
-        <!-- Сетка объявлений -->
+        <!-- Кнопка создания -->
+        <div class="create-ad-section">
+            <button class="create-ad-btn" id="createAdBtn">
+                <i class="fas fa-plus-circle"></i>
+                Разместить объявление
+            </button>
+        </div>
+
+        <!-- Объявления -->
         <div class="ads-section">
             <h2 class="section-title">Объявления</h2>
             <div id="adsGrid" class="ads-grid">
-                <!-- Объявления будут здесь -->
-                <div class="loading-ads">
-                    <div class="spinner"></div>
-                    <p>Загрузка объявлений...</p>
-                </div>
+                <!-- Динамически загружаются -->
             </div>
         </div>
 
-        <!-- Пустое состояние -->
-        <div id="emptyState" class="empty-state" style="display: none;">
-            <i class="fas fa-box-open"></i>
-            <h3>Нет объявлений</h3>
-            <p>Создайте первое объявление</p>
+        <!-- Статистика -->
+        <div class="ads-section">
+            <h2 class="section-title">Статистика платформы</h2>
+            <div class="profile-stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number" id="totalUsers">0</span>
+                    <span class="stat-label">Пользователей онлайн</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="totalAds">0</span>
+                    <span class="stat-label">Активных объявлений</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="todayAds">0</span>
+                    <span class="stat-label">Объявлений сегодня</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="totalDeals">0</span>
+                    <span class="stat-label">Успешных сделок</span>
+                </div>
+            </div>
         </div>
     </main>
 
-    <!-- Модальное окно создания объявления -->
-    <div id="createAdModal" class="modal-overlay" style="display: none;">
-        <div class="modal-container">
-            <div class="modal-header">
-                <h2>Разместить объявление</h2>
-                <button class="modal-close" id="closeModal">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <div class="modal-body">
-                <!-- Загрузка фото -->
-                <div class="photo-upload-section">
-                    <div class="upload-area" id="uploadArea">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <p>Выбор файлов</p>
-                        <p class="upload-info">Не выбран ни один файл</p>
-                        <button class="upload-btn" id="selectPhotos">
-                            Загрузить фотографии
-                        </button>
-                        <input type="file" id="photoInput" multiple accept="image/*" style="display: none;">
-                    </div>
-                    <p class="upload-hint">
-                        Можно загрузить до 3 фотографий.
-                        <span id="photoCount">Выбрано: 0/3</span>
-                    </p>
-                    <div id="photoPreview" class="photo-preview"></div>
-                </div>
-
-                <!-- Форма -->
-                <form id="adForm" class="ad-form">
-                    <div class="form-row">
-                        <div class="form-group deal-type-group">
-                            <label>Тип сделки</label>
-                            <div class="deal-type-buttons">
-                                <button type="button" class="deal-type-btn active" data-type="sell">
-                                    <i class="fas fa-tag"></i>
-                                    <span>Продаю</span>
-                                </button>
-                                <button type="button" class="deal-type-btn" data-type="buy">
-                                    <i class="fas fa-shopping-cart"></i>
-                                    <span>Покупаю</span>
-                                </button>
-                                <input type="hidden" id="dealType" name="dealType" value="sell">
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Категория</label>
-                            <select id="category" name="category" class="category-select">
-                                <option value="liquids">Жидкости</option>
-                                <option value="disposable">Одноразовые</option>
-                                <option value="pod">Под-системы</option>
-                                <option value="consumables">Расходники</option>
-                                <option value="other">Другое</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Название товара</label>
-                            <input type="text" id="title" name="title" 
-                                   placeholder="Например: Caliburn G3, HQD Cuvie Plus" 
-                                   class="form-input" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Цена (₽)</label>
-                            <input type="number" id="price" name="price" 
-                                   placeholder="1000" 
-                                   class="form-input" required>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Описание товара</label>
-                        <textarea id="description" name="description" 
-                                  placeholder="Опишите состояние, характеристики, объем и т.д." 
-                                  class="form-textarea" 
-                                  rows="4"></textarea>
-                        <div class="char-counter">
-                            <span id="charCount">0</span>/500
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-            <div class="modal-footer">
-                <button class="btn-cancel" id="cancelBtn">
-                    Отмена
-                </button>
-                <button class="btn-publish" id="publishBtn">
-                    <i class="fas fa-paper-plane"></i>
-                    Опубликовать
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Навигация внизу -->
+    <!-- Навигация -->
     <nav class="bottom-nav">
         <button class="nav-btn active" data-page="ads">
             <i class="fas fa-list"></i>
@@ -198,11 +120,21 @@
         </button>
     </nav>
 
-    <!-- Уведомления -->
-    <div id="notification" class="notification" style="display: none;"></div>
+    <!-- Модальные окна -->
+    <div id="createAdModal" class="modal-overlay" style="display: none;">
+        <!-- Контент модалки создания -->
+    </div>
+
+    <div id="adminModal" class="modal-overlay" style="display: none;">
+        <!-- Админ панель -->
+    </div>
+
+    <div id="reportModal" class="modal-overlay" style="display: none;">
+        <!-- Жалоба -->
+    </div>
 
     <!-- Скрипты -->
     <script src="config.js"></script>
-    <script src="app.js?v=1.0"></script>
+    <script src="app.js?v=2.0"></script>
 </body>
 </html>
