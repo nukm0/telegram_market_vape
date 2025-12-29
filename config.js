@@ -1,90 +1,69 @@
-const AppConfig = {
-    // Основные настройки
-    appName: 'Vape Market',
-    appVersion: '1.0.0',
+// Конфигурация приложения
+const CONFIG = {
+    // Настройки API
+    API_URL: 'https://your-api-domain.com/api',
+    WS_URL: 'wss://your-api-domain.com/ws',
     
-    // Настройки Telegram Web App
-    telegram: {
-        botToken: '',
-        apiUrl: 'https://api.telegram.org'
-    },
-    
-    // Роли пользователей
-    roles: {
-        user: 'user',           // Обычный пользователь
-        admin1: 'admin1',       // Модератор (управление объявлениями, жалобами)
-        admin2: 'admin2',       // Админ (реклама, статистика)
-        owner: 'owner'          // Владелец (полные права)
-    },
-    
-    // Права доступа
-    permissions: {
-        admin1: [
-            'view_ads',
-            'block_ads',
-            'view_reports',
-            'process_reports',
-            'block_users',
-            'view_stats'
-        ],
-        admin2: [
-            'view_ads',
-            'block_ads',
-            'view_reports',
-            'process_reports',
-            'block_users',
-            'view_stats',
-            'manage_ads',
-            'manage_advertisement'
-        ],
-        owner: [
-            'view_ads',
-            'block_ads',
-            'view_reports',
-            'process_reports',
-            'block_users',
-            'view_stats',
-            'manage_ads',
-            'manage_advertisement',
-            'manage_admins',
-            'full_access'
-        ]
-    },
+    // Настройки приложения
+    APP_NAME: 'Vape Market',
+    VERSION: '1.0.0',
     
     // Лимиты
-    limits: {
-        maxImagesPerAd: 5,
-        maxAdTitleLength: 100,
-        maxAdDescriptionLength: 1000,
-        maxPrice: 1000000,
-        reportThreshold: 3 // Количество жалоб для авто-блокировки
+    MAX_IMAGES_PER_AD: 3,
+    MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB
+    ALLOWED_FILE_TYPES: ['image/jpeg', 'image/png', 'image/webp'],
+    
+    // Настройки администратора
+    ADMIN_LEVELS: {
+        1: 'Модератор',
+        2: 'Администратор',
+        3: 'Владелец'
     },
     
-    // Категории товаров
-    categories: {
-        pod: 'Поды и POD-системы',
-        mod: 'Моды',
-        atomizer: 'Атомайзеры',
-        liquid: 'Жидкости',
-        accessories: 'Аксессуары',
-        other: 'Другое'
+    // Уровни доступа
+    PERMISSIONS: {
+        VIEW_STATS: 'view_stats',
+        BLOCK_USERS: 'block_users',
+        DELETE_ADS: 'delete_ads',
+        MANAGE_REPORTS: 'manage_reports',
+        MANAGE_BANNER: 'manage_banner',
+        MANAGE_ADMINS: 'manage_admins'
     },
     
-    // Причины жалоб
-    reportReasons: {
-        scam: 'Мошенничество',
-        fake: 'Фейковый товар',
-        spam: 'Спам',
-        rules: 'Нарушение правил',
-        other: 'Другое'
+    // Настройки рекламы
+    BANNER_SETTINGS: {
+        defaultText: 'Акция! Скидка 15% на все жидкости до конца недели!',
+        styles: {
+            gradient: 'var(--gradient-secondary)',
+            primary: 'var(--primary-color)',
+            warning: 'var(--warning-color)',
+            success: 'var(--success-color)'
+        }
     },
     
-    // Настройки кэширования
-    cache: {
-        adsTTL: 300000, // 5 минут
-        statsTTL: 60000 // 1 минута
+    // Настройки рейтинга
+    RATING_SETTINGS: {
+        min: 1,
+        max: 5,
+        default: 4.5
+    },
+    
+    // Настройки жалоб
+    REPORT_TYPES: {
+        light: [
+            { id: 'spam', label: 'Спам / Реклама' },
+            { id: 'wrong_category', label: 'Неверная категория' }
+        ],
+        medium: [
+            { id: 'fake', label: 'Недостоверная информация' },
+            { id: 'duplicate', label: 'Дубликат объявления' }
+        ],
+        heavy: [
+            { id: 'prohibited', label: 'Запрещённый товар' },
+            { id: 'scam', label: 'Мошенничество' },
+            { id: 'offensive', label: 'Оскорбительный контент' }
+        ]
     }
 };
 
-// Инициализация конфигурации
-window.AppConfig = AppConfig;
+export default CONFIG;
