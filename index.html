@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vape Market - Telegram</title>
+    <title>Vape Market</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
-        <!-- Шапка (оставляем как было) -->
         <header class="header">
             <div class="header-content">
                 <h1 class="logo">Vape Market</h1>
@@ -27,71 +26,82 @@
                         <i class="fas fa-question-circle"></i>
                         <span>FAQ</span>
                     </a>
-                    <div id="adminPanelNav" style="display: none;">
-                        <a href="pages/admin.html" class="nav-item">
-                            <i class="fas fa-shield-alt"></i>
-                            <span>Админ-панель</span>
-                        </a>
-                    </div>
+                    <!-- Админ панель будет добавлена через JS для админов -->
                 </nav>
             </div>
         </header>
 
-        <!-- Основной контент -->
         <main class="main-content">
-            <!-- Баннер (оставляем как было) -->
             <div class="banner">
                 <h2>Добро пожаловать в Vape Market</h2>
-                <p>Покупайте и продавайте вейп-товары безопасно и удобно</p>
+                <p>Покупайте и продавайте вейп-товары безопасно</p>
             </div>
 
-            <!-- Кнопки действий (оставляем расположение как было) -->
+            <!-- Ваши оригинальные кнопки -->
             <div class="action-buttons">
-                <button class="btn btn-primary" id="createAdBtn">
+                <button class="btn btn-primary" onclick="openCreateAd()">
                     <i class="fas fa-plus"></i>
                     <span>Создать объявление</span>
                 </button>
-                <button class="btn btn-secondary" id="myAdsBtn">
+                <button class="btn btn-secondary" onclick="showMyAds()">
                     <i class="fas fa-list"></i>
                     <span>Мои объявления</span>
                 </button>
-                <button class="btn btn-secondary" id="favoritesBtn">
+                <button class="btn btn-secondary" onclick="showFavorites()">
                     <i class="fas fa-heart"></i>
                     <span>Избранное</span>
                 </button>
+                
+                <!-- ФИЛЬТРАЦИЯ - возвращаю ваш фильтр -->
+                <div class="filter-container">
+                    <select class="filter-select" id="categoryFilter" onchange="filterAds()">
+                        <option value="">Все категории</option>
+                        <option value="pod">Поды</option>
+                        <option value="mod">Моды</option>
+                        <option value="liquid">Жидкости</option>
+                        <option value="accessory">Аксессуары</option>
+                    </select>
+                    <select class="filter-select" id="priceFilter" onchange="filterAds()">
+                        <option value="">Любая цена</option>
+                        <option value="0-1000">До 1000₽</option>
+                        <option value="1000-3000">1000-3000₽</option>
+                        <option value="3000+">От 3000₽</option>
+                    </select>
+                    <input type="text" class="search-input" placeholder="Поиск..." id="searchInput" onkeyup="searchAds()">
+                </div>
             </div>
 
-            <!-- Рекламный блок (только для админов) -->
-            <div id="adminAdSpot" class="admin-ad-spot" style="display: none;">
-                <div class="ad-header">
-                    <span class="ad-badge">Реклама</span>
-                    <button class="btn-ad-edit" onclick="openAdEditor()">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                </div>
-                <div id="adContent">
-                    <!-- Рекламный контент будет здесь -->
+            <!-- Блок рекламы (только для админов) -->
+            <div id="adminAdContainer" style="display: none; margin: 15px 0;">
+                <div class="ad-banner" id="adBanner">
+                    <div class="ad-content">
+                        <h3 id="adTitle">Рекламный баннер</h3>
+                        <p id="adText">Текст рекламы</p>
+                        <button class="btn btn-small" onclick="editAd()" id="editAdBtn" style="display: none;">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Список объявлений (оставляем как было) -->
+            <!-- Список объявлений -->
             <div class="ads-container">
                 <h3 class="section-title">Последние объявления</h3>
                 <div id="adsList" class="ads-grid">
-                    <!-- Объявления будут загружены через JS -->
+                    <!-- Объявления загружаются через JS -->
                 </div>
             </div>
         </main>
 
-        <!-- Модальное окно создания объявления -->
-        <div id="createAdModal" class="modal">
+        <!-- Модальное окно создания объявления (исправленное) -->
+        <div id="createAdModal" class="modal" style="display: none;">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Создать объявление</h3>
-                    <button class="close-modal">&times;</button>
+                    <span class="close-modal" onclick="closeModal()">&times;</span>
                 </div>
                 <div class="modal-body">
-                    <form id="adForm">
+                    <form id="adForm" onsubmit="return submitAd(event)">
                         <div class="form-group">
                             <label for="adTitle">Название товара</label>
                             <input type="text" id="adTitle" placeholder="Например: Vaporesso XROS 3" required>
@@ -106,18 +116,17 @@
                                 <option value="atomizer">Атомайзеры</option>
                                 <option value="liquid">Жидкости</option>
                                 <option value="accessories">Аксессуары</option>
-                                <option value="other">Другое</option>
                             </select>
                         </div>
                         
                         <div class="form-group">
                             <label for="adDescription">Описание</label>
-                            <textarea id="adDescription" rows="4" placeholder="Опишите товар подробно..." required></textarea>
+                            <textarea id="adDescription" rows="3" placeholder="Опишите товар..." required></textarea>
                         </div>
                         
                         <div class="form-group">
                             <label for="adPrice">Цена (₽)</label>
-                            <input type="number" id="adPrice" placeholder="1000" required>
+                            <input type="number" id="adPrice" placeholder="1000" required min="1" max="1000000">
                         </div>
                         
                         <div class="form-group">
@@ -126,17 +135,18 @@
                         </div>
                         
                         <div class="form-group">
-                            <label>Фотографии товара</label>
-                            <div class="upload-area" id="uploadArea">
+                            <label>Фотографии товара (макс. 5)</label>
+                            <div class="upload-area" onclick="document.getElementById('photoUpload').click()">
                                 <i class="fas fa-cloud-upload-alt"></i>
-                                <p>Перетащите фото сюда или нажмите для выбора</p>
-                                <input type="file" id="photoUpload" accept="image/*" multiple style="display: none;">
+                                <p>Нажмите для выбора фото</p>
                             </div>
-                            <div id="previewContainer" class="preview-container"></div>
+                            <input type="file" id="photoUpload" accept="image/*" multiple 
+                                   style="display: none;" onchange="handleImages(event)">
+                            <div id="imagePreviews" class="image-previews"></div>
                         </div>
                         
                         <div class="form-actions">
-                            <button type="button" class="btn btn-secondary close-modal">Отмена</button>
+                            <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-paper-plane"></i>
                                 <span>Опубликовать</span>
@@ -148,17 +158,17 @@
         </div>
 
         <!-- Модальное окно жалобы -->
-        <div id="reportModal" class="modal">
+        <div id="reportModal" class="modal" style="display: none;">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Пожаловаться на объявление</h3>
-                    <button class="close-modal">&times;</button>
+                    <span class="close-modal" onclick="closeReportModal()">&times;</span>
                 </div>
                 <div class="modal-body">
-                    <form id="reportForm">
+                    <form id="reportForm" onsubmit="return submitReport(event)">
                         <input type="hidden" id="reportAdId">
                         <div class="form-group">
-                            <label for="reportReason">Причина жалобы</label>
+                            <label>Причина жалобы</label>
                             <select id="reportReason" required>
                                 <option value="">Выберите причину</option>
                                 <option value="scam">Мошенничество</option>
@@ -170,12 +180,12 @@
                         </div>
                         
                         <div class="form-group">
-                            <label for="reportDetails">Подробности</label>
+                            <label>Подробности</label>
                             <textarea id="reportDetails" rows="3" placeholder="Опишите проблему..."></textarea>
                         </div>
                         
                         <div class="form-actions">
-                            <button type="button" class="btn btn-secondary close-modal">Отмена</button>
+                            <button type="button" class="btn btn-secondary" onclick="closeReportModal()">Отмена</button>
                             <button type="submit" class="btn btn-danger">
                                 <i class="fas fa-flag"></i>
                                 <span>Отправить жалобу</span>
@@ -186,39 +196,39 @@
             </div>
         </div>
 
-        <!-- Модальное окно рекламы -->
-        <div id="adEditorModal" class="modal">
+        <!-- Модальное окно рекламы для админов -->
+        <div id="adEditModal" class="modal" style="display: none;">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Редактировать рекламу</h3>
-                    <button class="close-modal">&times;</button>
+                    <span class="close-modal" onclick="closeAdEditModal()">&times;</span>
                 </div>
                 <div class="modal-body">
-                    <form id="adEditorForm">
+                    <form id="adEditForm" onsubmit="return saveAd(event)">
                         <div class="form-group">
-                            <label for="adTitleInput">Заголовок рекламы</label>
-                            <input type="text" id="adTitleInput" placeholder="Заголовок">
+                            <label>Заголовок рекламы</label>
+                            <input type="text" id="editAdTitle" placeholder="Заголовок">
                         </div>
                         
                         <div class="form-group">
-                            <label for="adTextInput">Текст рекламы</label>
-                            <textarea id="adTextInput" rows="3" placeholder="Текст рекламы"></textarea>
+                            <label>Текст рекламы</label>
+                            <textarea id="editAdText" rows="3" placeholder="Текст рекламы"></textarea>
                         </div>
                         
                         <div class="form-group">
-                            <label for="adLinkInput">Ссылка (если есть)</label>
-                            <input type="url" id="adLinkInput" placeholder="https://example.com">
+                            <label>Ссылка (если есть)</label>
+                            <input type="url" id="editAdLink" placeholder="https://example.com">
                         </div>
                         
                         <div class="form-group">
-                            <label for="adImageUpload">Изображение</label>
-                            <input type="file" id="adImageUpload" accept="image/*">
+                            <label>Изображение</label>
+                            <input type="file" id="editAdImage" accept="image/*" onchange="previewAdImage(event)">
                             <div id="adImagePreview" class="image-preview"></div>
                         </div>
                         
                         <div class="form-actions">
-                            <button type="button" class="btn btn-secondary close-modal">Отмена</button>
-                            <button type="submit" class="btn btn-primary">Сохранить рекламу</button>
+                            <button type="button" class="btn btn-secondary" onclick="closeAdEditModal()">Отмена</button>
+                            <button type="submit" class="btn btn-primary">Сохранить</button>
                         </div>
                     </form>
                 </div>
@@ -226,10 +236,6 @@
         </div>
     </div>
 
-    <script src="config.js"></script>
-    <script src="api/ads.js"></script>
-    <script src="api/server-api.js"></script>
     <script src="app.js"></script>
-    <script src="service-worker.js"></script>
 </body>
 </html>
