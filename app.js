@@ -59,21 +59,7 @@ function setupEventListeners() {
   // Поиск
   const searchInput = document.getElementById('searchInput');
   if (searchInput) {
-    searchInput.addEventListener('input', function(e) {
-      const searchTerm = e.target.value.toLowerCase().trim();
-
-      if (!searchTerm) {
-        updateItemsGrid(allItems);
-        return;
-      }
-
-      const filteredItems = allItems.filter(item => 
-        item.name.toLowerCase().includes(searchTerm) ||
-        (item.description && item.description.toLowerCase().includes(searchTerm))
-      );
-
-      updateItemsGrid(filteredItems);
-    });
+    searchInput.addEventListener('input', handleSearch);
   }
 
   // Кнопка обновления
@@ -85,6 +71,23 @@ function setupEventListeners() {
       updateUIAfterDataLoad();
     });
   }
+}
+
+// Обработчик поиска
+function handleSearch(e) {
+  const searchTerm = e.target.value.toLowerCase().trim();
+  
+  if (!searchTerm) {
+    updateItemsGrid(allItems);
+    return;
+  }
+  
+  const filteredItems = allItems.filter(item => 
+    item.name.toLowerCase().includes(searchTerm) ||
+    (item.description && item.description.toLowerCase().includes(searchTerm))
+  );
+  
+  updateItemsGrid(filteredItems);
 }
 
 // Обновление UI после загрузки данных
@@ -181,22 +184,28 @@ function createItemCard(item) {
 function initDynamicEventListeners() {
   // Обработчики для кнопок покупки
   document.querySelectorAll('.buy-btn').forEach(button => {
-    button.addEventListener('click', function(e) {
-      const itemId = e.target.dataset.id;
-      const item = allItems.find(i => i.id === itemId);
-      if (item) {
-        showBuyModal(item);
-      }
-    });
+    button.addEventListener('click', handleBuyClick);
   });
 
   // Обработчики для категорий
   document.querySelectorAll('.category-item').forEach(category => {
-    category.addEventListener('click', function(e) {
-      const categoryId = e.currentTarget.dataset.category;
-      filterItemsByCategory(categoryId);
-    });
+    category.addEventListener('click', handleCategoryClick);
   });
+}
+
+// Обработчик клика на покупку
+function handleBuyClick(e) {
+  const itemId = e.target.dataset.id;
+  const item = allItems.find(i => i.id === itemId);
+  if (item) {
+    showBuyModal(item);
+  }
+}
+
+// Обработчик клика на категорию
+function handleCategoryClick(e) {
+  const categoryId = e.currentTarget.dataset.category;
+  filterItemsByCategory(categoryId);
 }
 
 // Фильтрация товаров по категории
@@ -527,94 +536,6 @@ if (!document.querySelector('#notification-styles')) {
     .notification {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       font-size: 14px;
-    }
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1001;
-    }
-    .modal {
-      background: white;
-      border-radius: 10px;
-      max-width: 500px;
-      width: 90%;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-    .modal-header {
-      padding: 20px;
-      border-bottom: 1px solid #eee;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .modal-body {
-      padding: 20px;
-    }
-    .modal-footer {
-      padding: 20px;
-      border-top: 1px solid #eee;
-      display: flex;
-      gap: 10px;
-      justify-content: flex-end;
-    }
-    .modal-close {
-      background: none;
-      border: none;
-      font-size: 24px;
-      cursor: pointer;
-      color: #666;
-    }
-    .btn-primary {
-      background: #007aff;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .btn-secondary {
-      background: #f0f0f0;
-      color: #333;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .item-card {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 15px;
-      margin: 10px;
-    }
-    .item-image {
-      width: 100%;
-      height: 150px;
-      object-fit: cover;
-      border-radius: 4px;
-    }
-    .item-title {
-      margin: 10px 0 5px 0;
-      font-size: 16px;
-    }
-    .item-price {
-      font-weight: bold;
-      color: #007aff;
-    }
-    .buy-btn {
-      background: #007aff;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 4px;
-      cursor: pointer;
     }
   `;
   document.head.appendChild(style);
