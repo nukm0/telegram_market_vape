@@ -3,267 +3,389 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vape Market | Барахолка для вейпов</title>
-    
-    <!-- Внешние зависимости -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Наши файлы -->
-    <link rel="stylesheet" href="style.css">
+    <title>Telegram Market Vape</title>
+    <link rel="stylesheet" href="styla.css">
     <link rel="manifest" href="manifest.json">
+    <!-- Telegram Web App -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <!-- Главный скрипт приложения -->
+    <script src="app.js?v=5.0"></script>
 </head>
 <body>
-    <!-- Экран блокировки -->
-    <div class="blocked-screen" id="blockedScreen" style="display: none;">
-        <div class="blocked-icon"><i class="fas fa-ban"></i></div>
-        <div class="blocked-title">Аккаунт заблокирован</div>
-        <div class="blocked-reason" id="blockedReason">Ваш аккаунт был временно заблокирован администратором</div>
-        <div class="blocked-details">
-            <div class="blocked-info-item">
-                <span class="blocked-info-label">Причина:</span>
-                <span class="blocked-info-value" id="blockReasonText">Нарушение правил</span>
-            </div>
-            <div class="blocked-info-item">
-                <span class="blocked-info-label">Заблокирован:</span>
-                <span class="blocked-info-value" id="blockDateText">Неизвестно</span>
-            </div>
-            <div class="blocked-info-item">
-                <span class="blocked-info-label">Разблокировка:</span>
-                <span class="blocked-info-value" id="unblockDateText">Неизвестно</span>
-            </div>
-            <div class="blocked-time-left" id="timeLeft">Осталось: --:--:--</div>
-        </div>
-        <div class="blocked-contact">
-            Если вы считаете, что это ошибка, свяжитесь с администратором:
-            <a href="https://t.me/nukm0" target="_blank">@nukm0</a>
-        </div>
-    </div>
-
-    <div class="app-container" id="appContainer">
-        <!-- Бейдж администратора -->
-        <div class="admin-badge" id="adminBadge">
-            <i class="fas fa-crown"></i><span>Админ</span>
-        </div>
-
-        <!-- Шапка с поиском -->
-        <header class="app-header">
+    <div class="container">
+        <!-- Шапка -->
+        <header class="header">
             <div class="logo">
-                <i class="fas fa-smoking"></i>
-                <span id="header-title">Vape Market</span>
+                <h1>Vape Market</h1>
             </div>
-            <div class="search-container">
-                <input type="text" class="search-input" id="searchInput" placeholder="Поиск товаров...">
-                <button class="search-btn" onclick="performSearch()"><i class="fas fa-search"></i></button>
+            <div class="user-info">
+                <span id="userName">Загрузка...</span>
+                <button id="profileBtn" class="btn-icon">👤</button>
+                <button id="faqBtn" class="btn-icon">❓</button>
             </div>
         </header>
 
-        <!-- Основной контент -->
-        <main class="main-content" id="main-content">
-            <!-- Страница 1: Объявления -->
-            <div class="page active" id="page-ads">
-                <!-- Фильтры: Продажа/Покупка/Все -->
-                <div class="deal-type-filter">
-                    <button class="deal-type-btn active" onclick="filterDealType('all')">Все</button>
-                    <button class="deal-type-btn" onclick="filterDealType('sell')">Продажа</button>
-                    <button class="deal-type-btn" onclick="filterDealType('buy')">Покупка</button>
-                </div>
+        <!-- Поиск и фильтры -->
+        <div class="search-section">
+            <input type="text" id="searchInput" placeholder="🔍 Поиск товаров..." class="search-input">
+            <button id="refreshBtn" class="btn-secondary">🔄 Обновить</button>
+        </div>
 
-                <div class="add-ad-section">
-                    <div class="add-ad-header">
-                        <div class="add-ad-title">Разместить объявление</div>
-                        <button class="toggle-form-btn" onclick="toggleAddForm()" id="addAdButton">
-                            <i class="fas fa-plus-circle"></i><span id="toggle-btn-text">Добавить</span>
-                        </button>
-                    </div>
-                    
-                    <!-- Форма добавления объявления -->
-                    <div class="add-ad-form" id="addAdForm">
-                        <input type="file" id="photoInput" class="hidden-file-input" accept="image/*" multiple onchange="handlePhotoUpload(event)">
-                        
-                        <div class="photo-upload-section">
-                            <div class="uploaded-photos-container" id="uploaded-photos-container"></div>
-                            <button class="upload-btn" onclick="openPhotoPicker()">
-                                <i class="fas fa-images"></i> Загрузить фотографии
-                            </button>
-                            <div class="upload-info">
-                                Можно загрузить до 3 фотографий. Выбрано: <span id="photo-count">0</span>/3
-                            </div>
-                        </div>
-
-                        <!-- Тип сделки -->
-                        <div class="form-row">
-                            <select class="form-input" id="adDealType" style="width: 48%;">
-                                <option value="sell">Продаю</option>
-                                <option value="buy">Покупаю</option>
-                            </select>
-                            <select class="form-input" id="adCategory" style="width: 48%;">
-                                <option value="">Категория</option>
-                                <option value="liquids">Жидкости</option>
-                                <option value="disposable">Одноразовые</option>
-                                <option value="pod">Под-системы</option>
-                                <option value="consumables">Расходники</option>
-                            </select>
-                        </div>
-
-                        <input type="text" class="form-input" placeholder="Название товара" id="adTitle">
-                        <input type="number" class="form-input" placeholder="Цена (₽)" id="adPrice">
-                        <textarea class="form-input" placeholder="Описание товара" id="adDescription" rows="3"></textarea>
-                        
-                        <div class="form-buttons">
-                            <button class="publish-btn" onclick="publishAd()">
-                                <i class="fas fa-paper-plane"></i> Опубликовать
-                            </button>
-                            <button class="cancel-btn" onclick="toggleAddForm()">
-                                <i class="fas fa-times"></i> Отмена
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Категории -->
-                <div class="categories">
-                    <button class="category-btn active" onclick="filterCategory('all')">Все</button>
-                    <button class="category-btn" onclick="filterCategory('liquids')">Жидкости</button>
-                    <button class="category-btn" onclick="filterCategory('disposable')">Одноразовые</button>
-                    <button class="category-btn" onclick="filterCategory('pod')">Под-системы</button>
-                    <button class="category-btn" onclick="filterCategory('consumables')">Расходники</button>
-                </div>
-
-                <!-- Результаты поиска -->
-                <div class="search-results-header" id="searchResultsHeader" style="display: none;">
-                    <h3>Результаты поиска: <span id="searchQueryText"></span></h3>
-                    <button class="clear-search-btn" onclick="clearSearch()">Очистить поиск</button>
-                </div>
-
-                <!-- Контейнер объявлений -->
-                <div id="ads-container"></div>
-                
-                <!-- Статус синхронизации -->
-                <div class="sync-status" id="sync-status">
-                    <div class="sync-indicator"></div>
-                    <span id="sync-text">Синхронизировано с Firebase</span>
-                </div>
+        <!-- Категории -->
+        <div class="categories-section">
+            <h2>Категории</h2>
+            <div id="categories" class="categories-grid">
+                <!-- Категории будут загружены через JS -->
             </div>
+        </div>
 
-            <!-- Страница 2: Личный кабинет -->
-            <div class="page" id="page-profile">
-                <div class="profile-card">
-                    <div class="profile-header">
-                        <div class="profile-avatar" id="profileAvatar">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div class="profile-info">
-                            <h2 id="profileName">Загрузка...</h2>
-                            <p id="profileUsername">@username</p>
-                            <div class="seller-stat stat-rating">
-                                <i class="fas fa-star"></i>
-                                <span id="myRating">0.0</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="profile-stats">
-                        <div class="profile-stat">
-                            <div class="stat-number" id="myAdsCount">0</div>
-                            <div class="stat-label">Объявления</div>
-                        </div>
-                        <div class="profile-stat">
-                            <div class="stat-number" id="myLikesCount">0</div>
-                            <div class="stat-label">Лайки</div>
-                        </div>
-                        <div class="profile-stat">
-                            <div class="stat-number" id="myDislikesCount">0</div>
-                            <div class="stat-label">Дизлайки</div>
-                        </div>
-                        <div class="profile-stat">
-                            <div class="stat-number" id="myComplaintsCount">0</div>
-                            <div class="stat-label">Жалобы</div>
-                        </div>
-                    </div>
-
-                    <!-- Вкладки -->
-                    <div class="profile-tabs">
-                        <div class="profile-tab active" onclick="switchProfileTab('my-ads')">Мои объявления</div>
-                        <div class="profile-tab" onclick="switchProfileTab('history')">История</div>
-                        <div class="profile-tab" onclick="switchProfileTab('complaints')">Мои жалобы</div>
-                    </div>
-
-                    <!-- Мои объявления -->
-                    <div class="profile-tab-content active" id="my-ads-tab">
-                        <div class="my-ads-list" id="myAdsList"></div>
-                    </div>
-
-                    <!-- История -->
-                    <div class="profile-tab-content" id="history-tab">
-                        <div class="history-list" id="historyList"></div>
-                        <button class="cancel-btn" onclick="clearHistory()" style="width: 100%; margin-top: 10px;">
-                            <i class="fas fa-trash"></i> Очистить историю
-                        </button>
-                    </div>
-
-                    <!-- Мои жалобы -->
-                    <div class="profile-tab-content" id="complaints-tab">
-                        <div class="my-complaints-list" id="myComplaintsList"></div>
-                    </div>
-                </div>
+        <!-- Товары -->
+        <div class="items-section">
+            <div class="section-header">
+                <h2>Товары</h2>
+                <span id="itemsCount" class="counter">0</span>
             </div>
-
-            <!-- Страница 3: FAQ -->
-            <div class="page" id="page-faq">
-                <!-- ... код FAQ страницы ... -->
+            <div id="itemsGrid" class="items-grid">
+                <!-- Товары будут загружены через JS -->
+                <div class="loading">Загрузка товаров...</div>
             </div>
+        </div>
 
-            <!-- Страница 4: Админ-панель -->
-            <div class="page" id="page-admin">
-                <!-- ... код админ-панели ... -->
-            </div>
-        </main>
-
-        <!-- Нижнее меню -->
+        <!-- Навигация (для мобильных) -->
         <nav class="bottom-nav">
-            <button class="nav-item active" data-page="ads" onclick="switchPage('ads')">
-                <div class="nav-icon"><i class="fas fa-box-open"></i></div>
-                <span class="nav-label">Объявления</span>
+            <button class="nav-btn active" data-page="home">
+                <span>🏠</span>
+                <span>Главная</span>
             </button>
-            <button class="nav-item" data-page="profile" onclick="switchPage('profile')">
-                <div class="nav-icon"><i class="fas fa-user-circle"></i></div>
-                <span class="nav-label">Кабинет</span>
+            <button class="nav-btn" data-page="categories">
+                <span>📂</span>
+                <span>Категории</span>
             </button>
-            <button class="nav-item" data-page="faq" onclick="switchPage('faq')">
-                <div class="nav-icon"><i class="fas fa-question-circle"></i></div>
-                <span class="nav-label">FAQ</span>
+            <button class="nav-btn" id="cartBtnNav" data-page="cart">
+                <span>🛒</span>
+                <span>Корзина</span>
             </button>
-            <button class="nav-item" data-page="admin" onclick="switchPage('admin')" id="admin-nav-item" style="display: none;">
-                <div class="nav-icon"><i class="fas fa-crown"></i></div>
-                <span class="nav-label">Админ</span>
+            <button class="nav-btn" data-page="profile">
+                <span>👤</span>
+                <span>Профиль</span>
             </button>
         </nav>
-
-        <!-- Модальное окно для фото -->
-        <div class="photo-modal" id="photoModal">
-            <!-- ... код модального окна ... -->
-        </div>
-
-        <!-- Модальное окно жалобы -->
-        <div class="complaint-modal" id="complaintModal">
-            <!-- ... код модального окна жалобы ... -->
-        </div>
-
-        <!-- Уведомление -->
-        <div class="notification" id="notification"></div>
     </div>
 
-    <!-- Скрипты -->
-    <script src="config.js"></script>
-    <script src="app.js?v=1.1"></script>
+    <!-- Стайлы для уведомлений и модалок -->
+    <style>
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-style: italic;
+        }
+        
+        /* Стили для карточек */
+        .item-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .item-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .item-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .item-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+            color: #333;
+        }
+        
+        .item-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        
+        .item-category {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        
+        .item-rating {
+            color: #ff9800;
+            font-weight: 600;
+        }
+        
+        .item-description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 12px;
+            min-height: 40px;
+        }
+        
+        .item-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .item-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: #007aff;
+        }
+        
+        .buy-btn {
+            background: linear-gradient(135deg, #007aff, #0056cc);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .buy-btn:hover {
+            background: linear-gradient(135deg, #0056cc, #004099);
+        }
+        
+        /* Категории */
+        .categories-grid {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px 0;
+            scrollbar-width: none;
+        }
+        
+        .categories-grid::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .category-item {
+            min-width: 100px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .category-item:hover {
+            transform: scale(1.05);
+        }
+        
+        .category-item img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 5px;
+            border: 2px solid transparent;
+            transition: border-color 0.2s;
+        }
+        
+        .category-item:hover img {
+            border-color: #007aff;
+        }
+        
+        .category-item span {
+            display: block;
+            font-size: 12px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        /* Шапка */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            margin-bottom: 20px;
+        }
+        
+        .logo h1 {
+            margin: 0;
+            color: #007aff;
+            font-size: 24px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn-icon {
+            background: #f0f0f0;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Поиск */
+        .search-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        /* Секции */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .section-header h2 {
+            margin: 0;
+            color: #333;
+        }
+        
+        .counter {
+            background: #007aff;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        /* Навигация */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            border-top: 1px solid #eee;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .nav-btn {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #666;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .nav-btn.active {
+            color: #007aff;
+        }
+        
+        .nav-btn span:first-child {
+            font-size: 20px;
+        }
+        
+        .nav-btn span:last-child {
+            font-size: 10px;
+        }
+        
+        /* Контейнер */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px 70px 15px;
+        }
+        
+        /* Сетка товаров */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .items-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+            
+            .logo h1 {
+                font-size: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .items-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-section {
+                flex-direction: column;
+            }
+        }
+    </style>
+
+    <!-- Service Worker для PWA -->
     <script>
-        // Service Worker регистрация
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('service-worker.js');
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(function(registration) {
+                        console.log('Service Worker зарегистрирован:', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('Ошибка регистрации Service Worker:', error);
+                    });
+            });
         }
     </script>
 </body>
