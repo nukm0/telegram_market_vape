@@ -1,37 +1,24 @@
 {
-  "name": "Vape Market",
-  "short_name": "VapeMarket",
-  "description": "Барахолка для вейпов в Telegram",
-  "start_url": "/index.html",
+  "name": "Vape Market - Telegram",
+  "short_name": "Vape Market",
+  "description": "Telegram Marketplace для покупки и продажи вейп-товаров",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#0F172A",
-  "theme_color": "#7C3AED",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.2.96/svg/cigarette.svg",
+      "src": "https://cdn-icons-png.flaticon.com/512/5968/5968804.png",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/png"
     },
     {
-      "src": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.2.96/svg/cigarette.svg",
+      "src": "https://cdn-icons-png.flaticon.com/512/5968/5968804.png",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/png"
     }
   ],
   "categories": ["shopping", "social"],
-  "shortcuts": [
-    {
-      "name": "Новое объявление",
-      "short_name": "Добавить",
-      "description": "Создать новое объявление",
-      "url": "/index.html?action=add"
-    },
-    {
-      "name": "Мои объявления",
-      "short_name": "Мои",
-      "description": "Просмотреть мои объявления",
-      "url": "/index.html?action=profile"
-    }
-  ]
+  "prefer_related_applications": false
 }
