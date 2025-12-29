@@ -39,12 +39,6 @@
             transition: all 0.3s ease;
         }
 
-        .back-btn:hover {
-            background: rgba(168, 85, 247, 0.1);
-            border-color: rgba(168, 85, 247, 0.4);
-            color: #FFFFFF;
-        }
-
         .profile-title {
             font-size: 1.5rem;
             font-weight: 700;
@@ -92,14 +86,15 @@
             font-weight: 600;
         }
 
-        .profile-stats {
+        /* СТАТИСТИКА */
+        .profile-stats-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 15px;
             margin-top: 25px;
         }
 
-        .stat-item {
+        .stat-card {
             background: rgba(168, 85, 247, 0.1);
             border-radius: 15px;
             padding: 20px;
@@ -107,173 +102,116 @@
             border: 1px solid rgba(168, 85, 247, 0.2);
         }
 
-        .stat-value {
-            font-size: 1.8rem;
+        .stat-number {
+            font-size: 28px;
             font-weight: 800;
-            color: #8B5CF6;
+            background: linear-gradient(135deg, #FFFFFF 0%, #C084FC 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             display: block;
             margin-bottom: 5px;
         }
 
         .stat-label {
             color: #94A3B8;
-            font-size: 0.85rem;
+            font-size: 12px;
             font-weight: 600;
         }
 
-        .profile-tabs {
-            display: flex;
-            background: rgba(30, 41, 59, 0.6);
-            border-radius: 16px;
-            padding: 6px;
-            margin-bottom: 25px;
+        /* НАСТРОЙКИ - ПРАВИЛЬНЫЙ СТИЛЬ */
+        .profile-settings {
+            background: rgba(30, 27, 75, 0.6);
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 20px;
             border: 1px solid rgba(168, 85, 247, 0.2);
+            backdrop-filter: blur(10px);
         }
 
-        .tab-btn {
-            flex: 1;
-            padding: 15px;
-            background: transparent;
-            border: none;
-            border-radius: 12px;
-            color: #94A3B8;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .tab-btn.active {
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(124, 58, 237, 0.15) 100%);
+        .settings-title {
             color: #FFFFFF;
-        }
-
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .ads-list, .history-list, .settings-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .list-item {
-            background: rgba(30, 41, 59, 0.6);
-            border-radius: 16px;
-            padding: 20px;
-            border: 1px solid rgba(168, 85, 247, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .list-item:hover {
-            transform: translateY(-2px);
-            border-color: rgba(168, 85, 247, 0.4);
-            background: rgba(30, 41, 59, 0.8);
-        }
-
-        .item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 10px;
-        }
-
-        .item-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #FFFFFF;
-            flex: 1;
-        }
-
-        .item-price {
             font-size: 1.3rem;
-            font-weight: 800;
-            color: #10B981;
-            margin-left: 15px;
-        }
-
-        .item-description {
-            color: #CBD5E1;
-            font-size: 0.95rem;
-            margin-bottom: 15px;
-            line-height: 1.5;
-        }
-
-        .item-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 15px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .item-date {
-            color: #94A3B8;
-            font-size: 0.85rem;
-        }
-
-        .item-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .action-btn {
-            padding: 8px 16px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.05);
-            color: #CBD5E1;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .action-btn.edit {
-            background: rgba(59, 130, 246, 0.1);
-            border-color: rgba(59, 130, 246, 0.3);
-            color: #3B82F6;
-        }
-
-        .action-btn.delete {
-            background: rgba(239, 68, 68, 0.1);
-            border-color: rgba(239, 68, 68, 0.3);
-            color: #EF4444;
-        }
-
-        .action-btn:hover {
-            transform: translateY(-1px);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #94A3B8;
-        }
-
-        .empty-state i {
-            font-size: 3rem;
             margin-bottom: 20px;
-            opacity: 0.5;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .empty-state h3 {
-            font-size: 1.3rem;
-            color: #CBD5E1;
-            margin-bottom: 10px;
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-info {
+            flex: 1;
+        }
+
+        .setting-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #FFFFFF;
+            margin-bottom: 5px;
+        }
+
+        .setting-desc {
+            font-size: 0.85rem;
+            color: #94A3B8;
+        }
+
+        /* ПЕРЕКЛЮЧАТЕЛИ */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 28px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(30, 41, 59, 0.8);
+            border: 2px solid rgba(168, 85, 247, 0.3);
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 2px;
+            background: #94A3B8;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(124, 58, 237, 0.2) 100%);
+            border-color: #8B5CF6;
+        }
+
+        input:checked + .slider:before {
+            background: #8B5CF6;
+            transform: translateX(20px);
         }
 
         .logout-btn {
@@ -299,81 +237,6 @@
             border-color: rgba(239, 68, 68, 0.5);
             transform: translateY(-2px);
         }
-
-        .setting-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-            background: rgba(30, 41, 59, 0.6);
-            border-radius: 16px;
-            border: 1px solid rgba(168, 85, 247, 0.2);
-            margin-bottom: 15px;
-        }
-
-        .setting-info {
-            flex: 1;
-        }
-
-        .setting-title {
-            font-size: 1rem;
-            font-weight: 700;
-            color: #FFFFFF;
-            margin-bottom: 5px;
-        }
-
-        .setting-description {
-            font-size: 0.85rem;
-            color: #94A3B8;
-        }
-
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 30px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(30, 41, 59, 0.8);
-            border: 2px solid rgba(168, 85, 247, 0.3);
-            transition: .4s;
-            border-radius: 34px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 22px;
-            width: 22px;
-            left: 4px;
-            bottom: 2px;
-            background-color: #94A3B8;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: rgba(139, 92, 246, 0.3);
-            border-color: #8B5CF6;
-        }
-
-        input:checked + .slider:before {
-            background-color: #8B5CF6;
-            transform: translateX(26px);
-        }
     </style>
 </head>
 <body>
@@ -394,77 +257,42 @@
                 <div class="profile-avatar" id="profileAvatar">
                     <i class="fas fa-user"></i>
                 </div>
-                <h1 class="profile-name" id="profileName">Загрузка...</h1>
-                <p class="profile-username" id="profileUsername">@username</p>
+                <h1 class="profile-name" id="profileName">Админ</h1>
+                <p class="profile-username" id="profileUsername">@admin</p>
                 
-                <div class="profile-stats">
-                    <div class="stat-item">
-                        <span class="stat-value" id="statsAds">0</span>
+                <!-- Статистика -->
+                <div class="profile-stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-number" id="statsAds">15</span>
                         <span class="stat-label">Объявления</span>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-value" id="statsLikes">0</span>
+                    <div class="stat-card">
+                        <span class="stat-number" id="statsLikes">247</span>
                         <span class="stat-label">Лайки</span>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-value" id="statsRating">0.0</span>
+                    <div class="stat-card">
+                        <span class="stat-number" id="statsRating">4.7</span>
                         <span class="stat-label">Рейтинг</span>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-value" id="statsDeals">0</span>
+                    <div class="stat-card">
+                        <span class="stat-number" id="statsDeals">89</span>
                         <span class="stat-label">Сделки</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Вкладки -->
-            <div class="profile-tabs">
-                <button class="tab-btn active" onclick="switchTab('my-ads')">
-                    <i class="fas fa-box-open"></i>
-                    Мои объявления
-                </button>
-                <button class="tab-btn" onclick="switchTab('history')">
-                    <i class="fas fa-history"></i>
-                    История
-                </button>
-                <button class="tab-btn" onclick="switchTab('settings')">
+            <!-- Настройки -->
+            <div class="profile-settings">
+                <h2 class="settings-title">
                     <i class="fas fa-cog"></i>
                     Настройки
-                </button>
-            </div>
-
-            <!-- Вкладка: Мои объявления -->
-            <div class="tab-content active" id="tab-my-ads">
-                <div class="ads-list" id="myAdsList">
-                    <div class="empty-state">
-                        <i class="fas fa-box-open"></i>
-                        <h3>Нет объявлений</h3>
-                        <p>Создайте первое объявление</p>
-                        <a href="../index.html" style="color: #8B5CF6; margin-top: 15px; display: inline-block; font-weight: 600;">
-                            Создать объявление
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Вкладка: История -->
-            <div class="tab-content" id="tab-history">
-                <div class="history-list" id="historyList">
-                    <div class="empty-state">
-                        <i class="fas fa-history"></i>
-                        <h3>История пуста</h3>
-                        <p>Здесь будут отображаться ваши действия</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Вкладка: Настройки -->
-            <div class="tab-content" id="tab-settings">
+                </h2>
+                
                 <div class="settings-list">
                     <div class="setting-item">
                         <div class="setting-info">
-                            <div class="setting-title">Уведомления</div>
-                            <div class="setting-description">Получать уведомления о новых сообщениях</div>
+                            <div class="setting-name">Уведомления</div>
+                            <div class="setting-desc">Получать уведомления о новых сообщениях</div>
                         </div>
                         <label class="switch">
                             <input type="checkbox" id="notificationsToggle" checked>
@@ -474,8 +302,8 @@
 
                     <div class="setting-item">
                         <div class="setting-info">
-                            <div class="setting-title">Темная тема</div>
-                            <div class="setting-description">Использовать темную тему приложения</div>
+                            <div class="setting-name">Темная тема</div>
+                            <div class="setting-desc">Использовать темную тему приложения</div>
                         </div>
                         <label class="switch">
                             <input type="checkbox" id="darkThemeToggle" checked>
@@ -485,22 +313,22 @@
 
                     <div class="setting-item">
                         <div class="setting-info">
-                            <div class="setting-title">Автообновление</div>
-                            <div class="setting-description">Автоматически обновлять список объявлений</div>
+                            <div class="setting-name">Показывать телефон</div>
+                            <div class="setting-desc">Показывать номер телефона в объявлениях</div>
                         </div>
                         <label class="switch">
-                            <input type="checkbox" id="autoRefreshToggle" checked>
+                            <input type="checkbox" id="showPhoneToggle">
                             <span class="slider"></span>
                         </label>
                     </div>
 
                     <div class="setting-item">
                         <div class="setting-info">
-                            <div class="setting-title">Показывать телефон</div>
-                            <div class="setting-description">Показывать номер телефона в объявлениях</div>
+                            <div class="setting-name">Автообновление</div>
+                            <div class="setting-desc">Автоматически обновлять список объявлений</div>
                         </div>
                         <label class="switch">
-                            <input type="checkbox" id="showPhoneToggle">
+                            <input type="checkbox" id="autoRefreshToggle" checked>
                             <span class="slider"></span>
                         </label>
                     </div>
@@ -517,196 +345,73 @@
 
     <!-- Навигация -->
     <nav class="bottom-nav">
-        <button class="nav-btn" data-page="ads" onclick="window.location.href='../index.html'">
+        <button class="nav-btn" onclick="window.location.href='../index.html'">
             <i class="fas fa-list"></i>
             <span>Объявления</span>
         </button>
-        <button class="nav-btn active" data-page="profile">
+        <button class="nav-btn active">
             <i class="fas fa-user"></i>
             <span>Кабинет</span>
         </button>
-        <button class="nav-btn" data-page="faq" onclick="window.location.href='faq.html'">
+        <button class="nav-btn" onclick="window.location.href='faq.html'">
             <i class="fas fa-question-circle"></i>
             <span>FAQ</span>
         </button>
     </nav>
 
     <script>
-        // Глобальные переменные
-        let currentUser = null;
-        let myAds = [];
-
-        // Загрузка при открытии
-        document.addEventListener('DOMContentLoaded', async function() {
-            console.log('Загрузка профиля...');
+        // Настройка переключателей
+        document.addEventListener('DOMContentLoaded', function() {
+            // Загружаем настройки из localStorage
+            loadSettings();
             
-            // Загружаем пользователя из localStorage
-            const userData = localStorage.getItem('currentUser');
-            if (userData) {
-                currentUser = JSON.parse(userData);
-                updateProfileInfo();
-            } else {
-                // Если нет пользователя, возвращаемся на главную
-                window.location.href = '../index.html';
-                return;
-            }
-            
-            // Загружаем объявления пользователя
-            await loadMyAds();
-            
-            // Настройка обработчиков
-            setupProfileEventListeners();
+            // Настройка обработчиков для переключателей
+            setupSettingsListeners();
         });
 
-        // Обновление информации профиля
-        function updateProfileInfo() {
-            if (!currentUser) return;
+        function loadSettings() {
+            const settings = JSON.parse(localStorage.getItem('userSettings') || '{}');
             
-            document.getElementById('profileName').textContent = currentUser.firstName || 'Пользователь';
-            document.getElementById('profileUsername').textContent = currentUser.username 
-                ? '@' + currentUser.username 
-                : 'Без username';
-            
-            if (currentUser.photoUrl) {
-                document.getElementById('profileAvatar').innerHTML = 
-                    `<img src="${currentUser.photoUrl}" alt="Аватар" style="width:100%;height:100%;border-radius:50%;">`;
-            }
+            document.getElementById('notificationsToggle').checked = settings.notifications !== false;
+            document.getElementById('darkThemeToggle').checked = settings.darkTheme !== false;
+            document.getElementById('showPhoneToggle').checked = settings.showPhone || false;
+            document.getElementById('autoRefreshToggle').checked = settings.autoRefresh !== false;
         }
 
-        // Загрузка моих объявлений
-        async function loadMyAds() {
-            try {
-                // Здесь будет API запрос
-                // Пока используем мок данные
-                myAds = [
-                    {
-                        id: '1',
-                        title: 'HQD Cuvie Plus 2500',
-                        price: 1200,
-                        description: 'Новый, в упаковке, 2500 затяжек',
-                        createdAt: new Date().toISOString(),
-                        status: 'active',
-                        views: 45,
-                        likes: 5
-                    },
-                    {
-                        id: '2',
-                        title: 'Жидкости Salt 20mg',
-                        price: 500,
-                        description: 'Солевые жидкости разных вкусов',
-                        createdAt: new Date(Date.now() - 86400000).toISOString(),
-                        status: 'active',
-                        views: 23,
-                        likes: 3
-                    }
-                ];
-                
-                updateMyAdsList();
-                updateStats();
-                
-            } catch (error) {
-                console.error('Ошибка загрузки объявлений:', error);
-            }
-        }
-
-        // Обновление списка объявлений
-        function updateMyAdsList() {
-            const container = document.getElementById('myAdsList');
-            
-            if (myAds.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-box-open"></i>
-                        <h3>Нет объявлений</h3>
-                        <p>Создайте первое объявление</p>
-                        <a href="../index.html" style="color: #8B5CF6; margin-top: 15px; display: inline-block; font-weight: 600;">
-                            Создать объявление
-                        </a>
-                    </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = myAds.map(ad => `
-                <div class="list-item" data-id="${ad.id}">
-                    <div class="item-header">
-                        <h3 class="item-title">${ad.title}</h3>
-                        <span class="item-price">${ad.price.toLocaleString()} ₽</span>
-                    </div>
-                    
-                    <p class="item-description">${ad.description || 'Нет описания'}</p>
-                    
-                    <div class="item-footer">
-                        <div class="item-stats">
-                            <span style="color: #94A3B8; font-size: 0.85rem; margin-right: 15px;">
-                                <i class="fas fa-eye"></i> ${ad.views || 0}
-                            </span>
-                            <span style="color: #94A3B8; font-size: 0.85rem;">
-                                <i class="fas fa-thumbs-up"></i> ${ad.likes || 0}
-                            </span>
-                        </div>
-                        
-                        <div class="item-actions">
-                            <button class="action-btn edit" onclick="editAd('${ad.id}')">
-                                <i class="fas fa-edit"></i>
-                                Изменить
-                            </button>
-                            <button class="action-btn delete" onclick="deleteAd('${ad.id}')">
-                                <i class="fas fa-trash"></i>
-                                Удалить
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Обновление статистики
-        function updateStats() {
-            document.getElementById('statsAds').textContent = myAds.length;
-            document.getElementById('statsLikes').textContent = myAds.reduce((sum, ad) => sum + (ad.likes || 0), 0);
-            document.getElementById('statsRating').textContent = '4.7';
-            document.getElementById('statsDeals').textContent = '12';
-        }
-
-        // Переключение вкладок
-        function switchTab(tabName) {
-            // Убираем активный класс со всех вкладок
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
+        function setupSettingsListeners() {
+            // Сохраняем настройки при изменении
+            document.getElementById('notificationsToggle').addEventListener('change', function() {
+                saveSetting('notifications', this.checked);
             });
             
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
+            document.getElementById('darkThemeToggle').addEventListener('change', function() {
+                saveSetting('darkTheme', this.checked);
+                // Применяем тему
+                if (this.checked) {
+                    document.body.classList.add('dark-theme');
+                } else {
+                    document.body.classList.remove('dark-theme');
+                }
             });
             
-            // Добавляем активный класс к выбранной вкладке
-            document.querySelector(`.tab-btn[onclick*="${tabName}"]`).classList.add('active');
-            document.getElementById(`tab-${tabName}`).classList.add('active');
+            document.getElementById('showPhoneToggle').addEventListener('change', function() {
+                saveSetting('showPhone', this.checked);
+            });
+            
+            document.getElementById('autoRefreshToggle').addEventListener('change', function() {
+                saveSetting('autoRefresh', this.checked);
+            });
         }
 
-        // Редактирование объявления
-        function editAd(adId) {
-            const ad = myAds.find(a => a.id === adId);
-            if (ad) {
-                alert(`Редактирование объявления: ${ad.title}`);
-                // Здесь будет переход на страницу редактирования
-            }
+        function saveSetting(key, value) {
+            let settings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+            settings[key] = value;
+            localStorage.setItem('userSettings', JSON.stringify(settings));
+            
+            // Показываем уведомление
+            showNotification('Настройки сохранены', 'success');
         }
 
-        // Удаление объявления
-        function deleteAd(adId) {
-            if (confirm('Вы уверены, что хотите удалить это объявление?')) {
-                myAds = myAds.filter(a => a.id !== adId);
-                updateMyAdsList();
-                updateStats();
-                
-                // Показываем уведомление
-                showNotification('Объявление удалено', 'success');
-            }
-        }
-
-        // Выход из аккаунта
         function logout() {
             if (confirm('Вы уверены, что хотите выйти?')) {
                 localStorage.removeItem('currentUser');
@@ -714,29 +419,8 @@
             }
         }
 
-        // Настройка обработчиков
-        function setupProfileEventListeners() {
-            // Переключатели настроек
-            document.getElementById('notificationsToggle').addEventListener('change', function() {
-                console.log('Уведомления:', this.checked);
-            });
-            
-            document.getElementById('darkThemeToggle').addEventListener('change', function() {
-                console.log('Темная тема:', this.checked);
-            });
-            
-            document.getElementById('autoRefreshToggle').addEventListener('change', function() {
-                console.log('Автообновление:', this.checked);
-            });
-            
-            document.getElementById('showPhoneToggle').addEventListener('change', function() {
-                console.log('Показывать телефон:', this.checked);
-            });
-        }
-
-        // Вспомогательная функция
         function showNotification(message, type) {
-            alert(message);
+            alert(type === 'success' ? '✅ ' + message : 'ℹ️ ' + message);
         }
     </script>
 </body>
