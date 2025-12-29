@@ -39,7 +39,7 @@ const FirebaseMarketServer = {
 // Настройка обработчиков событий
 function setupEventListeners() {
   console.log("🎯 Настройка обработчиков событий...");
-  
+
   // Кнопка профиля
   const profileBtn = document.getElementById('profileBtn');
   if (profileBtn) {
@@ -47,7 +47,7 @@ function setupEventListeners() {
       window.location.href = 'pages/profile.html';
     });
   }
-  
+
   // Кнопка FAQ
   const faqBtn = document.getElementById('faqBtn');
   if (faqBtn) {
@@ -55,27 +55,27 @@ function setupEventListeners() {
       window.location.href = 'pages/faq.html';
     });
   }
-  
+
   // Поиск
   const searchInput = document.getElementById('searchInput');
   if (searchInput) {
     searchInput.addEventListener('input', function(e) {
       const searchTerm = e.target.value.toLowerCase().trim();
-      
+
       if (!searchTerm) {
         updateItemsGrid(allItems);
         return;
       }
-      
+
       const filteredItems = allItems.filter(item => 
         item.name.toLowerCase().includes(searchTerm) ||
         (item.description && item.description.toLowerCase().includes(searchTerm))
       );
-      
+
       updateItemsGrid(filteredItems);
     });
   }
-  
+
   // Кнопка обновления
   const refreshBtn = document.getElementById('refreshBtn');
   if (refreshBtn) {
@@ -90,16 +90,16 @@ function setupEventListeners() {
 // Обновление UI после загрузки данных
 function updateUIAfterDataLoad() {
   console.log("🎨 Обновление интерфейса после загрузки данных...");
-  
+
   // Обновление имени пользователя
   updateUserInfo();
-  
+
   // Обновление категорий
   updateCategories();
-  
+
   // Обновление товаров
   updateItemsGrid();
-  
+
   // Инициализация обработчиков для динамически созданных элементов
   initDynamicEventListeners();
 }
@@ -116,14 +116,14 @@ function updateUserInfo() {
 function updateCategories() {
   const categoriesContainer = document.getElementById('categories');
   if (!categoriesContainer) return;
-  
+
   const categories = serverCache.categories || {};
-  
+
   if (Object.keys(categories).length === 0) {
     categoriesContainer.innerHTML = '<p class="no-data">Категории не найдены</p>';
     return;
   }
-  
+
   categoriesContainer.innerHTML = '';
   Object.entries(categories).forEach(([id, category]) => {
     const categoryElement = document.createElement('div');
@@ -141,12 +141,12 @@ function updateCategories() {
 function updateItemsGrid(items = allItems) {
   const itemsGrid = document.getElementById('itemsGrid');
   if (!itemsGrid) return;
-  
+
   if (items.length === 0) {
     itemsGrid.innerHTML = '<p class="no-data">Товары не найдены</p>';
     return;
   }
-  
+
   itemsGrid.innerHTML = '';
   items.forEach(item => {
     const itemElement = createItemCard(item);
@@ -173,7 +173,7 @@ function createItemCard(item) {
       </div>
     </div>
   `;
-  
+
   return div;
 }
 
@@ -189,7 +189,7 @@ function initDynamicEventListeners() {
       }
     });
   });
-  
+
   // Обработчики для категорий
   document.querySelectorAll('.category-item').forEach(category => {
     category.addEventListener('click', function(e) {
@@ -205,7 +205,7 @@ function filterItemsByCategory(categoryId) {
     updateItemsGrid(allItems);
     return;
   }
-  
+
   const filteredItems = allItems.filter(item => item.categoryId === categoryId);
   updateItemsGrid(filteredItems);
 }
@@ -213,7 +213,7 @@ function filterItemsByCategory(categoryId) {
 // Получение названия категории
 function getCategoryName(categoryId) {
   if (!categoryId) return 'Без категории';
-  
+
   const categories = serverCache.categories || {};
   return categories[categoryId]?.name || 'Без категории';
 }
@@ -229,12 +229,12 @@ function formatPrice(price) {
 // Расчет рейтинга товара
 function calculateItemRating(itemId, ratings) {
   if (!ratings || !ratings[itemId]) return null;
-  
+
   const itemRatings = ratings[itemId];
   const values = Object.values(itemRatings).map(r => r.rating || r.value || r);
-  
+
   if (values.length === 0) return null;
-  
+
   const sum = values.reduce((a, b) => a + b, 0);
   return sum / values.length;
 }
@@ -242,7 +242,7 @@ function calculateItemRating(itemId, ratings) {
 // Инициализация приложения
 async function initApp() {
   console.log("🚀 Инициализация приложения...");
-  
+
   try {
     // Получение данных пользователя из Telegram
     const user = tg.initDataUnsafe?.user;
@@ -271,13 +271,13 @@ async function initApp() {
 
     // Загрузка данных
     await loadInitialData();
-    
+
     // Настройка обработчиков событий
     setupEventListeners();
-    
+
     // Обновление UI
     updateUIAfterDataLoad();
-    
+
   } catch (error) {
     console.error("❌ Ошибка инициализации:", error);
     showNotification("Ошибка загрузки приложения", "error");
@@ -296,7 +296,7 @@ async function loadInitialData() {
 
     // Загрузка данных из Firebase
     await loadFromServer();
-    
+
   } catch (error) {
     console.error("❌ Ошибка загрузки данных:", error);
     showNotification("Ошибка загрузки данных", "error");
@@ -306,23 +306,23 @@ async function loadInitialData() {
 // Загрузка данных с сервера
 async function loadFromServer() {
   console.log("📡 Загрузка данных с сервера...");
-  
+
   try {
     // Получение всех товаров
     const itemsSnapshot = await db.ref('items').once('value');
     const itemsData = itemsSnapshot.val() || {};
-    
+
     // Получение категорий
     const categoriesSnapshot = await db.ref('categories').once('value');
     const categoriesData = categoriesSnapshot.val() || {};
-    
+
     // Получение отзывов
     const reviewsSnapshot = await db.ref('reviews').once('value');
     const reviewsData = reviewsSnapshot.val() || {};
-    
+
     // Получение рейтингов
     const ratings = await FirebaseMarketServer.getRatings();
-    
+
     // Сохранение в кэш
     serverCache = {
       items: itemsData,
@@ -331,24 +331,24 @@ async function loadFromServer() {
       ratings: ratings,
       lastUpdated: Date.now()
     };
-    
+
     // Сохранение в localStorage
     localStorage.setItem('market_cache', JSON.stringify(serverCache));
-    
+
     // Преобразование товаров в массив
     allItems = Object.entries(itemsData).map(([id, item]) => ({
       id,
       ...item,
       rating: calculateItemRating(id, ratings)
     }));
-    
+
     console.log("✅ Данные загружены:", {
       items: allItems.length,
       categories: Object.keys(categoriesData).length,
       reviews: Object.keys(reviewsData).length,
       ratings: Object.keys(ratings).length
     });
-    
+
   } catch (error) {
     console.error("❌ Ошибка загрузки данных:", error);
     throw error;
@@ -360,7 +360,7 @@ async function checkOrCreateUserProfile(user) {
   try {
     const userRef = db.ref(`users/${user.id}`);
     const snapshot = await userRef.once('value');
-    
+
     if (!snapshot.exists()) {
       // Создание нового профиля
       const userData = {
@@ -375,7 +375,7 @@ async function checkOrCreateUserProfile(user) {
         reviews: 0,
         lastSeen: Date.now()
       };
-      
+
       await userRef.set(userData);
       console.log("✅ Создан новый профиль пользователя");
     } else {
@@ -402,7 +402,7 @@ function showBuyModal(item) {
     <div class="modal">
       <div class="modal-header">
         <h2>${item.name}</h2>
-        <button class="modal-close">&times;</button>
+        <button class="modal-close">×</button>
       </div>
       <div class="modal-body">
         <img src="${item.image || 'https://via.placeholder.com/300'}" alt="${item.name}" class="modal-image">
@@ -419,22 +419,22 @@ function showBuyModal(item) {
       </div>
     </div>
   `;
-  
+
   document.body.appendChild(modal);
-  
+
   // Обработчики закрытия
   modal.querySelectorAll('.modal-close').forEach(btn => {
     btn.addEventListener('click', () => {
       document.body.removeChild(modal);
     });
   });
-  
+
   // Обработчик подтверждения покупки
   modal.querySelector('#confirmPurchase').addEventListener('click', async () => {
     await processPurchase(item);
     document.body.removeChild(modal);
   });
-  
+
   // Закрытие по клику на overlay
   modal.addEventListener('click', (e) => {
     if (e.target === modal) {
@@ -458,9 +458,9 @@ async function processPurchase(item) {
       status: 'pending',
       paymentMethod: 'telegram'
     };
-    
+
     await db.ref(`orders/${orderId}`).set(orderData);
-    
+
     // Обновление статистики пользователя
     const userRef = db.ref(`users/${currentUser.id}`);
     await userRef.transaction((user) => {
@@ -470,9 +470,9 @@ async function processPurchase(item) {
       }
       return user;
     });
-    
+
     showNotification(`✅ Товар "${item.name}" успешно заказан!`, "success");
-    
+
   } catch (error) {
     console.error("❌ Ошибка оформления заказа:", error);
     showNotification("Ошибка оформления заказа", "error");
@@ -496,9 +496,9 @@ function showNotification(message, type = "info") {
     animation: slideIn 0.3s ease;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   `;
-  
+
   document.body.appendChild(notification);
-  
+
   setTimeout(() => {
     if (notification.parentNode) {
       notification.style.animation = 'slideOut 0.3s ease';
