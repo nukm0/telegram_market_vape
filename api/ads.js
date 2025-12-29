@@ -1,145 +1,132 @@
-const AdsAPI = {
-    // Получить все объявления
-    async getAllAds() {
+// API для работы с объявлениями
+class AdsAPI {
+    constructor() {
+        this.baseUrl = 'https://your-api-domain.com/api';
+        this.headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.getToken()}`
+        };
+    }
+    
+    getToken() {
+        return localStorage.getItem('auth_token');
+    }
+    
+    async getAds(params = {}) {
         try {
-            const ads = JSON.parse(localStorage.getItem('market_ads') || '[]');
-            return ads.filter(ad => !ad.isBlocked);
+            const query = new URLSearchParams(params).toString();
+            const response = await fetch(`${this.baseUrl}/ads?${query}`, {
+                headers: this.headers
+            });
+            return await response.json();
         } catch (error) {
             console.error('Ошибка получения объявлений:', error);
-            return [];
+            throw error;
         }
-    },
+    }
     
-    // Получить объявления пользователя
-    async getUserAds(userId) {
-        try {
-            const ads = JSON.parse(localStorage.getItem('market_ads') || '[]');
-            return ads.filter(ad => ad.userId === userId && !ad.isBlocked);
-        } catch (error) {
-            console.error('Ошибка получения объявлений пользователя:', error);
-            return [];
-        }
-    },
-    
-    // Создать объявление
     async createAd(adData) {
         try {
-            const ads = JSON.parse(localStorage.getItem('market_ads') || '[]');
-            const newAd = {
-                id: Date.now().toString(),
-                ...adData,
-                createdAt: new Date().toISOString(),
-                views: 0,
-                likes: 0,
-                isBlocked: false,
-                reports: []
-            };
-            
-            ads.unshift(newAd);
-            localStorage.setItem('market_ads', JSON.stringify(ads));
-            
-            return newAd;
+            const response = await fetch(`${this.baseUrl}/ads`, {
+                method: 'POST',
+                headers: this.headers,
+                body: JSON.stringify(adData)
+            });
+            return await response.json();
         } catch (error) {
             console.error('Ошибка создания объявления:', error);
             throw error;
         }
-    },
+    }
     
-    // Удалить объявление
-    async deleteAd(adId, userId) {
+    async updateAd(id, adData) {
         try {
-            const ads = JSON.parse(localStorage.getItem('market_ads') || '[]');
-            const adIndex = ads.findIndex(ad => ad.id === adId && ad.userId === userId);
-            
-            if (adIndex !== -1) {
-                ads.splice(adIndex, 1);
-                localStorage.setItem('market_ads', JSON.stringify(ads));
-                return true;
-            }
-            
-            return false;
+            const response = await fetch(`${this.baseUrl}/ads/${id}`, {
+                method: 'PUT',
+                headers: this.headers,
+                body: JSON.stringify(adData)
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Ошибка обновления объявления:', error);
+            throw error;
+        }
+    }
+    
+    async deleteAd(id) {
+        try {
+            const response = await fetch(`${this.baseUrl}/ads/${id}`, {
+                method: 'DELETE',
+                headers: this.headers
+            });
+            return await response.json();
         } catch (error) {
             console.error('Ошибка удаления объявления:', error);
             throw error;
         }
-    },
+    }
     
-    // Получить объявление по ID
-    async getAdById(adId) {
+    async likeAd(id) {
         try {
-            const ads = JSON.parse(localStorage.getItem('market_ads') || '[]');
-            return ads.find(ad => ad.id === adId);
+            const response = await fetch(`${this.baseUrl}/ads/${id}/like`, {
+                method: 'POST',
+                headers: this.headers
+            });
+            return await response.json();
         } catch (error) {
-            console.error('Ошибка получения объявления:', error);
-            return null;
-        }
-    },
-    
-    // Обновить счетчик просмотров
-    async incrementViews(adId) {
-        try {
-            const ads = JSON.parse(localStorage.getItem('market_ads') || '[]');
-            const adIndex = ads.findIndex(ad => ad.id === adId);
-            
-            if (adIndex !== -1) {
-                ads[adIndex].views = (ads[adIndex].views || 0) + 1;
-                localStorage.setItem('market_ads', JSON.stringify(ads));
-            }
-        } catch (error) {
-            console.error('Ошибка обновления просмотров:', error);
-        }
-    },
-    
-    // Добавить жалобу на объявление
-    async addReport(adId, reportData) {
-        try {
-            const ads = JSON.parse(localStorage.getItem('market_ads') || '[]');
-            const adIndex = ads.findIndex(ad => ad.id === adId);
-            
-            if (adIndex !== -1) {
-                if (!ads[adIndex].reports) {
-                    ads[adIndex].reports = [];
-                }
-                
-                ads[adIndex].reports.push({
-                    ...reportData,
-                    date: new Date().toISOString()
-                });
-                
-                localStorage.setItem('market_ads', JSON.stringify(ads));
-                
-                // Если жалоб больше 3, блокируем объявление
-                if (ads[adIndex].reports.length >= 3) {
-                    ads[adIndex].isBlocked = true;
-                    localStorage.setItem('market_ads', JSON.stringify(ads));
-                }
-                
-                return true;
-            }
-            
-            return false;
-        } catch (error) {
-            console.error('Ошибка добавления жалобы:', error);
-            throw error;
-        }
-    },
-    
-    // Блокировать/разблокировать объявление
-    async toggleAdBlock(adId, isBlocked) {
-        try {
-            const ads = JSON.parse(localStorage.getItem('market_ads') || '[]');
-            const adIndex = ads.findIndex(ad => ad.id === adId);
-            
-            if (adIndex !== -1) {
-                ads[adIndex].isBlocked = isBlocked;
-                localStorage.setItem('market_ads', JSON.stringify(ads));
-                return true;
-            }
-            
-            return false;
-        } catch (error) {
-            console.error('Ошибка блокировки объявления:', error);
+            console.error('Ошибка лайка:', error);
             throw error;
         }
     }
-};
+    
+    async dislikeAd(id) {
+        try {
+            const response = await fetch(`${this.baseUrl}/ads/${id}/dislike`, {
+                method: 'POST',
+                headers: this.headers
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Ошибка дизлайка:', error);
+            throw error;
+        }
+    }
+    
+    async reportAd(id, reportData) {
+        try {
+            const response = await fetch(`${this.baseUrl}/ads/${id}/report`, {
+                method: 'POST',
+                headers: this.headers,
+                body: JSON.stringify(reportData)
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Ошибка отправки жалобы:', error);
+            throw error;
+        }
+    }
+    
+    async uploadImages(files) {
+        try {
+            const formData = new FormData();
+            files.forEach((file, index) => {
+                formData.append(`image${index}`, file);
+            });
+            
+            const response = await fetch(`${this.baseUrl}/upload`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${this.getToken()}`
+                },
+                body: formData
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Ошибка загрузки изображений:', error);
+            throw error;
+        }
+    }
+}
+
+// Создаем глобальный экземпляр API
+window.adsAPI = new AdsAPI();
