@@ -3,622 +3,522 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Админ-панель - Vape Market</title>
+    <title>Админ панель - Vape Market</title>
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Шапка -->
-        <header class="header">
-            <div class="header-content">
-                <h1 class="logo">Vape Market</h1>
-                <nav class="nav-menu">
-                    <a href="../index.html" class="nav-item">
-                        <i class="fas fa-home"></i>
-                        <span>Главная</span>
-                    </a>
-                    <a href="profile.html" class="nav-item">
-                        <i class="fas fa-user"></i>
-                        <span>Профиль</span>
-                    </a>
-                    <a href="faq.html" class="nav-item">
-                        <i class="fas fa-question-circle"></i>
-                        <span>FAQ</span>
-                    </a>
-                    <a href="admin.html" class="nav-item active">
-                        <i class="fas fa-shield-alt"></i>
-                        <span>Админ-панель</span>
-                    </a>
-                </nav>
+    <div class="app-container">
+        <!-- Навигация -->
+        <nav class="navbar">
+            <a href="../index.html" class="logo">
+                <i class="fas fa-shield-alt"></i>
+                Admin Panel
+            </a>
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link">
+                    <i class="fas fa-home"></i> На сайт
+                </a>
+                <a href="profile.html" class="nav-link">
+                    <i class="fas fa-user"></i> Профиль
+                </a>
+                <button class="btn btn-danger" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Выйти
+                </button>
             </div>
-        </header>
+        </nav>
 
-        <!-- Приветствие админа -->
-        <div class="banner admin-banner">
-            <h2 id="adminGreeting">Админ-панель</h2>
-            <p id="adminRole">Загрузка...</p>
-        </div>
+        <div class="admin-container">
+            <div class="admin-grid">
+                <!-- Сайдбар -->
+                <div class="admin-sidebar">
+                    <div class="user-info" style="
+                        text-align: center;
+                        margin-bottom: 2rem;
+                        padding-bottom: 1rem;
+                        border-bottom: 2px solid #e5e7eb;
+                    ">
+                        <div style="
+                            width: 80px;
+                            height: 80px;
+                            border-radius: 50%;
+                            background: var(--gradient-primary);
+                            margin: 0 auto 1rem;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: white;
+                            font-size: 2rem;
+                            font-weight: 700;
+                        ">
+                            A
+                        </div>
+                        <h3 style="color: var(--dark-color);">Администратор</h3>
+                        <span style="
+                            background: var(--warning-color);
+                            color: white;
+                            padding: 0.2rem 0.8rem;
+                            border-radius: 20px;
+                            font-size: 0.8rem;
+                            font-weight: 500;
+                        ">
+                            Уровень 3
+                        </span>
+                    </div>
 
-        <!-- Статистика -->
-        <div class="admin-section">
-            <h3>Общая статистика</h3>
-            <div class="admin-stats-grid" id="adminStats">
-                <!-- Статистика будет загружена через JS -->
+                    <ul class="admin-menu">
+                        <li><a href="#" class="active" data-tab="dashboard">
+                            <i class="fas fa-chart-line"></i> Дашборд
+                        </a></li>
+                        <li><a href="#" data-tab="users">
+                            <i class="fas fa-users"></i> Пользователи
+                        </a></li>
+                        <li><a href="#" data-tab="ads">
+                            <i class="fas fa-list-alt"></i> Объявления
+                        </a></li>
+                        <li><a href="#" data-tab="reports">
+                            <i class="fas fa-flag"></i> Жалобы
+                            <span id="reportCount" style="
+                                background: var(--danger-color);
+                                color: white;
+                                padding: 0.1rem 0.5rem;
+                                border-radius: 10px;
+                                font-size: 0.8rem;
+                                margin-left: 0.5rem;
+                            ">5</span>
+                        </a></li>
+                        <li><a href="#" data-tab="banner">
+                            <i class="fas fa-bullhorn"></i> Рекламный баннер
+                        </a></li>
+                        <li><a href="#" data-tab="adminRights">
+                            <i class="fas fa-user-shield"></i> Права администрации
+                        </a></li>
+                    </ul>
+                </div>
+
+                <!-- Основной контент -->
+                <div class="admin-content">
+                    <!-- Дашборд -->
+                    <div id="dashboardTab" class="admin-tab active">
+                        <h2 style="color: var(--dark-color); margin-bottom: 1.5rem;">
+                            <i class="fas fa-chart-line"></i> Статистика платформы
+                        </h2>
+                        
+                        <div class="statistics-grid">
+                            <div class="stat-card">
+                                <span class="stat-number">15,432</span>
+                                <span class="stat-label">Пользователей</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-number">2,345</span>
+                                <span class="stat-label">Объявлений</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-number">8,921</span>
+                                <span class="stat-label">Сделок</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-number">94%</span>
+                                <span class="stat-label">Успешных сделок</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-number">156</span>
+                                <span class="stat-label">Жалоб</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-number">3</span>
+                                <span class="stat-label">Администраторов</span>
+                            </div>
+                        </div>
+
+                        <div style="
+                            background: white;
+                            padding: 1.5rem;
+                            border-radius: var(--radius);
+                            margin-top: 2rem;
+                            box-shadow: var(--shadow);
+                        ">
+                            <h3 style="color: var(--dark-color); margin-bottom: 1rem;">
+                                <i class="fas fa-chart-bar"></i> Активность за 7 дней
+                            </h3>
+                            <div style="
+                                height: 200px;
+                                background: var(--light-color);
+                                border-radius: var(--radius);
+                                display: flex;
+                                align-items: flex-end;
+                                padding: 1rem;
+                                gap: 0.5rem;
+                            ">
+                                <div style="flex: 1; background: var(--gradient-primary); border-radius: 4px; height: 80%;"></div>
+                                <div style="flex: 1; background: var(--gradient-primary); border-radius: 4px; height: 60%;"></div>
+                                <div style="flex: 1; background: var(--gradient-primary); border-radius: 4px; height: 90%;"></div>
+                                <div style="flex: 1; background: var(--gradient-primary); border-radius: 4px; height: 70%;"></div>
+                                <div style="flex: 1; background: var(--gradient-primary); border-radius: 4px; height: 85%;"></div>
+                                <div style="flex: 1; background: var(--gradient-primary); border-radius: 4px; height: 95%;"></div>
+                                <div style="flex: 1; background: var(--gradient-primary); border-radius: 4px; height: 75%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Управление пользователями -->
+                    <div id="usersTab" class="admin-tab hidden">
+                        <h2 style="color: var(--dark-color); margin-bottom: 1.5rem;">
+                            <i class="fas fa-users"></i> Управление пользователями
+                        </h2>
+                        
+                        <div style="
+                            background: white;
+                            padding: 1.5rem;
+                            border-radius: var(--radius);
+                            margin-bottom: 1.5rem;
+                            box-shadow: var(--shadow);
+                        ">
+                            <input type="text" class="form-input" placeholder="Поиск пользователя...">
+                        </div>
+
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Пользователь</th>
+                                    <th>Рейтинг</th>
+                                    <th>Статус</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#001</td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <div style="
+                                                width: 32px;
+                                                height: 32px;
+                                                border-radius: 50%;
+                                                background: var(--gradient-secondary);
+                                                display: flex;
+                                                align-items: center;
+                                                justify-content: center;
+                                                color: white;
+                                                font-weight: 600;
+                                            ">
+                                                A
+                                            </div>
+                                            <span>Алексей Иванов</span>
+                                        </div>
+                                    </td>
+                                    <td>4.8 ★</td>
+                                    <td>
+                                        <span style="
+                                            background: var(--success-color);
+                                            color: white;
+                                            padding: 0.2rem 0.8rem;
+                                            border-radius: 20px;
+                                            font-size: 0.8rem;
+                                            font-weight: 500;
+                                        ">
+                                            Активен
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; gap: 0.3rem;">
+                                            <button class="btn btn-danger btn-small">
+                                                <i class="fas fa-ban"></i>
+                                            </button>
+                                            <button class="btn btn-warning btn-small">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- Добавьте больше пользователей -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Управление объявлениями -->
+                    <div id="adsTab" class="admin-tab hidden">
+                        <h2 style="color: var(--dark-color); margin-bottom: 1.5rem;">
+                            <i class="fas fa-list-alt"></i> Управление объявлениями
+                        </h2>
+                        
+                        <div class="ads-grid">
+                            <!-- Пример объявления для модерации -->
+                            <div class="ad-card">
+                                <div class="ad-image">
+                                    <img src="" alt="Товар" style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>
+                                <div class="ad-content">
+                                    <div class="ad-header">
+                                        <h3 class="ad-title">Caliburn G3</h3>
+                                        <span class="ad-price">1500 ₽</span>
+                                    </div>
+                                    <p class="ad-description">
+                                        Новое устройство, в упаковке. Использовался 1 раз.
+                                    </p>
+                                    <div class="ad-meta">
+                                        <span class="ad-category">Устройства</span>
+                                        <span class="ad-type">Продажа</span>
+                                    </div>
+                                    <div class="ad-actions">
+                                        <button class="btn btn-danger btn-small">
+                                            <i class="fas fa-trash"></i> Удалить
+                                        </button>
+                                        <button class="btn btn-warning btn-small">
+                                            <i class="fas fa-edit"></i> Изменить
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Жалобы -->
+                    <div id="reportsTab" class="admin-tab hidden">
+                        <h2 style="color: var(--dark-color); margin-bottom: 1.5rem;">
+                            <i class="fas fa-flag"></i> Обработка жалоб
+                        </h2>
+                        
+                        <div style="
+                            background: var(--light-color);
+                            padding: 1.5rem;
+                            border-radius: var(--radius);
+                            margin-bottom: 1.5rem;
+                        ">
+                            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                                <button class="btn btn-secondary active">Все</button>
+                                <button class="btn btn-secondary">Лёгкие</button>
+                                <button class="btn btn-warning">Средние</button>
+                                <button class="btn btn-danger">Тяжёлые</button>
+                                <button class="btn btn-success">Решённые</button>
+                            </div>
+                            
+                            <div class="reports-list">
+                                <!-- Пример жалобы -->
+                                <div style="
+                                    background: white;
+                                    padding: 1rem;
+                                    border-radius: 8px;
+                                    margin-bottom: 1rem;
+                                    border-left: 4px solid var(--danger-color);
+                                ">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                        <strong>Мошенничество</strong>
+                                        <span style="
+                                            background: var(--danger-color);
+                                            color: white;
+                                            padding: 0.1rem 0.5rem;
+                                            border-radius: 10px;
+                                            font-size: 0.8rem;
+                                        ">Тяжёлая</span>
+                                    </div>
+                                    <p style="color: #6b7280; font-size: 0.9rem;">
+                                        Продавец требует предоплату, но не отправляет товар
+                                    </p>
+                                    <div style="display: flex; justify-content: space-between; margin-top: 1rem;">
+                                        <span style="font-size: 0.85rem; color: #6b7280;">
+                                            От: Пользователь #045
+                                        </span>
+                                        <div style="display: flex; gap: 0.5rem;">
+                                            <button class="btn btn-success btn-small">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn btn-danger btn-small">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                            <button class="btn btn-secondary btn-small">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Рекламный баннер -->
+                    <div id="bannerTab" class="admin-tab hidden">
+                        <h2 style="color: var(--dark-color); margin-bottom: 1.5rem;">
+                            <i class="fas fa-bullhorn"></i> Управление рекламным баннером
+                        </h2>
+                        
+                        <div style="
+                            background: white;
+                            padding: 2rem;
+                            border-radius: var(--radius);
+                            box-shadow: var(--shadow);
+                        ">
+                            <div class="form-group">
+                                <label class="form-label">Текст баннера</label>
+                                <textarea class="form-textarea" id="bannerText" 
+                                          placeholder="Введите текст рекламного сообщения...">
+Акция! Скидка 15% на все жидкости до конца недели!
+                                </textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Цветовая схема</label>
+                                <div style="display: flex; gap: 1rem;">
+                                    <button class="btn btn-primary" data-banner-style="gradient">
+                                        Градиент
+                                    </button>
+                                    <button class="btn btn-secondary" data-banner-style="primary">
+                                        Основной
+                                    </button>
+                                    <button class="btn btn-warning" data-banner-style="warning">
+                                        Предупреждение
+                                    </button>
+                                    <button class="btn btn-success" data-banner-style="success">
+                                        Успех
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Показ баннера</label>
+                                <div style="display: flex; gap: 1rem; align-items: center;">
+                                    <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <input type="radio" name="bannerStatus" value="show" checked>
+                                        <span>Показывать</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <input type="radio" name="bannerStatus" value="hide">
+                                        <span>Скрыть</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div style="text-align: center; margin-top: 2rem;">
+                                <button class="btn btn-primary" id="saveBannerBtn" style="padding: 0.8rem 2rem;">
+                                    <i class="fas fa-save"></i> Сохранить настройки
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Права администрации -->
+                    <div id="adminRightsTab" class="admin-tab hidden">
+                        <h2 style="color: var(--dark-color); margin-bottom: 1.5rem;">
+                            <i class="fas fa-user-shield"></i> Управление правами администрации
+                        </h2>
+                        
+                        <div style="
+                            background: white;
+                            padding: 2rem;
+                            border-radius: var(--radius);
+                            box-shadow: var(--shadow);
+                        ">
+                            <div class="form-group">
+                                <label class="form-label">Выберите пользователя</label>
+                                <select class="form-select" id="adminUserSelect">
+                                    <option value="">Выберите пользователя</option>
+                                    <option value="1">Алексей Иванов (Уровень 3)</option>
+                                    <option value="2">Мария Петрова (Уровень 2)</option>
+                                    <option value="3">Иван Сидоров (Уровень 1)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Уровень доступа</label>
+                                <div style="display: flex; gap: 1rem;">
+                                    <button class="btn btn-danger" data-level="3">
+                                        Уровень 3 (Владелец)
+                                    </button>
+                                    <button class="btn btn-warning" data-level="2">
+                                        Уровень 2 (Администратор)
+                                    </button>
+                                    <button class="btn btn-primary" data-level="1">
+                                        Уровень 1 (Модератор)
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Права доступа</label>
+                                <div style="
+                                    display: grid;
+                                    grid-template-columns: repeat(2, 1fr);
+                                    gap: 1rem;
+                                    margin-top: 1rem;
+                                ">
+                                    <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <input type="checkbox" checked disabled>
+                                        <span>Просмотр статистики</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <input type="checkbox" data-right="block_users">
+                                        <span>Блокировка пользователей</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <input type="checkbox" data-right="delete_ads">
+                                        <span>Удаление объявлений</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <input type="checkbox" data-right="manage_reports">
+                                        <span>Обработка жалоб</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <input type="checkbox" data-right="manage_banner">
+                                        <span>Управление баннером</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <input type="checkbox" data-right="manage_admins">
+                                        <span>Управление правами</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div style="text-align: center; margin-top: 2rem;">
+                                <button class="btn btn-primary" id="saveRightsBtn" style="padding: 0.8rem 2rem;">
+                                    <i class="fas fa-user-shield"></i> Сохранить права
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-
-        <!-- Уровни доступа -->
-        <div id="adminContent">
-            <!-- Содержимое загружается в зависимости от уровня доступа -->
         </div>
     </div>
 
-    <!-- Модальное окно управления пользователями -->
-    <div id="userModal" class="modal">
+    <!-- Модальное окно блокировки пользователя -->
+    <div class="modal" id="blockUserModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Управление пользователем</h3>
-                <button class="close-modal">&times;</button>
+                <h2 style="color: var(--dark-color);">Блокировка пользователя</h2>
+                <button class="modal-close" id="closeBlockModal">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <div class="modal-body">
-                <form id="userForm">
-                    <input type="hidden" id="userId">
-                    <div class="form-group">
-                        <label for="userNameInput">Имя пользователя</label>
-                        <input type="text" id="userNameInput" readonly>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="userRoleSelect">Роль</label>
-                        <select id="userRoleSelect">
-                            <option value="user">Пользователь</option>
-                            <option value="admin1">Модератор</option>
-                            <option value="admin2">Администратор</option>
-                            <option value="owner">Владелец</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="userStatus">Статус</label>
-                        <div>
-                            <button type="button" id="blockUserBtn" class="btn btn-danger">Заблокировать</button>
-                            <button type="button" id="unblockUserBtn" class="btn btn-success" style="display: none;">Разблокировать</button>
-                        </div>
-                    </div>
-                    
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary close-modal">Отмена</button>
-                        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
-                    </div>
-                </form>
-            </div>
+            <form id="blockUserForm">
+                <div class="form-group">
+                    <label class="form-label">Причина блокировки</label>
+                    <textarea class="form-textarea" name="blockReason" 
+                              placeholder="Укажите причину блокировки..." required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Тип блокировки</label>
+                    <select class="form-select" name="blockType" required>
+                        <option value="temporary">Временная (7 дней)</option>
+                        <option value="permanent">Постоянная</option>
+                        <option value="warning">Предупреждение</option>
+                    </select>
+                </div>
+                
+                <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" id="cancelBlockBtn">
+                        Отмена
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-ban"></i> Заблокировать
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <script src="../config.js"></script>
-    <script src="../api/ads.js"></script>
-    <script src="../api/server-api.js"></script>
     <script src="../app.js"></script>
-    <script>
-        // Загрузка админ-панели
-        document.addEventListener('DOMContentLoaded', async function() {
-            const userId = localStorage.getItem('tg_user_id');
-            const userRole = localStorage.getItem('user_role');
-            
-            // Проверяем права доступа
-            if (!userRole || (userRole !== 'admin1' && userRole !== 'admin2' && userRole !== 'owner')) {
-                window.location.href = '../index.html';
-                return;
-            }
-            
-            // Устанавливаем приветствие
-            document.getElementById('adminGreeting').textContent = 
-                `Админ-панель (${getRoleName(userRole)})`;
-            document.getElementById('adminRole').textContent = 
-                `Ваш уровень доступа: ${getRoleName(userRole)}`;
-            
-            // Загружаем статистику
-            await loadAdminStats();
-            
-            // Загружаем контент в зависимости от уровня доступа
-            await loadAdminContent(userRole);
-            
-            // Инициализируем обработчики событий
-            initAdminEventListeners();
-        });
-        
-        // Получение названия роли
-        function getRoleName(role) {
-            const roles = {
-                admin1: 'Модератор',
-                admin2: 'Администратор',
-                owner: 'Владелец'
-            };
-            return roles[role] || 'Пользователь';
-        }
-        
-        // Загрузка статистики
-        async function loadAdminStats() {
-            try {
-                const stats = await ServerAPI.getStats();
-                const statsContainer = document.getElementById('adminStats');
-                
-                statsContainer.innerHTML = `
-                    <div class="admin-stat">
-                        <div class="admin-stat-value">${stats.totalAds}</div>
-                        <div class="admin-stat-label">Всего объявлений</div>
-                    </div>
-                    <div class="admin-stat">
-                        <div class="admin-stat-value">${stats.activeAds}</div>
-                        <div class="admin-stat-label">Активных</div>
-                    </div>
-                    <div class="admin-stat">
-                        <div class="admin-stat-value">${stats.blockedAds}</div>
-                        <div class="admin-stat-label">Заблокировано</div>
-                    </div>
-                    <div class="admin-stat">
-                        <div class="admin-stat-value">${stats.totalUsers}</div>
-                        <div class="admin-stat-label">Пользователей</div>
-                    </div>
-                    <div class="admin-stat">
-                        <div class="admin-stat-value">${stats.pendingReports}</div>
-                        <div class="admin-stat-label">Жалоб в ожидании</div>
-                    </div>
-                    <div class="admin-stat">
-                        <div class="admin-stat-value">${stats.todayAds}</div>
-                        <div class="admin-stat-label">Объявлений за сегодня</div>
-                    </div>
-                `;
-            } catch (error) {
-                console.error('Ошибка загрузки статистики:', error);
-            }
-        }
-        
-        // Загрузка контента админ-панели
-        async function loadAdminContent(userRole) {
-            const contentContainer = document.getElementById('adminContent');
-            let contentHTML = '';
-            
-            // Все админы видят жалобы
-            contentHTML += await loadReportsSection();
-            
-            // Админы admin1 и выше видят управление объявлениями
-            if (userRole === 'admin1' || userRole === 'admin2' || userRole === 'owner') {
-                contentHTML += await loadAdsManagementSection();
-            }
-            
-            // Админы admin1 и выше видят управление пользователями
-            if (userRole === 'admin1' || userRole === 'admin2' || userRole === 'owner') {
-                contentHTML += await loadUsersManagementSection();
-            }
-            
-            // Только admin2 и owner видят управление рекламой
-            if (userRole === 'admin2' || userRole === 'owner') {
-                contentHTML += await loadAdvertisementSection();
-            }
-            
-            // Только owner видит управление админами
-            if (userRole === 'owner') {
-                contentHTML += await loadAdminsManagementSection();
-            }
-            
-            contentContainer.innerHTML = contentHTML;
-        }
-        
-        // Секция жалоб
-        async function loadReportsSection() {
-            try {
-                const reports = await ServerAPI.getAllReports();
-                const pendingReports = reports.filter(r => r.status === 'pending');
-                
-                return `
-                    <div class="admin-section">
-                        <h3>Жалобы на объявления (${pendingReports.length})</h3>
-                        <div class="reports-list" id="reportsList">
-                            ${pendingReports.length > 0 ? 
-                                pendingReports.map(report => createReportItem(report)).join('') :
-                                '<p class="no-data">Нет жалоб в ожидании</p>'
-                            }
-                        </div>
-                    </div>
-                `;
-            } catch (error) {
-                console.error('Ошибка загрузки жалоб:', error);
-                return '';
-            }
-        }
-        
-        // Создание элемента жалобы
-        function createReportItem(report) {
-            return `
-                <div class="report-item" data-report-id="${report.id}">
-                    <div class="report-header">
-                        <strong>ID объявления: ${report.adId}</strong>
-                        <span class="report-reason">${AppConfig.reportReasons[report.reason] || report.reason}</span>
-                    </div>
-                    <p class="report-details">${report.details || 'Без описания'}</p>
-                    <div class="report-meta">
-                        <small>От: ${report.reporterName}</small>
-                        <small>${new Date(report.date).toLocaleString()}</small>
-                    </div>
-                    <div class="report-actions">
-                        <button class="btn btn-primary btn-small" onclick="reviewReport('${report.id}')">
-                            <i class="fas fa-eye"></i>
-                            Просмотреть
-                        </button>
-                        <button class="btn btn-danger btn-small" onclick="processReport('${report.id}', 'rejected')">
-                            <i class="fas fa-times"></i>
-                            Отклонить
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-        
-        // Секция управления объявлениями
-        async function loadAdsManagementSection() {
-            try {
-                const ads = await AdsAPI.getAllAds();
-                
-                return `
-                    <div class="admin-section">
-                        <h3>Управление объявлениями (${ads.length})</h3>
-                        <div class="ads-management">
-                            <div class="search-bar">
-                                <input type="text" id="adSearch" placeholder="Поиск по названию..." 
-                                       onkeyup="searchAds()">
-                            </div>
-                            <div class="ads-list" id="adminAdsList">
-                                ${ads.length > 0 ? 
-                                    ads.map(ad => createAdminAdItem(ad)).join('') :
-                                    '<p class="no-data">Нет объявлений</p>'
-                                }
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } catch (error) {
-                console.error('Ошибка загрузки объявлений:', error);
-                return '';
-            }
-        }
-        
-        // Создание элемента объявления для админа
-        function createAdminAdItem(ad) {
-            return `
-                <div class="user-item ${ad.isBlocked ? 'blocked' : ''}" data-ad-id="${ad.id}">
-                    <div class="user-info">
-                        <div class="user-avatar">${ad.userName?.charAt(0) || 'U'}</div>
-                        <div>
-                            <strong>${ad.title}</strong>
-                            <div>${ad.price} ₽ • ${ad.location}</div>
-                        </div>
-                    </div>
-                    <div class="user-actions">
-                        <button class="btn btn-secondary btn-small" onclick="viewAd('${ad.id}')">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="btn ${ad.isBlocked ? 'btn-success' : 'btn-danger'} btn-small" 
-                                onclick="toggleAdBlock('${ad.id}', ${!ad.isBlocked})">
-                            <i class="fas ${ad.isBlocked ? 'fa-unlock' : 'fa-ban'}"></i>
-                            ${ad.isBlocked ? 'Разблокировать' : 'Заблокировать'}
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-        
-        // Секция управления пользователями
-        async function loadUsersManagementSection() {
-            return `
-                <div class="admin-section">
-                    <h3>Управление пользователями</h3>
-                    <div class="users-management">
-                        <div class="search-bar">
-                            <input type="text" id="userSearch" placeholder="Поиск пользователей..." 
-                                   onkeyup="searchUsers()">
-                        </div>
-                        <div class="user-list" id="usersList">
-                            <!-- Пользователи будут загружены динамически -->
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-        
-        // Секция управления рекламой
-        async function loadAdvertisementSection() {
-            return `
-                <div class="admin-section">
-                    <h3>Управление рекламой</h3>
-                    <div class="ad-management">
-                        <div class="ad-preview">
-                            <h4>Предпросмотр рекламы</h4>
-                            <div id="adPreview" style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin: 15px 0;">
-                                <!-- Превью рекламы -->
-                            </div>
-                        </div>
-                        <button class="btn btn-primary" onclick="window.App.openAdEditor()">
-                            <i class="fas fa-edit"></i>
-                            Редактировать рекламу
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-        
-        // Секция управления админами (только для владельца)
-        async function loadAdminsManagementSection() {
-            return `
-                <div class="admin-section">
-                    <h3>Управление администраторами</h3>
-                    <div class="admins-management">
-                        <div class="admins-list" id="adminsList">
-                            <!-- Список админов будет загружен динамически -->
-                        </div>
-                        <button class="btn btn-primary" onclick="addAdmin()">
-                            <i class="fas fa-user-plus"></i>
-                            Добавить администратора
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-        
-        // Инициализация обработчиков событий
-        function initAdminEventListeners() {
-            // Кнопки закрытия модальных окон
-            document.querySelectorAll('.close-modal').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.modal').forEach(modal => {
-                        modal.classList.remove('active');
-                    });
-                });
-            });
-            
-            // Форма управления пользователем
-            const userForm = document.getElementById('userForm');
-            if (userForm) {
-                userForm.addEventListener('submit', handleUserFormSubmit);
-            }
-            
-            // Кнопки блокировки/разблокировки
-            const blockUserBtn = document.getElementById('blockUserBtn');
-            const unblockUserBtn = document.getElementById('unblockUserBtn');
-            
-            if (blockUserBtn) {
-                blockUserBtn.addEventListener('click', () => {
-                    const userId = document.getElementById('userId').value;
-                    blockUser(userId, true);
-                });
-            }
-            
-            if (unblockUserBtn) {
-                unblockUserBtn.addEventListener('click', () => {
-                    const userId = document.getElementById('userId').value;
-                    blockUser(userId, false);
-                });
-            }
-        }
-        
-        // Обработка жалобы
-        async function processReport(reportId, action) {
-            try {
-                await ServerAPI.updateReportStatus(reportId, action);
-                
-                // Обновляем список жалоб
-                await loadReportsSection();
-                
-                alert(`Жалоба ${action === 'rejected' ? 'отклонена' : 'обработана'}`);
-            } catch (error) {
-                console.error('Ошибка обработки жалобы:', error);
-                alert('Ошибка при обработке жалобы');
-            }
-        }
-        
-        // Просмотр жалобы
-        function reviewReport(reportId) {
-            alert('Просмотр жалобы ID: ' + reportId);
-            // Здесь должна быть реализация просмотра объявления
-        }
-        
-        // Поиск объявлений
-        function searchAds() {
-            const searchTerm = document.getElementById('adSearch').value.toLowerCase();
-            const adItems = document.querySelectorAll('[data-ad-id]');
-            
-            adItems.forEach(item => {
-                const adTitle = item.querySelector('strong')?.textContent.toLowerCase() || '';
-                const shouldShow = adTitle.includes(searchTerm);
-                item.style.display = shouldShow ? 'flex' : 'none';
-            });
-        }
-        
-        // Просмотр объявления
-        function viewAd(adId) {
-            alert('Просмотр объявления ID: ' + adId);
-            // Здесь должна быть реализация просмотра объявления
-        }
-        
-        // Блокировка/разблокировка объявления
-        async function toggleAdBlock(adId, isBlocked) {
-            try {
-                const success = await AdsAPI.toggleAdBlock(adId, isBlocked);
-                
-                if (success) {
-                    alert(`Объявление ${isBlocked ? 'заблокировано' : 'разблокировано'}`);
-                    location.reload(); // Перезагружаем страницу для обновления списка
-                } else {
-                    alert('Ошибка при изменении статуса объявления');
-                }
-            } catch (error) {
-                console.error('Ошибка блокировки объявления:', error);
-                alert('Ошибка при изменении статуса объявления');
-            }
-        }
-        
-        // Поиск пользователей
-        async function searchUsers() {
-            try {
-                const searchTerm = document.getElementById('userSearch').value.toLowerCase();
-                const users = await ServerAPI.getUsers();
-                
-                const usersList = document.getElementById('usersList');
-                usersList.innerHTML = users
-                    .filter(user => user.name?.toLowerCase().includes(searchTerm) || 
-                                   user.id?.toLowerCase().includes(searchTerm))
-                    .map(user => createUserItem(user))
-                    .join('');
-            } catch (error) {
-                console.error('Ошибка поиска пользователей:', error);
-            }
-        }
-        
-        // Создание элемента пользователя
-        function createUserItem(user) {
-            return `
-                <div class="user-item ${user.isBlocked ? 'blocked' : ''}" data-user-id="${user.id}">
-                    <div class="user-info">
-                        <div class="user-avatar">${user.name?.charAt(0) || 'U'}</div>
-                        <div>
-                            <strong>${user.name || 'Без имени'}</strong>
-                            <div>ID: ${user.id}</div>
-                        </div>
-                    </div>
-                    <div class="user-status ${user.isBlocked ? 'status-blocked' : 'status-active'}">
-                        ${user.isBlocked ? 'Заблокирован' : 'Активен'}
-                    </div>
-                    <div class="user-actions">
-                        <button class="btn btn-primary btn-small" onclick="openUserModal('${user.id}')">
-                            <i class="fas fa-cog"></i>
-                            Управление
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-        
-        // Открытие модального окна пользователя
-        async function openUserModal(userId) {
-            try {
-                const users = await ServerAPI.getUsers();
-                const user = users.find(u => u.id === userId);
-                
-                if (!user) {
-                    alert('Пользователь не найден');
-                    return;
-                }
-                
-                document.getElementById('userId').value = user.id;
-                document.getElementById('userNameInput').value = user.name || 'Без имени';
-                
-                // Устанавливаем роль
-                const userRoleSelect = document.getElementById('userRoleSelect');
-                const adminUsers = await ServerAPI.getAdmins();
-                const userRole = adminUsers[userId]?.role || 'user';
-                userRoleSelect.value = userRole;
-                
-                // Настраиваем кнопки блокировки
-                const blockUserBtn = document.getElementById('blockUserBtn');
-                const unblockUserBtn = document.getElementById('unblockUserBtn');
-                
-                if (user.isBlocked) {
-                    blockUserBtn.style.display = 'none';
-                    unblockUserBtn.style.display = 'inline-block';
-                } else {
-                    blockUserBtn.style.display = 'inline-block';
-                    unblockUserBtn.style.display = 'none';
-                }
-                
-                // Показываем модальное окно
-                document.getElementById('userModal').classList.add('active');
-            } catch (error) {
-                console.error('Ошибка открытия модального окна:', error);
-                alert('Ошибка при загрузке данных пользователя');
-            }
-        }
-        
-        // Обработка формы пользователя
-        async function handleUserFormSubmit(e) {
-            e.preventDefault();
-            
-            try {
-                const userId = document.getElementById('userId').value;
-                const newRole = document.getElementById('userRoleSelect').value;
-                const userRole = localStorage.getItem('user_role');
-                
-                // Только владелец может назначать роли
-                if (userRole !== 'owner') {
-                    alert('Только владелец может назначать роли');
-                    return;
-                }
-                
-                if (newRole === 'owner') {
-                    alert('Нельзя назначать роль владельца');
-                    return;
-                }
-                
-                if (newRole !== 'user') {
-                    await ServerAPI.setAdmin(userId, newRole);
-                    alert('Роль пользователя обновлена');
-                } else {
-                    await ServerAPI.removeAdmin(userId);
-                    alert('Права админа удалены');
-                }
-                
-                closeAllModals();
-            } catch (error) {
-                console.error('Ошибка обновления пользователя:', error);
-                alert('Ошибка при обновлении данных пользователя');
-            }
-        }
-        
-        // Блокировка пользователя
-        async function blockUser(userId, isBlocked) {
-            try {
-                const success = await ServerAPI.toggleUserBlock(userId, isBlocked);
-                
-                if (success) {
-                    alert(`Пользователь ${isBlocked ? 'заблокирован' : 'разблокирован'}`);
-                    closeAllModals();
-                    location.reload(); // Перезагружаем страницу
-                } else {
-                    alert('Ошибка при блокировке пользователя');
-                }
-            } catch (error) {
-                console.error('Ошибка блокировки пользователя:', error);
-                alert('Ошибка при блокировке пользователя');
-            }
-        }
-        
-        // Добавление администратора
-        function addAdmin() {
-            const userId = prompt('Введите ID пользователя для назначения администратором:');
-            
-            if (!userId) return;
-            
-            const role = prompt('Выберите уровень доступа (admin1, admin2):');
-            
-            if (role && (role === 'admin1' || role === 'admin2')) {
-                ServerAPI.setAdmin(userId, role).then(() => {
-                    alert('Администратор добавлен');
-                    location.reload();
-                }).catch(error => {
-                    console.error('Ошибка добавления админа:', error);
-                    alert('Ошибка при добавлении администратора');
-                });
-            } else {
-                alert('Некорректный уровень доступа');
-            }
-        }
-        
-        // Закрытие всех модальных окон
-        function closeAllModals() {
-            document.querySelectorAll('.modal').forEach(modal => {
-                modal.classList.remove('active');
-            });
-        }
-    </script>
+    <script src="../api/server-api.js"></script>
 </body>
 </html>
