@@ -1060,4 +1060,178 @@ class VapeMarket {
                         </div>
                         <div>
                             <div style="font-weight: 600;">${this.currentUser.name}</div>
-                           
+                            <div style="color: var(--text-secondary); font-size: 14px;">${this.currentUser.email}</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: var(--bg-input); padding: 12px; border-radius: var(--radius-md); margin-bottom: 12px;">
+                        <div style="color: var(--text-muted); font-size: 12px;">USER ID</div>
+                        <div style="font-family: monospace; word-break: break-all;">${this.currentUser.id}</div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                        <div>
+                            <div style="color: var(--text-muted); font-size: 12px;">Рейтинг</div>
+                            <div style="color: var(--warning); font-weight: 600;">
+                                <i class="fas fa-star"></i> ${this.currentUser.rating}
+                            </div>
+                        </div>
+                        <div>
+                            <div style="color: var(--text-muted); font-size: 12px;">Объявления</div>
+                            <div style="font-weight: 600;">${this.currentUser.ads || 0}</div>
+                        </div>
+                        <div>
+                            <div style="color: var(--text-muted); font-size: 12px;">Лайки</div>
+                            <div style="font-weight: 600;">${this.currentUser.likes || 0}</div>
+                        </div>
+                        <div>
+                            <div style="color: var(--text-muted); font-size: 12px;">Сделки</div>
+                            <div style="font-weight: 600;">${this.currentUser.deals || 0}</div>
+                        </div>
+                    </div>
+                    
+                    ${this.isAdmin ? `
+                        <div style="margin-top: 12px; padding: 8px; background: rgba(138, 43, 226, 0.1); border-radius: var(--radius-md);">
+                            <div style="color: var(--primary); font-weight: 600;">
+                                <i class="fas fa-shield-alt"></i> Администратор (Уровень ${this.adminLevel})
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <div style="text-align: center;">
+                    <button onclick="this.parentElement.parentElement.remove()" 
+                            style="background: var(--primary); color: white; border: none; padding: 10px 24px; border-radius: var(--radius-md); cursor: pointer;">
+                        Закрыть
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        const modal = document.createElement('div');
+        modal.innerHTML = info;
+        document.body.appendChild(modal);
+        
+        // Закрытие по клику вне модального окна
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+    
+    saveUserAction(action, adId) {
+        const actions = JSON.parse(localStorage.getItem('user_actions') || '[]');
+        actions.push({
+            userId: this.currentUser.id,
+            action,
+            adId,
+            timestamp: new Date().toISOString()
+        });
+        localStorage.setItem('user_actions', JSON.stringify(actions));
+    }
+    
+    showNotification(message, type = 'info') {
+        // Создаем уведомление
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `
+            <div style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? 'var(--success)' : 
+                           type === 'warning' ? 'var(--warning)' : 
+                           type === 'danger' ? 'var(--danger)' : 'var(--info)'};
+                color: white;
+                padding: 16px 24px;
+                border-radius: var(--radius-md);
+                box-shadow: var(--shadow-lg);
+                z-index: 3000;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                animation: slideIn 0.3s ease;
+            ">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 
+                            type === 'warning' ? 'fa-exclamation-triangle' : 
+                            type === 'danger' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+                ${message}
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Добавляем стили для анимации
+        if (!document.getElementById('notificationStyles')) {
+            const style = document.createElement('style');
+            style.id = 'notificationStyles';
+            style.textContent = `
+                @keyframes slideIn {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Удаляем через 3 секунды
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+}
+
+// Инициализация приложения
+document.addEventListener('DOMContentLoaded', () => {
+    window.vapeMarket = new VapeMarket();
+    
+    // Для демо: возможность переключиться на админа по тройному клику
+    const userAvatar = document.getElementById('userAvatar');
+    if (userAvatar) {
+        let clickCount = 0;
+        let clickTimer;
+        
+        userAvatar.addEventListener('click', () => {
+            clickCount++;
+            
+            if (clickTimer) {
+                clearTimeout(clickTimer);
+            }
+            
+            clickTimer = setTimeout(() => {
+                if (clickCount === 3) {
+                    const adminUser = {
+                        id: 'admin_' + Date.now(),
+                        username: 'admin',
+                        name: 'Администратор Системы',
+                        avatar: 'A',
+                        email: 'admin@vapemarket.ru',
+                        isGuest: false,
+                        isAdmin: true,
+                        adminLevel: 3,
+                        rating: 5.0,
+                        ads: 45,
+                        likes: 289,
+                        deals: 156,
+                        createdAt: new Date().toISOString(),
+                        phone: '+7 (999) 123-45-67'
+                    };
+                    
+                    if (confirm('Переключиться на Администратора для демо?')) {
+                        localStorage.setItem('vape_market_user', JSON.stringify(adminUser));
+                        location.reload();
+                    }
+                }
+                clickCount = 0;
+            }, 500);
+        });
+    }
+});
