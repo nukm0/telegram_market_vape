@@ -25,7 +25,7 @@
             <span class="username">Админ</span>
         </div>
         <!-- Кнопка админ панели -->
-        <button class="admin-panel-btn" id="adminPanelBtn" title="Админ панель">
+        <button class="admin-panel-btn" id="adminPanelBtn" title="Админ панель" style="display: none;">
             <i class="fas fa-shield-alt"></i>
         </button>
     </header>
@@ -55,7 +55,7 @@
             </div>
         </div>
 
-        <!-- Рекламный баннер (только для админов) -->
+        <!-- Рекламный баннер -->
         <div id="adBanner" class="ad-banner admin-only" style="display: none;">
             <h3><i class="fas fa-ad"></i> Рекламное место</h3>
             <p>Текст рекламы здесь. Только для администраторов.</p>
@@ -76,7 +76,11 @@
         <div class="ads-section">
             <h2 class="section-title">Объявления</h2>
             <div id="adsGrid" class="ads-grid">
-                <!-- Динамически загружаются -->
+                <!-- Загружаются динамически -->
+                <div class="loading-ads">
+                    <div class="spinner"></div>
+                    <p>Загрузка объявлений...</p>
+                </div>
             </div>
         </div>
 
@@ -120,21 +124,8 @@
         </button>
     </nav>
 
-    <!-- Модальные окна -->
-    <div id="createAdModal" class="modal-overlay" style="display: none;">
-        <!-- Контент модалки создания -->
-    </div>
-
-    <div id="adminModal" class="modal-overlay" style="display: none;">
-        <!-- Админ панель -->
-    </div>
-
-    <div id="reportModal" class="modal-overlay" style="display: none;">
-        <!-- Жалоба -->
-    </div>
-
     <!-- Скрипты -->
     <script src="config.js"></script>
-    <script src="app.js?v=2.0"></script>
+    <script src="app.js?v=3.0"></script>
 </body>
 </html>
