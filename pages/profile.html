@@ -6,421 +6,312 @@
     <title>Профиль - Vape Market</title>
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .profile-page {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
-        }
-
-        .profile-container {
-            padding: 80px 20px 100px;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .profile-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 30px;
-        }
-
-        .back-btn {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #CBD5E1;
-            text-decoration: none;
-            font-weight: 600;
-            padding: 10px 15px;
-            border-radius: 12px;
-            background: rgba(30, 41, 59, 0.6);
-            border: 2px solid rgba(168, 85, 247, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .profile-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #FFFFFF;
-            background: linear-gradient(135deg, #FFFFFF 0%, #C084FC 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .profile-info {
-            background: rgba(30, 27, 75, 0.6);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 25px;
-            border: 1px solid rgba(168, 85, 247, 0.2);
-            backdrop-filter: blur(10px);
-            text-align: center;
-        }
-
-        .profile-avatar {
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
-            border-radius: 50%;
-            margin: 0 auto 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            color: white;
-            border: 4px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .profile-name {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: #FFFFFF;
-            margin-bottom: 5px;
-        }
-
-        .profile-username {
-            color: #C084FC;
-            font-size: 1rem;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-
-        /* СТАТИСТИКА */
-        .profile-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 25px;
-        }
-
-        .stat-card {
-            background: rgba(168, 85, 247, 0.1);
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            border: 1px solid rgba(168, 85, 247, 0.2);
-        }
-
-        .stat-number {
-            font-size: 28px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #FFFFFF 0%, #C084FC 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            color: #94A3B8;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        /* НАСТРОЙКИ - ПРАВИЛЬНЫЙ СТИЛЬ */
-        .profile-settings {
-            background: rgba(30, 27, 75, 0.6);
-            border-radius: 20px;
-            padding: 25px;
-            margin-top: 20px;
-            border: 1px solid rgba(168, 85, 247, 0.2);
-            backdrop-filter: blur(10px);
-        }
-
-        .settings-title {
-            color: #FFFFFF;
-            font-size: 1.3rem;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .setting-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 18px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .setting-item:last-child {
-            border-bottom: none;
-        }
-
-        .setting-info {
-            flex: 1;
-        }
-
-        .setting-name {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #FFFFFF;
-            margin-bottom: 5px;
-        }
-
-        .setting-desc {
-            font-size: 0.85rem;
-            color: #94A3B8;
-        }
-
-        /* ПЕРЕКЛЮЧАТЕЛИ */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 52px;
-            height: 28px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(30, 41, 59, 0.8);
-            border: 2px solid rgba(168, 85, 247, 0.3);
-            transition: .4s;
-            border-radius: 34px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 20px;
-            width: 20px;
-            left: 4px;
-            bottom: 2px;
-            background: #94A3B8;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(124, 58, 237, 0.2) 100%);
-            border-color: #8B5CF6;
-        }
-
-        input:checked + .slider:before {
-            background: #8B5CF6;
-            transform: translateX(20px);
-        }
-
-        .logout-btn {
-            width: 100%;
-            padding: 18px;
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
-            border: 2px solid rgba(239, 68, 68, 0.3);
-            border-radius: 16px;
-            color: #EF4444;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            transition: all 0.3s ease;
-        }
-
-        .logout-btn:hover {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(239, 68, 68, 0.1) 100%);
-            border-color: rgba(239, 68, 68, 0.5);
-            transform: translateY(-2px);
-        }
-    </style>
 </head>
 <body>
-    <div class="profile-page">
-        <div class="profile-container">
-            <!-- Шапка -->
-            <header class="profile-header">
-                <a href="../index.html" class="back-btn">
-                    <i class="fas fa-arrow-left"></i>
-                    Назад
-                </a>
-                <div class="profile-title">Личный кабинет</div>
-                <div style="width: 80px;"></div>
-            </header>
+    <div class="container">
+        <!-- Шапка (такая же как в index.html) -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">Vape Market</h1>
+                <nav class="nav-menu">
+                    <a href="../index.html" class="nav-item">
+                        <i class="fas fa-home"></i>
+                        <span>Главная</span>
+                    </a>
+                    <a href="profile.html" class="nav-item active">
+                        <i class="fas fa-user"></i>
+                        <span>Профиль</span>
+                    </a>
+                    <a href="faq.html" class="nav-item">
+                        <i class="fas fa-question-circle"></i>
+                        <span>FAQ</span>
+                    </a>
+                    <div id="adminPanelNav" style="display: none;">
+                        <a href="admin.html" class="nav-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Админ-панель</span>
+                        </a>
+                    </div>
+                </nav>
+            </div>
+        </header>
 
-            <!-- Информация профиля -->
-            <div class="profile-info">
-                <div class="profile-avatar" id="profileAvatar">
-                    <i class="fas fa-user"></i>
+        <!-- Заголовок профиля -->
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <i class="fas fa-user" style="font-size: 50px; color: #667eea; line-height: 100px;"></i>
+            </div>
+            <h2 id="userName">Загрузка...</h2>
+            <div class="user-rating">
+                <div class="rating-stats">
+                    <span class="rating-value" id="userRating">0%</span>
+                    <div class="rating-stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
                 </div>
-                <h1 class="profile-name" id="profileName">Админ</h1>
-                <p class="profile-username" id="profileUsername">@admin</p>
-                
-                <!-- Статистика -->
-                <div class="profile-stats-grid">
-                    <div class="stat-card">
-                        <span class="stat-number" id="statsAds">15</span>
-                        <span class="stat-label">Объявления</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-number" id="statsLikes">247</span>
-                        <span class="stat-label">Лайки</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-number" id="statsRating">4.7</span>
-                        <span class="stat-label">Рейтинг</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-number" id="statsDeals">89</span>
-                        <span class="stat-label">Сделки</span>
-                    </div>
+                <div class="rating-counts">
+                    <span class="like-count" id="likeCount">0 лайков</span>
+                    <span class="dislike-count" id="dislikeCount">0 дизлайков</span>
                 </div>
             </div>
+        </div>
 
-            <!-- Настройки -->
-            <div class="profile-settings">
-                <h2 class="settings-title">
-                    <i class="fas fa-cog"></i>
-                    Настройки
-                </h2>
-                
-                <div class="settings-list">
-                    <div class="setting-item">
-                        <div class="setting-info">
-                            <div class="setting-name">Уведомления</div>
-                            <div class="setting-desc">Получать уведомления о новых сообщениях</div>
-                        </div>
-                        <label class="switch">
-                            <input type="checkbox" id="notificationsToggle" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-
-                    <div class="setting-item">
-                        <div class="setting-info">
-                            <div class="setting-name">Темная тема</div>
-                            <div class="setting-desc">Использовать темную тему приложения</div>
-                        </div>
-                        <label class="switch">
-                            <input type="checkbox" id="darkThemeToggle" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-
-                    <div class="setting-item">
-                        <div class="setting-info">
-                            <div class="setting-name">Показывать телефон</div>
-                            <div class="setting-desc">Показывать номер телефона в объявлениях</div>
-                        </div>
-                        <label class="switch">
-                            <input type="checkbox" id="showPhoneToggle">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-
-                    <div class="setting-item">
-                        <div class="setting-info">
-                            <div class="setting-name">Автообновление</div>
-                            <div class="setting-desc">Автоматически обновлять список объявлений</div>
-                        </div>
-                        <label class="switch">
-                            <input type="checkbox" id="autoRefreshToggle" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
+        <!-- Статистика профиля -->
+        <div class="profile-stats">
+            <div class="stat-card">
+                <div class="stat-value" id="totalAds">0</div>
+                <div class="stat-label">Объявления</div>
             </div>
+            <div class="stat-card">
+                <div class="stat-value" id="activeAds">0</div>
+                <div class="stat-label">Активные</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalViews">0</div>
+                <div class="stat-label">Просмотры</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="soldItems">0</div>
+                <div class="stat-label">Продано</div>
+            </div>
+        </div>
 
-            <!-- Кнопка выхода -->
-            <button class="logout-btn" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i>
-                Выйти из аккаунта
-            </button>
+        <!-- Мои объявления -->
+        <div class="ads-container">
+            <div class="section-header">
+                <h3>Мои объявления</h3>
+                <button class="btn btn-primary" onclick="window.App.openCreateAdModal()">
+                    <i class="fas fa-plus"></i>
+                    <span>Новое объявление</span>
+                </button>
+            </div>
+            <div id="myAdsList" class="ads-grid">
+                <!-- Мои объявления будут здесь -->
+            </div>
+        </div>
+
+        <!-- Настройки профиля -->
+        <div class="admin-section">
+            <h3>Настройки профиля</h3>
+            <div class="settings-grid">
+                <button class="btn btn-secondary" onclick="editProfile()">
+                    <i class="fas fa-edit"></i>
+                    <span>Редактировать профиль</span>
+                </button>
+                <button class="btn btn-secondary" onclick="changeAvatar()">
+                    <i class="fas fa-camera"></i>
+                    <span>Сменить аватар</span>
+                </button>
+                <button class="btn btn-secondary" onclick="showNotificationsSettings()">
+                    <i class="fas fa-bell"></i>
+                    <span>Уведомления</span>
+                </button>
+                <button class="btn btn-danger" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Выйти</span>
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- Навигация -->
-    <nav class="bottom-nav">
-        <button class="nav-btn" onclick="window.location.href='../index.html'">
-            <i class="fas fa-list"></i>
-            <span>Объявления</span>
-        </button>
-        <button class="nav-btn active">
-            <i class="fas fa-user"></i>
-            <span>Кабинет</span>
-        </button>
-        <button class="nav-btn" onclick="window.location.href='faq.html'">
-            <i class="fas fa-question-circle"></i>
-            <span>FAQ</span>
-        </button>
-    </nav>
-
+    <script src="../config.js"></script>
+    <script src="../api/ads.js"></script>
+    <script src="../api/server-api.js"></script>
+    <script src="../app.js"></script>
     <script>
-        // Настройка переключателей
-        document.addEventListener('DOMContentLoaded', function() {
-            // Загружаем настройки из localStorage
-            loadSettings();
+        // Загрузка данных профиля
+        document.addEventListener('DOMContentLoaded', async function() {
+            const userId = localStorage.getItem('tg_user_id');
+            const userName = localStorage.getItem('tg_user_name');
             
-            // Настройка обработчиков для переключателей
-            setupSettingsListeners();
-        });
-
-        function loadSettings() {
-            const settings = JSON.parse(localStorage.getItem('userSettings') || '{}');
-            
-            document.getElementById('notificationsToggle').checked = settings.notifications !== false;
-            document.getElementById('darkThemeToggle').checked = settings.darkTheme !== false;
-            document.getElementById('showPhoneToggle').checked = settings.showPhone || false;
-            document.getElementById('autoRefreshToggle').checked = settings.autoRefresh !== false;
-        }
-
-        function setupSettingsListeners() {
-            // Сохраняем настройки при изменении
-            document.getElementById('notificationsToggle').addEventListener('change', function() {
-                saveSetting('notifications', this.checked);
-            });
-            
-            document.getElementById('darkThemeToggle').addEventListener('change', function() {
-                saveSetting('darkTheme', this.checked);
-                // Применяем тему
-                if (this.checked) {
-                    document.body.classList.add('dark-theme');
-                } else {
-                    document.body.classList.remove('dark-theme');
-                }
-            });
-            
-            document.getElementById('showPhoneToggle').addEventListener('change', function() {
-                saveSetting('showPhone', this.checked);
-            });
-            
-            document.getElementById('autoRefreshToggle').addEventListener('change', function() {
-                saveSetting('autoRefresh', this.checked);
-            });
-        }
-
-        function saveSetting(key, value) {
-            let settings = JSON.parse(localStorage.getItem('userSettings') || '{}');
-            settings[key] = value;
-            localStorage.setItem('userSettings', JSON.stringify(settings));
-            
-            // Показываем уведомление
-            showNotification('Настройки сохранены', 'success');
-        }
-
-        function logout() {
-            if (confirm('Вы уверены, что хотите выйти?')) {
-                localStorage.removeItem('currentUser');
+            if (!userId || userId === 'guest') {
                 window.location.href = '../index.html';
+                return;
+            }
+            
+            // Устанавливаем имя
+            document.getElementById('userName').textContent = userName;
+            
+            // Загружаем рейтинг
+            const rating = await ServerAPI.getUserRating(userId);
+            document.getElementById('userRating').textContent = `${rating.rating}%`;
+            document.getElementById('likeCount').textContent = `${rating.likes} лайков`;
+            document.getElementById('dislikeCount').textContent = `${rating.dislikes} дизлайков`;
+            
+            // Загружаем статистику
+            await loadUserStats(userId);
+            
+            // Загружаем объявления пользователя
+            await loadUserAds(userId);
+            
+            // Проверяем права доступа
+            const userRole = localStorage.getItem('user_role');
+            if (userRole === 'admin1' || userRole === 'admin2' || userRole === 'owner') {
+                document.getElementById('adminPanelNav').style.display = 'block';
+            }
+        });
+        
+        // Загрузка статистики пользователя
+        async function loadUserStats(userId) {
+            try {
+                const ads = await AdsAPI.getUserAds(userId);
+                
+                const totalAds = ads.length;
+                const activeAds = ads.filter(ad => !ad.isBlocked).length;
+                const totalViews = ads.reduce((sum, ad) => sum + (ad.views || 0), 0);
+                const soldItems = ads.filter(ad => ad.status === 'sold').length;
+                
+                document.getElementById('totalAds').textContent = totalAds;
+                document.getElementById('activeAds').textContent = activeAds;
+                document.getElementById('totalViews').textContent = totalViews;
+                document.getElementById('soldItems').textContent = soldItems;
+            } catch (error) {
+                console.error('Ошибка загрузки статистики:', error);
             }
         }
-
-        function showNotification(message, type) {
-            alert(type === 'success' ? '✅ ' + message : 'ℹ️ ' + message);
+        
+        // Загрузка объявлений пользователя
+        async function loadUserAds(userId) {
+            try {
+                const ads = await AdsAPI.getUserAds(userId);
+                const adsList = document.getElementById('myAdsList');
+                
+                if (!ads.length) {
+                    adsList.innerHTML = `
+                        <div class="no-ads" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                            <i class="fas fa-box-open" style="font-size: 48px; color: #667eea; margin-bottom: 15px;"></i>
+                            <p style="color: #666; margin-bottom: 20px;">У вас пока нет объявлений</p>
+                            <button class="btn btn-primary" onclick="window.App.openCreateAdModal()">
+                                <i class="fas fa-plus"></i>
+                                <span>Создать первое объявление</span>
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                adsList.innerHTML = ads.map(ad => createMyAdCard(ad)).join('');
+                
+                // Добавляем обработчики для кнопок
+                ads.forEach(ad => {
+                    const editBtn = document.getElementById(`editBtn_${ad.id}`);
+                    const deleteBtn = document.getElementById(`deleteBtn_${ad.id}`);
+                    
+                    if (editBtn) {
+                        editBtn.addEventListener('click', () => editAd(ad.id));
+                    }
+                    
+                    if (deleteBtn) {
+                        deleteBtn.addEventListener('click', () => deleteAd(ad.id));
+                    }
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки объявлений:', error);
+            }
+        }
+        
+        // Создание карточки "моего" объявления
+        function createMyAdCard(ad) {
+            const hasImage = ad.images && ad.images.length > 0;
+            const imageUrl = hasImage ? ad.images[0] : '';
+            const isBlocked = ad.isBlocked;
+            
+            return `
+                <div class="ad-card ${isBlocked ? 'blocked' : ''}" data-ad-id="${ad.id}">
+                    ${isBlocked ? 
+                        `<div class="ad-blocked-banner">
+                            <i class="fas fa-ban"></i>
+                            <span>Заблокировано</span>
+                        </div>` : ''
+                    }
+                    <div class="ad-image-container">
+                        ${hasImage ? 
+                            `<img src="${imageUrl}" alt="${ad.title}" class="ad-image">` : 
+                            `<div class="no-image">
+                                <i class="fas fa-camera"></i>
+                                <p>Нет фото</p>
+                            </div>`
+                        }
+                    </div>
+                    <div class="ad-content">
+                        <h3 class="ad-title">${ad.title}</h3>
+                        <div class="ad-price">${ad.price} ₽</div>
+                        <div class="ad-meta">
+                            <span class="ad-views">
+                                <i class="fas fa-eye"></i>
+                                ${ad.views || 0}
+                            </span>
+                            <span class="ad-date">
+                                <i class="fas fa-calendar"></i>
+                                ${new Date(ad.createdAt).toLocaleDateString()}
+                            </span>
+                        </div>
+                        <div class="ad-actions">
+                            <button class="btn btn-primary btn-small" id="editBtn_${ad.id}">
+                                <i class="fas fa-edit"></i>
+                                Редактировать
+                            </button>
+                            <button class="btn btn-danger btn-small" id="deleteBtn_${ad.id}">
+                                <i class="fas fa-trash"></i>
+                                Удалить
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Редактирование объявления
+        function editAd(adId) {
+            alert('Редактирование объявления ID: ' + adId);
+            // Здесь должна быть реализация редактирования
+        }
+        
+        // Удаление объявления
+        async function deleteAd(adId) {
+            if (!confirm('Вы уверены, что хотите удалить это объявление?')) {
+                return;
+            }
+            
+            try {
+                const userId = localStorage.getItem('tg_user_id');
+                const success = await AdsAPI.deleteAd(adId, userId);
+                
+                if (success) {
+                    alert('Объявление удалено');
+                    await loadUserAds(userId);
+                    await loadUserStats(userId);
+                } else {
+                    alert('Ошибка при удалении объявления');
+                }
+            } catch (error) {
+                console.error('Ошибка удаления объявления:', error);
+                alert('Ошибка при удалении объявления');
+            }
+        }
+        
+        // Другие функции профиля
+        function editProfile() {
+            alert('Функция редактирования профиля будет реализована позже');
+        }
+        
+        function changeAvatar() {
+            alert('Функция смены аватара будет реализована позже');
+        }
+        
+        function showNotificationsSettings() {
+            alert('Настройки уведомлений будут реализованы позже');
+        }
+        
+        function logout() {
+            if (confirm('Вы уверены, что хотите выйти?')) {
+                localStorage.clear();
+                window.location.href = '../index.html';
+            }
         }
     </script>
 </body>
