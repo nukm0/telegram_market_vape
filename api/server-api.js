@@ -1,423 +1,264 @@
-// Серверные API методы для работы с Firebase
-class ServerAPI {
-    constructor(firebaseApp) {
-        this.db = firebaseApp.database();
-    }
-
-    // Получить объявления с пагинацией и фильтрами
-    async getAds(filters = {}, page = 1, limit = 20) {
+const ServerAPI = {
+    // Оценить пользователя
+    async rateUser(userId, rating, raterId) {
         try {
-            let query = this.db.ref('ads').orderByChild('createdAt');
-
-            // Применяем фильтры
-            if (filters.category && filters.category !== 'all') {
-                query = query.orderByChild('category').equalTo(filters.category);
+            const ratings = JSON.parse(localStorage.getItem('user_ratings') || '[]');
+            const existingRating = ratings.find(r => r.userId === userId && r.raterId === raterId);
+            
+            if (existingRating) {
+                existingRating.rating = rating;
+                existingRating.date = new Date().toISOString();
+            } else {
+                ratings.push({
+                    userId,
+                    raterId,
+                    rating,
+                    date: new Date().toISOString()
+                });
             }
-
-            if (filters.dealType && filters.dealType !== 'all') {
-                query = query.orderByChild('dealType').equalTo(filters.dealType);
-            }
-
-            if (filters.userId) {
-                query = query.orderByChild('sellerId').equalTo(filters.userId);
-            }
-
-            const snapshot = await query.once('value');
-            let ads = [];
-
-            snapshot.forEach((child) => {
-                const ad = child.val();
-                ad.id = child.key;
-
-                // Фильтрация по поиску
-                if (filters.search) {
-                    const searchLower = filters.search.toLowerCase();
-                    const matches = (
-                        (ad.title && ad.title.toLowerCase().includes(searchLower)) ||
-                        (ad.description && ad.description.toLowerCase().includes(searchLower)) ||
-                        (ad.category && ad.category.toLowerCase().includes(searchLower))
-                    );
-                    if (!matches) return;
-                }
-
-                // Фильтрация по цене
-                if (filters.minPrice && ad.price < filters.minPrice) return;
-                if (filters.maxPrice && ad.price > filters.maxPrice) return;
-
-                // Фильтрация по статусу
-                if (filters.status && ad.status !== filters.status) return;
-
-                ads.push(ad);
-            });
-
-            // Сортировка по дате (новые сначала)
-            ads.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-
-            // Пагинация
-            const total = ads.length;
-            const start = (page - 1) * limit;
-            const end = start + limit;
-            const paginatedAds = ads.slice(start, end);
-
-            return {
-                ads: paginatedAds,
-                pagination: {
-                    page,
-                    limit,
-                    total,
-                    pages: Math.ceil(total / limit),
-                    hasNext: end < total,
-                    hasPrev: page > 1
-                }
-            };
-
+            
+            localStorage.setItem('user_ratings', JSON.stringify(ratings));
+            
+            // Обновляем статистику пользователя
+            this.updateUserRatingStats(userId);
+            
+            return true;
         } catch (error) {
-            console.error('API Error in getAds:', error);
+            console.error('Ошибка оценки пользователя:', error);
             throw error;
         }
-    }
-
+    },
+    
+    // Обновить статистику рейтинга пользователя
+    updateUserRatingStats(userId) {
+        try {
+            const ratings = JSON.parse(localStorage.getItem('user_ratings') || '[]');
+            const userRatings = ratings.filter(r => r.userId === userId);
+            
+            const stats = {
+                likes: userRatings.filter(r => r.rating === 'like').length,
+                dislikes: userRatings.filter(r => r.rating === 'dislike').length,
+                total: userRatings.length,
+                rating: userRatings.length > 0 ? 
+                    (userRatings.filter(r => r.rating === 'like').length / userRatings.length * 100).toFixed(1) : 0
+            };
+            
+            // Сохраняем статистику
+            const userStats = JSON.parse(localStorage.getItem('user_stats') || '{}');
+            userStats[userId] = stats;
+            localStorage.setItem('user_stats', JSON.stringify(userStats));
+            
+            return stats;
+        } catch (error) {
+            console.error('Ошибка обновления статистики:', error);
+            return { likes: 0, dislikes: 0, total: 0, rating: 0 };
+        }
+    },
+    
+    // Получить рейтинг пользователя
+    async getUserRating(userId) {
+        try {
+            const userStats = JSON.parse(localStorage.getItem('user_stats') || '{}');
+            return userStats[userId] || { likes: 0, dislikes: 0, total: 0, rating: 0 };
+        } catch (error) {
+            console.error('Ошибка получения рейтинга:', error);
+            return { likes: 0, dislikes: 0, total: 0, rating: 0 };
+        }
+    },
+    
+    // Пожаловаться на объявление
+    async reportAd(reportData) {
+        try {
+            const reports = JSON.parse(localStorage.getItem('ad_reports') || '[]');
+            reports.push({
+                ...reportData,
+                id: Date.now().toString(),
+                date: new Date().toISOString(),
+                status: 'pending'
+            });
+            
+            localStorage.setItem('ad_reports', JSON.stringify(reports));
+            
+            // Также добавляем жалобу в сам объект объявления
+            await AdsAPI.addReport(reportData.adId, reportData);
+            
+            return true;
+        } catch (error) {
+            console.error('Ошибка отправки жалобы:', error);
+            throw error;
+        }
+    },
+    
+    // Получить все жалобы
+    async getAllReports() {
+        try {
+            return JSON.parse(localStorage.getItem('ad_reports') || '[]');
+        } catch (error) {
+            console.error('Ошибка получения жалоб:', error);
+            return [];
+        }
+    },
+    
+    // Обновить статус жалобы
+    async updateReportStatus(reportId, status) {
+        try {
+            const reports = JSON.parse(localStorage.getItem('ad_reports') || '[]');
+            const reportIndex = reports.findIndex(r => r.id === reportId);
+            
+            if (reportIndex !== -1) {
+                reports[reportIndex].status = status;
+                reports[reportIndex].processedAt = new Date().toISOString();
+                localStorage.setItem('ad_reports', JSON.stringify(reports));
+                return true;
+            }
+            
+            return false;
+        } catch (error) {
+            console.error('Ошибка обновления жалобы:', error);
+            throw error;
+        }
+    },
+    
+    // Получить рекламу
+    async getAdvertisement() {
+        try {
+            return JSON.parse(localStorage.getItem('advertisement') || '{}');
+        } catch (error) {
+            console.error('Ошибка получения рекламы:', error);
+            return null;
+        }
+    },
+    
+    // Сохранить рекламу
+    async saveAdvertisement(adData) {
+        try {
+            const ad = {
+                ...adData,
+                id: 'ad_1',
+                enabled: true,
+                updatedAt: new Date().toISOString()
+            };
+            
+            localStorage.setItem('advertisement', JSON.stringify(ad));
+            return ad;
+        } catch (error) {
+            console.error('Ошибка сохранения рекламы:', error);
+            throw error;
+        }
+    },
+    
     // Получить статистику
     async getStats() {
         try {
-            const [adsSnapshot, usersSnapshot, ratingsSnapshot, complaintsSnapshot] = await Promise.all([
-                this.db.ref('ads').once('value'),
-                this.db.ref('users').once('value'),
-                this.db.ref('ratings').once('value'),
-                this.db.ref('complaints').once('value')
-            ]);
-
-            // Общая статистика
-            const totalAds = adsSnapshot.numChildren();
-            const totalUsers = usersSnapshot.numChildren();
-            const totalComplaints = complaintsSnapshot.numChildren();
-
-            // Статистика за сегодня
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const todayAds = [];
-            adsSnapshot.forEach((child) => {
-                const ad = child.val();
-                if (ad.createdAt && new Date(ad.createdAt) >= today) {
-                    todayAds.push(ad);
-                }
-            });
-
-            // Статистика по категориям
-            const categories = { liquids: 0, disposable: 0, pod: 0, consumables: 0, other: 0 };
-            adsSnapshot.forEach((child) => {
-                const ad = child.val();
-                const category = ad.category || 'other';
-                if (categories[category] !== undefined) {
-                    categories[category]++;
-                } else {
-                    categories.other++;
-                }
-            });
-
-            // Статистика по типам сделок
-            const dealTypes = { sell: 0, buy: 0 };
-            adsSnapshot.forEach((child) => {
-                const ad = child.val();
-                const dealType = ad.dealType || 'sell';
-                dealTypes[dealType] = (dealTypes[dealType] || 0) + 1;
-            });
-
-            // Подсчет лайков/дизлайков
-            let totalLikes = 0;
-            let totalDislikes = 0;
-            ratingsSnapshot.forEach((userRatings) => {
-                userRatings.forEach((rating) => {
-                    if (rating.val() === 'like') totalLikes++;
-                    if (rating.val() === 'dislike') totalDislikes++;
-                });
-            });
-
+            const ads = JSON.parse(localStorage.getItem('market_ads') || '[]');
+            const users = JSON.parse(localStorage.getItem('market_users') || '[]');
+            const reports = JSON.parse(localStorage.getItem('ad_reports') || '[]');
+            
             return {
-                totals: {
-                    ads: totalAds,
-                    users: totalUsers,
-                    complaints: totalComplaints,
-                    likes: totalLikes,
-                    dislikes: totalDislikes
-                },
-                today: {
-                    ads: todayAds.length
-                },
-                categories,
-                dealTypes,
-                lastUpdated: new Date().toISOString()
+                totalAds: ads.length,
+                activeAds: ads.filter(ad => !ad.isBlocked).length,
+                blockedAds: ads.filter(ad => ad.isBlocked).length,
+                totalUsers: users.length,
+                pendingReports: reports.filter(r => r.status === 'pending').length,
+                totalReports: reports.length,
+                todayAds: ads.filter(ad => {
+                    const adDate = new Date(ad.createdAt);
+                    const today = new Date();
+                    return adDate.toDateString() === today.toDateString();
+                }).length
             };
-
         } catch (error) {
-            console.error('API Error in getStats:', error);
-            throw error;
-        }
-    }
-
-    // Получить жалобы с фильтрами
-    async getComplaints(filters = {}, page = 1, limit = 20) {
-        try {
-            let query = this.db.ref('complaints').orderByChild('createdAt');
-
-            if (filters.status && filters.status !== 'all') {
-                query = query.orderByChild('status').equalTo(filters.status);
-            }
-
-            if (filters.reporterId) {
-                query = query.orderByChild('reporterId').equalTo(filters.reporterId);
-            }
-
-            if (filters.targetId) {
-                query = query.orderByChild('targetId').equalTo(filters.targetId);
-            }
-
-            const snapshot = await query.once('value');
-            let complaints = [];
-
-            snapshot.forEach((child) => {
-                complaints.unshift({ id: child.key, ...child.val() });
-            });
-
-            // Пагинация
-            const total = complaints.length;
-            const start = (page - 1) * limit;
-            const end = start + limit;
-            const paginated = complaints.slice(start, end);
-
+            console.error('Ошибка получения статистики:', error);
             return {
-                complaints: paginated,
-                pagination: {
-                    page,
-                    limit,
-                    total,
-                    pages: Math.ceil(total / limit)
-                }
+                totalAds: 0,
+                activeAds: 0,
+                blockedAds: 0,
+                totalUsers: 0,
+                pendingReports: 0,
+                totalReports: 0,
+                todayAds: 0
             };
-
-        } catch (error) {
-            console.error('API Error in getComplaints:', error);
-            throw error;
         }
-    }
-
-    // Обновить статус жалобы
-    async updateComplaintStatus(complaintId, status, adminNote = '') {
+    },
+    
+    // Управление пользователями
+    async getUsers() {
         try {
-            const updates = {
-                status,
-                updatedAt: firebase.database.ServerValue.TIMESTAMP
-            };
-
-            if (adminNote) {
-                updates.adminNote = adminNote;
-            }
-
-            if (status === 'resolved' || status === 'rejected') {
-                updates.resolvedAt = firebase.database.ServerValue.TIMESTAMP;
-            }
-
-            await this.db.ref(`complaints/${complaintId}`).update(updates);
-            return true;
+            return JSON.parse(localStorage.getItem('market_users') || '[]');
         } catch (error) {
-            console.error('API Error in updateComplaintStatus:', error);
-            throw error;
+            console.error('Ошибка получения пользователей:', error);
+            return [];
         }
-    }
-
-    // Получить пользователя
-    async getUser(userId) {
+    },
+    
+    // Блокировать/разблокировать пользователя
+    async toggleUserBlock(userId, isBlocked) {
         try {
-            const snapshot = await this.db.ref(`users/${userId}`).once('value');
-            return snapshot.val();
-        } catch (error) {
-            console.error('API Error in getUser:', error);
-            throw error;
-        }
-    }
-
-    // Обновить пользователя
-    async updateUser(userId, data) {
-        try {
-            await this.db.ref(`users/${userId}`).update({
-                ...data,
-                updatedAt: firebase.database.ServerValue.TIMESTAMP
-            });
-            return true;
-        } catch (error) {
-            console.error('API Error in updateUser:', error);
-            throw error;
-        }
-    }
-
-    // Блокировать пользователя
-    async blockUser(userId, reason, durationHours = 24) {
-        try {
-            const blockedUntil = durationHours === 0 ? 
-                'permanent' : 
-                Date.now() + (durationHours * 60 * 60 * 1000);
-
-            await this.db.ref(`users/${userId}`).update({
-                blocked: true,
-                blockReason: reason,
-                blockedUntil: blockedUntil,
-                blockedAt: firebase.database.ServerValue.TIMESTAMP
-            });
-
-            // Запись в историю модерации
-            await this.db.ref('moderationHistory').push().set({
-                action: 'block',
-                userId: userId,
-                reason: reason,
-                duration: durationHours,
-                blockedUntil: blockedUntil,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            });
-
-            return true;
-        } catch (error) {
-            console.error('API Error in blockUser:', error);
-            throw error;
-        }
-    }
-
-    // Получить историю пользователя
-    async getUserHistory(userId, limit = 50) {
-        try {
-            const snapshot = await this.db.ref(`userHistory/${userId}`)
-                .orderByChild('timestamp')
-                .limitToLast(limit)
-                .once('value');
-
-            const history = [];
-            snapshot.forEach((child) => {
-                history.unshift(child.val());
-            });
-
-            return history;
-        } catch (error) {
-            console.error('API Error in getUserHistory:', error);
-            throw error;
-        }
-    }
-
-    // Умный поиск
-    async smartSearch(query, filters = {}) {
-        try {
-            // Получаем все объявления
-            const adsSnapshot = await this.db.ref('ads').once('value');
-            const results = [];
-            const queryLower = query.toLowerCase();
-
-            // Веса для разных полей
-            const weights = {
-                title: 3,
-                description: 1,
-                category: 2,
-                sellerName: 1
-            };
-
-            adsSnapshot.forEach((child) => {
-                const ad = child.val();
-                ad.id = child.key;
-
-                // Проверяем фильтры
-                if (filters.category && filters.category !== 'all' && ad.category !== filters.category) {
-                    return;
-                }
-
-                if (filters.dealType && filters.dealType !== 'all' && ad.dealType !== filters.dealType) {
-                    return;
-                }
-
-                if (filters.minPrice && ad.price < filters.minPrice) {
-                    return;
-                }
-
-                if (filters.maxPrice && ad.price > filters.maxPrice) {
-                    return;
-                }
-
-                // Подсчет релевантности
-                let relevance = 0;
-
-                // Поиск в заголовке
-                if (ad.title && ad.title.toLowerCase().includes(queryLower)) {
-                    relevance += weights.title;
-
-                    // Бонус за точное совпадение в начале
-                    if (ad.title.toLowerCase().startsWith(queryLower)) {
-                        relevance += 2;
+            const users = JSON.parse(localStorage.getItem('market_users') || '[]');
+            const userIndex = users.findIndex(u => u.id === userId);
+            
+            if (userIndex !== -1) {
+                users[userIndex].isBlocked = isBlocked;
+                users[userIndex].blockedAt = isBlocked ? new Date().toISOString() : null;
+                localStorage.setItem('market_users', JSON.stringify(users));
+                
+                // Также блокируем все объявления пользователя
+                const ads = JSON.parse(localStorage.getItem('market_ads') || '[]');
+                ads.forEach(ad => {
+                    if (ad.userId === userId) {
+                        ad.isBlocked = isBlocked;
                     }
-                }
-
-                // Поиск в описании
-                if (ad.description && ad.description.toLowerCase().includes(queryLower)) {
-                    relevance += weights.description;
-                }
-
-                // Поиск в категории
-                if (ad.category && ad.category.toLowerCase().includes(queryLower)) {
-                    relevance += weights.category;
-                }
-
-                // Поиск по имени продавца
-                if (ad.sellerName && ad.sellerName.toLowerCase().includes(queryLower)) {
-                    relevance += weights.sellerName;
-                }
-
-                // Если есть релевантность, добавляем в результаты
-                if (relevance > 0) {
-                    results.push({
-                        ...ad,
-                        relevance,
-                        matchType: this.getMatchType(relevance, query, ad)
-                    });
-                }
-            });
-
-            // Сортировка по релевантности и дате
-            results.sort((a, b) => {
-                if (b.relevance !== a.relevance) {
-                    return b.relevance - a.relevance;
-                }
-                return (b.createdAt || 0) - (a.createdAt || 0);
-            });
-
-            return results;
-
+                });
+                localStorage.setItem('market_ads', JSON.stringify(ads));
+                
+                return true;
+            }
+            
+            return false;
         } catch (error) {
-            console.error('API Error in smartSearch:', error);
+            console.error('Ошибка блокировки пользователя:', error);
             throw error;
         }
-    }
-
-    // Определить тип совпадения
-    getMatchType(relevance, query, ad) {
-        if (ad.title && ad.title.toLowerCase().startsWith(query.toLowerCase())) {
-            return 'exact_title';
+    },
+    
+    // Назначить админа
+    async setAdmin(userId, role) {
+        try {
+            const adminUsers = JSON.parse(localStorage.getItem('admin_users') || '{}');
+            adminUsers[userId] = {
+                userId,
+                role,
+                assignedAt: new Date().toISOString()
+            };
+            
+            localStorage.setItem('admin_users', JSON.stringify(adminUsers));
+            return true;
+        } catch (error) {
+            console.error('Ошибка назначения админа:', error);
+            throw error;
         }
-        if (ad.title && ad.title.toLowerCase().includes(query.toLowerCase())) {
-            return 'title';
+    },
+    
+    // Удалить админа
+    async removeAdmin(userId) {
+        try {
+            const adminUsers = JSON.parse(localStorage.getItem('admin_users') || '{}');
+            delete adminUsers[userId];
+            localStorage.setItem('admin_users', JSON.stringify(adminUsers));
+            return true;
+        } catch (error) {
+            console.error('Ошибка удаления админа:', error);
+            throw error;
         }
-        if (ad.category && ad.category.toLowerCase().includes(query.toLowerCase())) {
-            return 'category';
+    },
+    
+    // Получить список админов
+    async getAdmins() {
+        try {
+            return JSON.parse(localStorage.getItem('admin_users') || '{}');
+        } catch (error) {
+            console.error('Ошибка получения админов:', error);
+            return {};
         }
-        return 'description';
     }
-}
-
-// Создание экземпляра API
-let serverAPI = null;
-
-function initServerAPI(firebaseApp) {
-    if (!serverAPI) {
-        serverAPI = new ServerAPI(firebaseApp);
-    }
-    return serverAPI;
-}
-
-// Экспорт
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { ServerAPI, initServerAPI };
-}
+};
