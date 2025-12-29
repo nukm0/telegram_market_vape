@@ -1,31 +1,90 @@
-// Конфигурация приложения
 const AppConfig = {
-    // Firebase конфигурация
-    firebaseConfig: {
-        apiKey: "AIzaSyBgPG4EXFQHoIOVLt2_BdCmiUJEWTXsGN8",
-        authDomain: "telegram-market-vape.firebaseapp.com",
-        databaseURL: "https://telegram-market-vape-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "telegram-market-vape",
-        storageBucket: "telegram-market-vape.appspot.com",
-        messagingSenderId: "35870048384",
-        appId: "1:35870048384:web:acd6501459aa39180b6665",
-        measurementId: "G-99R2PPBNF8"
+    // Основные настройки
+    appName: 'Vape Market',
+    appVersion: '1.0.0',
+    
+    // Настройки Telegram Web App
+    telegram: {
+        botToken: '',
+        apiUrl: 'https://api.telegram.org'
     },
-
-    // Администраторы
-    adminUsers: ['998579758'],
-    superAdmin: '998579758',
-
-    // Настройки
-    appSettings: {
-        maxPhotosPerAd: 3,
-        maxDescriptionLength: 500
+    
+    // Роли пользователей
+    roles: {
+        user: 'user',           // Обычный пользователь
+        admin1: 'admin1',       // Модератор (управление объявлениями, жалобами)
+        admin2: 'admin2',       // Админ (реклама, статистика)
+        owner: 'owner'          // Владелец (полные права)
+    },
+    
+    // Права доступа
+    permissions: {
+        admin1: [
+            'view_ads',
+            'block_ads',
+            'view_reports',
+            'process_reports',
+            'block_users',
+            'view_stats'
+        ],
+        admin2: [
+            'view_ads',
+            'block_ads',
+            'view_reports',
+            'process_reports',
+            'block_users',
+            'view_stats',
+            'manage_ads',
+            'manage_advertisement'
+        ],
+        owner: [
+            'view_ads',
+            'block_ads',
+            'view_reports',
+            'process_reports',
+            'block_users',
+            'view_stats',
+            'manage_ads',
+            'manage_advertisement',
+            'manage_admins',
+            'full_access'
+        ]
+    },
+    
+    // Лимиты
+    limits: {
+        maxImagesPerAd: 5,
+        maxAdTitleLength: 100,
+        maxAdDescriptionLength: 1000,
+        maxPrice: 1000000,
+        reportThreshold: 3 // Количество жалоб для авто-блокировки
+    },
+    
+    // Категории товаров
+    categories: {
+        pod: 'Поды и POD-системы',
+        mod: 'Моды',
+        atomizer: 'Атомайзеры',
+        liquid: 'Жидкости',
+        accessories: 'Аксессуары',
+        other: 'Другое'
+    },
+    
+    // Причины жалоб
+    reportReasons: {
+        scam: 'Мошенничество',
+        fake: 'Фейковый товар',
+        spam: 'Спам',
+        rules: 'Нарушение правил',
+        other: 'Другое'
+    },
+    
+    // Настройки кэширования
+    cache: {
+        adsTTL: 300000, // 5 минут
+        statsTTL: 60000 // 1 минута
     }
 };
 
-// Экспорт
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = AppConfig;
-} else {
-    window.AppConfig = AppConfig;
-}
+// Инициализация конфигурации
+window.AppConfig = AppConfig;
