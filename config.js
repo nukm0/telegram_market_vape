@@ -1,4 +1,4 @@
-// Конфигурация приложения
+// Конфигурация приложения Vape Market
 const AppConfig = {
     // Firebase конфигурация
     firebaseConfig: {
@@ -11,7 +11,7 @@ const AppConfig = {
         appId: "1:35870048384:web:acd6501459aa39180b6665",
         measurementId: "G-99R2PPBNF8"
     },
-    
+
     // Администраторы
     adminUsers: {
         '998579758': {
@@ -21,7 +21,7 @@ const AppConfig = {
             role: 'superadmin'
         }
     },
-    
+
     // Настройки приложения
     appSettings: {
         maxPhotosPerAd: 3,
@@ -47,7 +47,7 @@ const AppConfig = {
             { id: 'buy', label: 'Покупаю', icon: 'fa-shopping-cart', color: '#3B82F6' }
         ]
     },
-    
+
     // Строки интерфейса
     strings: {
         appName: 'Vape Market',
@@ -61,7 +61,7 @@ const AppConfig = {
         pricePlaceholder: 'Цена (₽)',
         descriptionPlaceholder: 'Описание товара'
     },
-    
+
     // URL и пути
     urls: {
         adminContact: 'https://t.me/nukm0',
@@ -73,4 +73,6 @@ const AppConfig = {
 // Экспорт конфигурации
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = AppConfig;
+} else {
+    window.AppConfig = AppConfig;
 }
