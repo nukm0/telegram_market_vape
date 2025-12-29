@@ -22,7 +22,7 @@ let allItems = [];
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-// Сервер API для получения данных (если используется отдельный сервер)
+// Сервер API для получения данных
 const FirebaseMarketServer = {
   // Загрузка рейтингов товаров
   async getRatings() {
@@ -32,28 +32,6 @@ const FirebaseMarketServer = {
     } catch (error) {
       console.error("❌ Ошибка загрузки рейтингов:", error);
       return {};
-    }
-  },
-  
-  // Загрузка заказов пользователя
-  async getUserOrders(userId) {
-    try {
-      const snapshot = await db.ref('orders').orderByChild('userId').equalTo(userId).once('value');
-      return snapshot.val() || {};
-    } catch (error) {
-      console.error("❌ Ошибка загрузки заказов:", error);
-      return {};
-    }
-  },
-  
-  // Загрузка профиля пользователя
-  async getUserProfile(userId) {
-    try {
-      const snapshot = await db.ref(`users/${userId}`).once('value');
-      return snapshot.val();
-    } catch (error) {
-      console.error("❌ Ошибка загрузки профиля:", error);
-      return null;
     }
   }
 };
@@ -138,24 +116,6 @@ function setupEventListeners() {
       updateUIAfterDataLoad();
     });
   }
-  
-  // Кнопка корзины
-  const cartBtn = document.getElementById('cartBtn');
-  if (cartBtn) {
-    cartBtn.addEventListener('click', () => {
-      showNotification("Корзина в разработке", "info");
-    });
-  }
-  
-  // Фильтры категорий
-  document.querySelectorAll('.category-filter').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const categoryId = e.target.dataset.category;
-      if (categoryId) {
-        filterItemsByCategory(categoryId);
-      }
-    });
-  });
 }
 
 // Загрузка начальных данных
@@ -170,9 +130,6 @@ async function loadInitialData() {
 
     // Загрузка данных из Firebase
     await loadFromServer();
-    
-    // Загрузка рекламы
-    await loadAds();
     
   } catch (error) {
     console.error("❌ Ошибка загрузки данных:", error);
@@ -245,9 +202,6 @@ function updateUIAfterDataLoad() {
   // Обновление товаров
   updateItemsGrid();
   
-  // Обновление счетчиков
-  updateCounters();
-  
   // Инициализация обработчиков для динамически созданных элементов
   initDynamicEventListeners();
 }
@@ -257,11 +211,6 @@ function updateUserInfo() {
   const userNameElement = document.getElementById('userName');
   if (userNameElement && currentUser) {
     userNameElement.textContent = currentUser.firstName;
-  }
-  
-  const userAvatar = document.getElementById('userAvatar');
-  if (userAvatar && currentUser.isPremium) {
-    userAvatar.classList.add('premium');
   }
 }
 
@@ -330,22 +279,6 @@ function createItemCard(item) {
   return div;
 }
 
-// Обновление счетчиков
-function updateCounters() {
-  // Обновление счетчика товаров
-  const itemsCount = document.getElementById('itemsCount');
-  if (itemsCount) {
-    itemsCount.textContent = allItems.length;
-  }
-  
-  // Обновление счетчика категорий
-  const categoriesCount = document.getElementById('categoriesCount');
-  if (categoriesCount) {
-    const categories = serverCache.categories || {};
-    categoriesCount.textContent = Object.keys(categories).length;
-  }
-}
-
 // Инициализация обработчиков для динамических элементов
 function initDynamicEventListeners() {
   // Обработчики для кнопок покупки
@@ -383,11 +316,6 @@ function filterItemsByCategory(categoryId) {
   
   const filteredItems = allItems.filter(item => item.categoryId === categoryId);
   updateItemsGrid(filteredItems);
-  
-  // Подсветка активной категории
-  document.querySelectorAll('.category-item').forEach(cat => {
-    cat.classList.toggle('active', cat.dataset.category === categoryId);
-  });
 }
 
 // Обработчик поиска
@@ -401,24 +329,10 @@ function handleSearch(e) {
   
   const filteredItems = allItems.filter(item => 
     item.name.toLowerCase().includes(searchTerm) ||
-    (item.description && item.description.toLowerCase().includes(searchTerm)) ||
-    (item.tags && item.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
+    (item.description && item.description.toLowerCase().includes(searchTerm))
   );
   
   updateItemsGrid(filteredItems);
-}
-
-// Загрузка рекламы
-async function loadAds() {
-  try {
-    const response = await fetch('https://raw.githubusercontent.com/nukm0/telegram_market_vape/main/api/ads.js');
-    if (response.ok) {
-      const adsScript = await response.text();
-      console.log("📢 Рекламный скрипт загружен");
-    }
-  } catch (error) {
-    console.error("❌ Ошибка загрузки рекламы:", error);
-  }
 }
 
 // Проверка и создание профиля пользователя
@@ -433,7 +347,7 @@ async function checkOrCreateUserProfile(user) {
         id: user.id,
         username: user.username,
         firstName: user.firstName,
-        lastName: user.lastLastName,
+        lastName: user.lastName,
         isPremium: user.isPremium,
         joined: Date.now(),
         balance: 0,
@@ -622,6 +536,66 @@ if (!document.querySelector('#notification-styles')) {
     .notification {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       font-size: 14px;
+    }
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1001;
+    }
+    .modal {
+      background: white;
+      border-radius: 10px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      padding: 20px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-body {
+      padding: 20px;
+    }
+    .modal-footer {
+      padding: 20px;
+      border-top: 1px solid #eee;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+    }
+    .btn-primary {
+      background: #007aff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #333;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
     }
   `;
   document.head.appendChild(style);
