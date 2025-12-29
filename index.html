@@ -12,7 +12,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <!-- Главный скрипт приложения -->
-    <script src="app.js?v=6.0"></script>
+    <script src="app.js?v=7.0"></script>
 </head>
 <body>
     <div class="container">
@@ -28,7 +28,7 @@
             </div>
         </header>
 
-        <!-- Поиск и фильтры -->
+        <!-- Поиск -->
         <div class="search-section">
             <input type="text" id="searchInput" placeholder="🔍 Поиск товаров..." class="search-input">
             <button id="refreshBtn" class="btn-secondary">🔄 Обновить</button>
@@ -38,7 +38,7 @@
         <div class="categories-section">
             <h2>Категории</h2>
             <div id="categories" class="categories-grid">
-                <!-- Категории будут загружены через JS -->
+                <div class="loading">Загрузка категорий...</div>
             </div>
         </div>
 
@@ -49,12 +49,11 @@
                 <span id="itemsCount" class="counter">0</span>
             </div>
             <div id="itemsGrid" class="items-grid">
-                <!-- Товары будут загружены через JS -->
                 <div class="loading">Загрузка товаров...</div>
             </div>
         </div>
 
-        <!-- Навигация (для мобильных) -->
+        <!-- Навигация -->
         <nav class="bottom-nav">
             <button class="nav-btn active" data-page="home">
                 <span>🏠</span>
@@ -64,24 +63,23 @@
                 <span>📂</span>
                 <span>Категории</span>
             </button>
-            <button class="nav-btn" id="cartBtnNav" data-page="cart">
+            <button class="nav-btn" id="cartBtnNav">
                 <span>🛒</span>
                 <span>Корзина</span>
             </button>
-            <button class="nav-btn" data-page="profile">
+            <button class="nav-btn" id="profileBtnNav">
                 <span>👤</span>
                 <span>Профиль</span>
             </button>
         </nav>
     </div>
 
-    <!-- Service Worker для PWA -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('service-worker.js')
                     .then(function(registration) {
-                        console.log('Service Worker зарегистрирован:', registration.scope);
+                        console.log('Service Worker зарегистрирован');
                     })
                     .catch(function(error) {
                         console.log('Ошибка регистрации Service Worker:', error);
