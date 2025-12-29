@@ -8,271 +8,143 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Шапка -->
-        <header class="header">
-            <div class="header-content">
-                <h1 class="logo">Vape Market</h1>
-                <nav class="nav-menu">
-                    <a href="../index.html" class="nav-item">
-                        <i class="fas fa-home"></i>
-                        <span>Главная</span>
-                    </a>
-                    <a href="profile.html" class="nav-item">
-                        <i class="fas fa-user"></i>
-                        <span>Профиль</span>
-                    </a>
-                    <a href="faq.html" class="nav-item active">
-                        <i class="fas fa-question-circle"></i>
-                        <span>FAQ</span>
-                    </a>
-                    <div id="adminPanelNav" style="display: none;">
-                        <a href="admin.html" class="nav-item">
-                            <i class="fas fa-shield-alt"></i>
-                            <span>Админ-панель</span>
-                        </a>
-                    </div>
-                </nav>
-            </div>
-        </header>
-
-        <!-- FAQ Контент -->
-        <div class="faq-container">
-            <h2>Часто задаваемые вопросы</h2>
-            
-            <div class="faq-section">
-                <h3>Общие вопросы</h3>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <span>Как создать объявление?</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Чтобы создать объявление:</p>
-                        <ol>
-                            <li>Нажмите кнопку "Создать объявление" на главной странице</li>
-                            <li>Заполните все обязательные поля: название, описание, цену, город</li>
-                            <li>Добавьте фотографии товара (до 5 фото)</li>
-                            <li>Нажмите "Опубликовать"</li>
-                        </ol>
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <span>Как связаться с продавцом?</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Нажмите кнопку "Написать" на карточке товара. Откроется чат с продавцом в Telegram с готовым текстом сообщения.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="faq-section">
-                <h3>Безопасность и правила</h3>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <span>Что запрещено продавать?</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Запрещено продавать:</p>
-                        <ul>
-                            <li>Несовершеннолетним лицам</li>
-                            <li>Контрафактную продукцию</li>
-                            <li>Товары с истекшим сроком годности</li>
-                            <li>Незаконные вещества и устройства</li>
-                        </ul>
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <span>Как подать жалобу?</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Если вы столкнулись с мошенничеством или нарушением правил:</p>
-                        <ol>
-                            <li>Найдите нужное объявление</li>
-                            <li>Нажмите кнопку "Жалоба"</li>
-                            <li>Выберите причину жалобы</li>
-                            <li>Опишите проблему подробно</li>
-                            <li>Нажмите "Отправить жалобу"</li>
-                        </ol>
-                        <p>Администраторы рассмотрят жалобу в течение 24 часов.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="faq-section">
-                <h3>Профиль и рейтинг</h3>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <span>Как работает система рейтинга?</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>После сделки покупатель и продавец могут оценить друг друга:</p>
-                        <ul>
-                            <li>Лайк - положительная оценка</li>
-                            <li>Дизлайк - отрицательная оценка</li>
-                            <li>Рейтинг рассчитывается как процент лайков от общего числа оценок</li>
-                        </ul>
-                        <p>Чем выше рейтинг, тем больше доверия вызывает пользователь.</p>
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <span>Что делать, если мой аккаунт заблокирован?</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Если ваш аккаунт заблокирован:</p>
-                        <ol>
-                            <li>Проверьте, не было ли нарушений правил</li>
-                            <li>Обратитесь в поддержку через Telegram</li>
-                            <li>Предоставьте объяснение ситуации</li>
-                            <li>Дождитесь решения администрации</li>
-                        </ol>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="contact-support">
-                <h3>Не нашли ответ?</h3>
-                <p>Свяжитесь с нашей поддержкой:</p>
-                <a href="https://t.me/vape_market_support" class="btn btn-primary" target="_blank">
-                    <i class="fab fa-telegram"></i>
-                    <span>Написать в поддержку</span>
+    <div class="app-container">
+        <!-- Навигация -->
+        <nav class="navbar">
+            <a href="../index.html" class="logo">
+                <i class="fas fa-smoking"></i>
+                VapeMarket
+            </a>
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link">
+                    <i class="fas fa-home"></i> Главная
                 </a>
+                <a href="profile.html" class="nav-link">
+                    <i class="fas fa-user"></i> Кабинет
+                </a>
+                <a href="../index.html#create" class="nav-link">
+                    <i class="fas fa-plus-circle"></i> Разместить
+                </a>
+                <a href="faq.html" class="nav-link active">
+                    <i class="fas fa-question-circle"></i> FAQ
+                </a>
+                <div class="user-avatar">
+                    Г
+                </div>
+            </div>
+        </nav>
+
+        <div class="faq-container">
+            <h1 style="
+                color: var(--dark-color);
+                margin-bottom: 2rem;
+                text-align: center;
+            ">
+                <i class="fas fa-question-circle"></i> Частые вопросы
+            </h1>
+
+            <div class="faq-item">
+                <h3 class="faq-question">
+                    Как добавить объявление?
+                </h3>
+                <p class="faq-answer">
+                    1. Нажмите кнопку "Разместить" в верхней панели<br>
+                    2. Заполните все необходимые поля формы<br>
+                    3. Загрузите фотографии товара (до 3 штук)<br>
+                    4. Нажмите "Опубликовать"<br>
+                    Ваше объявление появится в общем списке после проверки модератором
+                </p>
+            </div>
+
+            <div class="faq-item">
+                <h3 class="faq-question">
+                    Как работает система рейтинга?
+                </h3>
+                <p class="faq-answer">
+                    Рейтинг формируется на основе оценок других пользователей после успешных сделок. 
+                    Вы можете оценить пользователя после завершения сделки по шкале от 1 до 5 звёзд. 
+                    Средний рейтинг отображается в профиле пользователя.
+                </p>
+            </div>
+
+            <div class="faq-item">
+                <h3 class="faq-question">
+                    Как загрузить фотографии?
+                </h3>
+                <p class="faq-answer">
+                    При создании объявления нажмите на область загрузки файлов или перетащите 
+                    фотографии прямо в эту область. Вы можете загрузить до 3 фотографий в форматах 
+                    JPG, PNG или WebP. Максимальный размер файла - 5 МБ.
+                </p>
+            </div>
+
+            <div class="faq-item">
+                <h3 class="faq-question">
+                    Как написать продавцу?
+                </h3>
+                <p class="faq-answer">
+                    На карточке объявления нажмите кнопку "Написать продавцу". 
+                    Это откроет чат с продавцом, где вы сможете обсудить детали сделки. 
+                    Для использования чата необходима авторизация на платформе.
+                </p>
+            </div>
+
+            <div class="faq-item">
+                <h3 class="faq-question">
+                    Как оплачивать товар?
+                </h3>
+                <p class="faq-answer">
+                    Платформа предоставляет несколько способов оплаты:<br>
+                    1. Безопасная сделка через платформу<br>
+                    2. Перевод на карту<br>
+                    3. Наличные при встрече<br>
+                    Рекомендуем использовать безопасную сделку для защиты от мошенничества.
+                </p>
+            </div>
+
+            <div class="faq-item">
+                <h3 class="faq-question">
+                    Как подать жалобу на объявление?
+                </h3>
+                <p class="faq-answer">
+                    На карточке объявления нажмите кнопку с флагом (↖). 
+                    Выберите тип нарушения (лёгкое, среднее или тяжёлое), 
+                    укажите причину и отправьте жалобу. Администрация рассмотрит 
+                    вашу жалобу в течение 24 часов.
+                </p>
+            </div>
+
+            <div class="platform-stats">
+                <h2 style="
+                    color: var(--dark-color);
+                    margin-bottom: 1.5rem;
+                    text-align: center;
+                ">
+                    <i class="fas fa-chart-line"></i> Статистика платформы
+                </h2>
+                
+                <div class="statistics-grid">
+                    <div class="stat-card">
+                        <span class="stat-number">15,432</span>
+                        <span class="stat-label">Пользователей</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">2,345</span>
+                        <span class="stat-label">Объявлений</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">8,921</span>
+                        <span class="stat-label">Сделок</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">94%</span>
+                        <span class="stat-label">Успешных сделок</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <script src="../config.js"></script>
     <script src="../app.js"></script>
-    <script>
-        // FAQ аккордеон
-        document.addEventListener('DOMContentLoaded', function() {
-            // Проверяем права доступа
-            const userRole = localStorage.getItem('user_role');
-            if (userRole === 'admin1' || userRole === 'admin2' || userRole === 'owner') {
-                document.getElementById('adminPanelNav').style.display = 'block';
-            }
-            
-            // Инициализация FAQ аккордеона
-            const faqQuestions = document.querySelectorAll('.faq-question');
-            faqQuestions.forEach(question => {
-                question.addEventListener('click', () => {
-                    const answer = question.nextElementSibling;
-                    const icon = question.querySelector('i');
-                    
-                    answer.classList.toggle('active');
-                    icon.classList.toggle('fa-chevron-down');
-                    icon.classList.toggle('fa-chevron-up');
-                });
-            });
-        });
-    </script>
-    
-    <style>
-        .faq-container {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-        
-        .faq-container h2 {
-            color: #667eea;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-        
-        .faq-section {
-            margin-bottom: 30px;
-        }
-        
-        .faq-section h3 {
-            color: #333;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-        
-        .faq-item {
-            margin-bottom: 10px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        .faq-question {
-            padding: 15px;
-            background: #f8f9ff;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            font-weight: 500;
-        }
-        
-        .faq-answer {
-            padding: 0;
-            max-height: 0;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .faq-answer.active {
-            padding: 15px;
-            max-height: 500px;
-        }
-        
-        .faq-answer p,
-        .faq-answer ol,
-        .faq-answer ul {
-            margin-bottom: 10px;
-        }
-        
-        .faq-answer ol,
-        .faq-answer ul {
-            padding-left: 20px;
-        }
-        
-        .faq-answer li {
-            margin-bottom: 5px;
-        }
-        
-        .contact-support {
-            text-align: center;
-            padding: 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 15px;
-            color: white;
-            margin-top: 30px;
-        }
-        
-        .contact-support h3 {
-            margin-bottom: 10px;
-            color: white;
-        }
-        
-        .contact-support .btn {
-            margin-top: 15px;
-            background: white;
-            color: #667eea;
-        }
-        
-        .contact-support .btn:hover {
-            background: #f0f0f0;
-        }
-    </style>
 </body>
 </html>
