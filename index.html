@@ -3,239 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vape Market</title>
+    <title>Vape Market - Главная</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <div class="header-content">
-                <h1 class="logo">Vape Market</h1>
-                <nav class="nav-menu">
-                    <a href="index.html" class="nav-item active">
-                        <i class="fas fa-home"></i>
-                        <span>Главная</span>
-                    </a>
-                    <a href="pages/profile.html" class="nav-item">
-                        <i class="fas fa-user"></i>
-                        <span>Профиль</span>
-                    </a>
-                    <a href="pages/faq.html" class="nav-item">
-                        <i class="fas fa-question-circle"></i>
-                        <span>FAQ</span>
-                    </a>
-                    <!-- Админ панель будет добавлена через JS для админов -->
-                </nav>
-            </div>
-        </header>
-
-        <main class="main-content">
-            <div class="banner">
-                <h2>Добро пожаловать в Vape Market</h2>
-                <p>Покупайте и продавайте вейп-товары безопасно</p>
-            </div>
-
-            <!-- Ваши оригинальные кнопки -->
-            <div class="action-buttons">
-                <button class="btn btn-primary" onclick="openCreateAd()">
-                    <i class="fas fa-plus"></i>
-                    <span>Создать объявление</span>
-                </button>
-                <button class="btn btn-secondary" onclick="showMyAds()">
-                    <i class="fas fa-list"></i>
-                    <span>Мои объявления</span>
-                </button>
-                <button class="btn btn-secondary" onclick="showFavorites()">
-                    <i class="fas fa-heart"></i>
-                    <span>Избранное</span>
-                </button>
-                
-                <!-- ФИЛЬТРАЦИЯ - возвращаю ваш фильтр -->
-                <div class="filter-container">
-                    <select class="filter-select" id="categoryFilter" onchange="filterAds()">
-                        <option value="">Все категории</option>
-                        <option value="pod">Поды</option>
-                        <option value="mod">Моды</option>
-                        <option value="liquid">Жидкости</option>
-                        <option value="accessory">Аксессуары</option>
-                    </select>
-                    <select class="filter-select" id="priceFilter" onchange="filterAds()">
-                        <option value="">Любая цена</option>
-                        <option value="0-1000">До 1000₽</option>
-                        <option value="1000-3000">1000-3000₽</option>
-                        <option value="3000+">От 3000₽</option>
-                    </select>
-                    <input type="text" class="search-input" placeholder="Поиск..." id="searchInput" onkeyup="searchAds()">
+    <div class="app-container">
+        <!-- Навигация -->
+        <nav class="navbar">
+            <a href="index.html" class="logo">
+                <i class="fas fa-smoking"></i>
+                VapeMarket
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link active">
+                    <i class="fas fa-home"></i> Главная
+                </a>
+                <a href="pages/profile.html" class="nav-link">
+                    <i class="fas fa-user"></i> Кабинет
+                </a>
+                <a href="#" class="nav-link" id="createAdBtn">
+                    <i class="fas fa-plus-circle"></i> Разместить
+                </a>
+                <a href="pages/faq.html" class="nav-link">
+                    <i class="fas fa-question-circle"></i> FAQ
+                </a>
+                <a href="pages/admin-panel.html" class="nav-link" id="adminLink" style="display: none;">
+                    <i class="fas fa-shield-alt"></i> Админ
+                </a>
+                <div class="user-avatar" id="userAvatar">
+                    Г
                 </div>
             </div>
+        </nav>
 
-            <!-- Блок рекламы (только для админов) -->
-            <div id="adminAdContainer" style="display: none; margin: 15px 0;">
-                <div class="ad-banner" id="adBanner">
-                    <div class="ad-content">
-                        <h3 id="adTitle">Рекламный баннер</h3>
-                        <p id="adText">Текст рекламы</p>
-                        <button class="btn btn-small" onclick="editAd()" id="editAdBtn" style="display: none;">
-                            <i class="fas fa-edit"></i>
-                        </button>
+        <!-- Рекламный баннер (только для админов) -->
+        <div id="adminBanner" class="hidden" style="
+            background: var(--gradient-secondary);
+            color: white;
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 500;
+        ">
+            <i class="fas fa-star"></i> Акция! Скидка 15% на все жидкости до конца недели!
+        </div>
+
+        <!-- Фильтры -->
+        <div class="filters" style="
+            background: white;
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            box-shadow: var(--shadow);
+        ">
+            <button class="btn btn-primary" data-filter="all">Все</button>
+            <button class="btn btn-secondary" data-filter="sale">Продажа</button>
+            <button class="btn btn-secondary" data-filter="buy">Покупка</button>
+            <div style="margin-left: auto; display: flex; gap: 0.5rem;">
+                <select class="form-select" style="width: auto;">
+                    <option>Все категории</option>
+                    <option>Жидкости</option>
+                    <option>Устройства</option>
+                    <option>Аксессуары</option>
+                </select>
+                <input type="text" class="form-input" placeholder="Поиск..." style="width: 200px;">
+            </div>
+        </div>
+
+        <!-- Сетка объявлений -->
+        <div class="ads-grid" id="adsGrid">
+            <!-- Объявления загружаются через JavaScript -->
+        </div>
+
+        <!-- Пагинация -->
+        <div class="pagination" style="
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        ">
+            <button class="btn btn-secondary">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="btn btn-primary">1</button>
+            <button class="btn btn-secondary">2</button>
+            <button class="btn btn-secondary">3</button>
+            <button class="btn btn-secondary">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Модальное окно создания объявления -->
+    <div class="modal" id="createAdModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="color: var(--dark-color);">Новое объявление</h2>
+                <button class="modal-close" id="closeModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="adForm">
+                <div class="form-group">
+                    <label class="form-label">Тип сделки</label>
+                    <div style="display: flex; gap: 1rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="radio" name="type" value="sell" checked>
+                            <span>Продаю</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="radio" name="type" value="buy">
+                            <span>Покупаю</span>
+                        </label>
                     </div>
                 </div>
-            </div>
 
-            <!-- Список объявлений -->
-            <div class="ads-container">
-                <h3 class="section-title">Последние объявления</h3>
-                <div id="adsList" class="ads-grid">
-                    <!-- Объявления загружаются через JS -->
+                <div class="form-group">
+                    <label class="form-label">Категория</label>
+                    <select class="form-select" name="category" required>
+                        <option value="">Выберите категорию</option>
+                        <option value="liquids">Жидкости</option>
+                        <option value="devices">Устройства</option>
+                        <option value="accessories">Аксессуары</option>
+                        <option value="pods">Поды</option>
+                        <option value="coils">Нагреватели</option>
+                    </select>
                 </div>
-            </div>
-        </main>
 
-        <!-- Модальное окно создания объявления (исправленное) -->
-        <div id="createAdModal" class="modal" style="display: none;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Создать объявление</h3>
-                    <span class="close-modal" onclick="closeModal()">&times;</span>
+                <div class="form-group">
+                    <label class="form-label">Название товара</label>
+                    <input type="text" class="form-input" name="title" 
+                           placeholder="Например: Caliburn G3, H..." required>
                 </div>
-                <div class="modal-body">
-                    <form id="adForm" onsubmit="return submitAd(event)">
-                        <div class="form-group">
-                            <label for="adTitle">Название товара</label>
-                            <input type="text" id="adTitle" placeholder="Например: Vaporesso XROS 3" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="adCategory">Категория</label>
-                            <select id="adCategory" required>
-                                <option value="">Выберите категорию</option>
-                                <option value="pod">Поды и POD-системы</option>
-                                <option value="mod">Моды</option>
-                                <option value="atomizer">Атомайзеры</option>
-                                <option value="liquid">Жидкости</option>
-                                <option value="accessories">Аксессуары</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="adDescription">Описание</label>
-                            <textarea id="adDescription" rows="3" placeholder="Опишите товар..." required></textarea>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="adPrice">Цена (₽)</label>
-                            <input type="number" id="adPrice" placeholder="1000" required min="1" max="1000000">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="adLocation">Город</label>
-                            <input type="text" id="adLocation" placeholder="Москва" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Фотографии товара (макс. 5)</label>
-                            <div class="upload-area" onclick="document.getElementById('photoUpload').click()">
-                                <i class="fas fa-cloud-upload-alt"></i>
-                                <p>Нажмите для выбора фото</p>
-                            </div>
-                            <input type="file" id="photoUpload" accept="image/*" multiple 
-                                   style="display: none;" onchange="handleImages(event)">
-                            <div id="imagePreviews" class="image-previews"></div>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-paper-plane"></i>
-                                <span>Опубликовать</span>
-                            </button>
-                        </div>
-                    </form>
+
+                <div class="form-group">
+                    <label class="form-label">Цена (₽)</label>
+                    <input type="number" class="form-input" name="price" 
+                           placeholder="1000" required>
                 </div>
-            </div>
+
+                <div class="form-group">
+                    <label class="form-label">Загрузите фотографии (до 3 шт.)</label>
+                    <div class="file-upload" id="fileUpload">
+                        <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: var(--primary-color);"></i>
+                        <p style="margin: 1rem 0;">Перетащите файлы сюда или кликните для выбора</p>
+                        <p style="color: #6b7280; font-size: 0.9rem;">
+                            Поддерживаемые форматы: JPG, PNG, WebP
+                        </p>
+                    </div>
+                    <input type="file" id="fileInput" accept="image/*" multiple 
+                           style="display: none;">
+                    <div class="file-preview" id="filePreview"></div>
+                    <p style="text-align: center; margin-top: 0.5rem; color: #6b7280;">
+                        Выбрано: <span id="fileCount">0</span>/3
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Описание</label>
+                    <textarea class="form-textarea" name="description" 
+                              placeholder="Опишите состояние, характеристики, объем и т.д."></textarea>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">
+                        Отмена
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Опубликовать
+                    </button>
+                </div>
+            </form>
         </div>
+    </div>
 
-        <!-- Модальное окно жалобы -->
-        <div id="reportModal" class="modal" style="display: none;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Пожаловаться на объявление</h3>
-                    <span class="close-modal" onclick="closeReportModal()">&times;</span>
-                </div>
-                <div class="modal-body">
-                    <form id="reportForm" onsubmit="return submitReport(event)">
-                        <input type="hidden" id="reportAdId">
-                        <div class="form-group">
-                            <label>Причина жалобы</label>
-                            <select id="reportReason" required>
-                                <option value="">Выберите причину</option>
-                                <option value="scam">Мошенничество</option>
-                                <option value="fake">Фейковый товар</option>
-                                <option value="spam">Спам</option>
-                                <option value="rules">Нарушение правил</option>
-                                <option value="other">Другое</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Подробности</label>
-                            <textarea id="reportDetails" rows="3" placeholder="Опишите проблему..."></textarea>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-secondary" onclick="closeReportModal()">Отмена</button>
-                            <button type="submit" class="btn btn-danger">
-                                <i class="fas fa-flag"></i>
-                                <span>Отправить жалобу</span>
-                            </button>
-                        </div>
-                    </form>
-                </div>
+    <!-- Модальное окно жалобы -->
+    <div class="modal" id="reportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="color: var(--dark-color);">Пожаловаться на объявление</h2>
+                <button class="modal-close" id="closeReportModal">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-        </div>
+            <form id="reportForm">
+                <div class="form-group">
+                    <label class="form-label">Тип нарушения</label>
+                    <select class="form-select" name="reportType" required>
+                        <option value="">Выберите тип</option>
+                        <optgroup label="Лёгкие нарушения">
+                            <option value="spam">Спам / Реклама</option>
+                            <option value="wrong_category">Неверная категория</option>
+                        </optgroup>
+                        <optgroup label="Средние нарушения">
+                            <option value="fake">Недостоверная информация</option>
+                            <option value="duplicate">Дубликат объявления</option>
+                        </optgroup>
+                        <optgroup label="Тяжёлые нарушения">
+                            <option value="prohibited">Запрещённый товар</option>
+                            <option value="scam">Мошенничество</option>
+                            <option value="offensive">Оскорбительный контент</option>
+                        </optgroup>
+                    </select>
+                </div>
 
-        <!-- Модальное окно рекламы для админов -->
-        <div id="adEditModal" class="modal" style="display: none;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Редактировать рекламу</h3>
-                    <span class="close-modal" onclick="closeAdEditModal()">&times;</span>
+                <div class="form-group">
+                    <label class="form-label">Комментарий</label>
+                    <textarea class="form-textarea" name="comment" 
+                              placeholder="Опишите проблему подробнее..." required></textarea>
                 </div>
-                <div class="modal-body">
-                    <form id="adEditForm" onsubmit="return saveAd(event)">
-                        <div class="form-group">
-                            <label>Заголовок рекламы</label>
-                            <input type="text" id="editAdTitle" placeholder="Заголовок">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Текст рекламы</label>
-                            <textarea id="editAdText" rows="3" placeholder="Текст рекламы"></textarea>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Ссылка (если есть)</label>
-                            <input type="url" id="editAdLink" placeholder="https://example.com">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Изображение</label>
-                            <input type="file" id="editAdImage" accept="image/*" onchange="previewAdImage(event)">
-                            <div id="adImagePreview" class="image-preview"></div>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-secondary" onclick="closeAdEditModal()">Отмена</button>
-                            <button type="submit" class="btn btn-primary">Сохранить</button>
-                        </div>
-                    </form>
+
+                <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" id="cancelReportBtn">
+                        Отмена
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-flag"></i> Отправить жалобу
+                    </button>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
 
     <script src="app.js"></script>
+    <script src="api/ads.js"></script>
 </body>
 </html>
