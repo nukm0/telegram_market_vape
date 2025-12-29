@@ -36,51 +36,6 @@ const FirebaseMarketServer = {
   }
 };
 
-// Инициализация приложения
-async function initApp() {
-  console.log("🚀 Инициализация приложения...");
-  
-  try {
-    // Получение данных пользователя из Telegram
-    const user = tg.initDataUnsafe?.user;
-    if (user) {
-      currentUser = {
-        id: user.id,
-        username: user.username || `user_${user.id}`,
-        firstName: user.first_name || 'User',
-        lastName: user.last_name || '',
-        isPremium: user.is_premium || false
-      };
-      console.log("👤 Пользователь Telegram:", currentUser);
-    } else {
-      console.log("⚠️ Данные пользователя не получены");
-      currentUser = {
-        id: Date.now(),
-        username: 'test_user',
-        firstName: 'Test',
-        lastName: 'User',
-        isPremium: false
-      };
-    }
-
-    // Проверка и создание профиля пользователя
-    await checkOrCreateUserProfile(currentUser);
-
-    // Загрузка данных
-    await loadInitialData();
-    
-    // Настройка обработчиков событий
-    setupEventListeners();
-    
-    // Обновление UI
-    updateUIAfterDataLoad();
-    
-  } catch (error) {
-    console.error("❌ Ошибка инициализации:", error);
-    showNotification("Ошибка загрузки приложения", "error");
-  }
-}
-
 // Настройка обработчиков событий
 function setupEventListeners() {
   console.log("🎯 Настройка обработчиков событий...");
@@ -104,7 +59,21 @@ function setupEventListeners() {
   // Поиск
   const searchInput = document.getElementById('searchInput');
   if (searchInput) {
-    searchInput.addEventListener('input', handleSearch);
+    searchInput.addEventListener('input', function(e) {
+      const searchTerm = e.target.value.toLowerCase().trim();
+      
+      if (!searchTerm) {
+        updateItemsGrid(allItems);
+        return;
+      }
+      
+      const filteredItems = allItems.filter(item => 
+        item.name.toLowerCase().includes(searchTerm) ||
+        (item.description && item.description.toLowerCase().includes(searchTerm))
+      );
+      
+      updateItemsGrid(filteredItems);
+    });
   }
   
   // Кнопка обновления
@@ -115,77 +84,6 @@ function setupEventListeners() {
       await loadFromServer();
       updateUIAfterDataLoad();
     });
-  }
-}
-
-// Загрузка начальных данных
-async function loadInitialData() {
-  try {
-    // Загрузка кэшированных данных
-    const cachedData = localStorage.getItem('market_cache');
-    if (cachedData) {
-      serverCache = JSON.parse(cachedData);
-      console.log("📦 Загружены кэшированные данные");
-    }
-
-    // Загрузка данных из Firebase
-    await loadFromServer();
-    
-  } catch (error) {
-    console.error("❌ Ошибка загрузки данных:", error);
-    showNotification("Ошибка загрузки данных", "error");
-  }
-}
-
-// Загрузка данных с сервера
-async function loadFromServer() {
-  console.log("📡 Загрузка данных с сервера...");
-  
-  try {
-    // Получение всех товаров
-    const itemsSnapshot = await db.ref('items').once('value');
-    const itemsData = itemsSnapshot.val() || {};
-    
-    // Получение категорий
-    const categoriesSnapshot = await db.ref('categories').once('value');
-    const categoriesData = categoriesSnapshot.val() || {};
-    
-    // Получение отзывов
-    const reviewsSnapshot = await db.ref('reviews').once('value');
-    const reviewsData = reviewsSnapshot.val() || {};
-    
-    // Получение рейтингов
-    const ratings = await FirebaseMarketServer.getRatings();
-    
-    // Сохранение в кэш
-    serverCache = {
-      items: itemsData,
-      categories: categoriesData,
-      reviews: reviewsData,
-      ratings: ratings,
-      lastUpdated: Date.now()
-    };
-    
-    // Сохранение в localStorage
-    localStorage.setItem('market_cache', JSON.stringify(serverCache));
-    
-    // Преобразование товаров в массив
-    allItems = Object.entries(itemsData).map(([id, item]) => ({
-      id,
-      ...item,
-      rating: calculateItemRating(id, ratings)
-    }));
-    
-    console.log("✅ Данные загружены:", {
-      items: allItems.length,
-      categories: Object.keys(categoriesData).length,
-      reviews: Object.keys(reviewsData).length,
-      ratings: Object.keys(ratings).length
-    });
-    
-  } catch (error) {
-    console.error("❌ Ошибка загрузки данных:", error);
-    throw error;
   }
 }
 
@@ -283,33 +181,27 @@ function createItemCard(item) {
 function initDynamicEventListeners() {
   // Обработчики для кнопок покупки
   document.querySelectorAll('.buy-btn').forEach(button => {
-    button.addEventListener('click', handleBuyClick);
+    button.addEventListener('click', function(e) {
+      const itemId = e.target.dataset.id;
+      const item = allItems.find(i => i.id === itemId);
+      if (item) {
+        showBuyModal(item);
+      }
+    });
   });
   
   // Обработчики для категорий
   document.querySelectorAll('.category-item').forEach(category => {
-    category.addEventListener('click', handleCategoryClick);
+    category.addEventListener('click', function(e) {
+      const categoryId = e.currentTarget.dataset.category;
+      filterItemsByCategory(categoryId);
+    });
   });
-}
-
-// Обработчик клика на покупку
-function handleBuyClick(e) {
-  const itemId = e.target.dataset.id;
-  const item = allItems.find(i => i.id === itemId);
-  if (item) {
-    showBuyModal(item);
-  }
-}
-
-// Обработчик клика на категорию
-function handleCategoryClick(e) {
-  const categoryId = e.currentTarget.dataset.category;
-  filterItemsByCategory(categoryId);
 }
 
 // Фильтрация товаров по категории
 function filterItemsByCategory(categoryId) {
-  if (!categoryId || categoryId === 'all') {
+  if (!categoryId) {
     updateItemsGrid(allItems);
     return;
   }
@@ -318,21 +210,149 @@ function filterItemsByCategory(categoryId) {
   updateItemsGrid(filteredItems);
 }
 
-// Обработчик поиска
-function handleSearch(e) {
-  const searchTerm = e.target.value.toLowerCase().trim();
+// Получение названия категории
+function getCategoryName(categoryId) {
+  if (!categoryId) return 'Без категории';
   
-  if (!searchTerm) {
-    updateItemsGrid(allItems);
-    return;
+  const categories = serverCache.categories || {};
+  return categories[categoryId]?.name || 'Без категории';
+}
+
+// Форматирование цены
+function formatPrice(price) {
+  if (typeof price === 'number') {
+    return `${price.toLocaleString('ru-RU')} ₽`;
   }
+  return `${price} ₽`;
+}
+
+// Расчет рейтинга товара
+function calculateItemRating(itemId, ratings) {
+  if (!ratings || !ratings[itemId]) return null;
   
-  const filteredItems = allItems.filter(item => 
-    item.name.toLowerCase().includes(searchTerm) ||
-    (item.description && item.description.toLowerCase().includes(searchTerm))
-  );
+  const itemRatings = ratings[itemId];
+  const values = Object.values(itemRatings).map(r => r.rating || r.value || r);
   
-  updateItemsGrid(filteredItems);
+  if (values.length === 0) return null;
+  
+  const sum = values.reduce((a, b) => a + b, 0);
+  return sum / values.length;
+}
+
+// Инициализация приложения
+async function initApp() {
+  console.log("🚀 Инициализация приложения...");
+  
+  try {
+    // Получение данных пользователя из Telegram
+    const user = tg.initDataUnsafe?.user;
+    if (user) {
+      currentUser = {
+        id: user.id,
+        username: user.username || `user_${user.id}`,
+        firstName: user.first_name || 'User',
+        lastName: user.last_name || '',
+        isPremium: user.is_premium || false
+      };
+      console.log("👤 Пользователь Telegram:", currentUser);
+    } else {
+      console.log("⚠️ Данные пользователя не получены");
+      currentUser = {
+        id: Date.now(),
+        username: 'test_user',
+        firstName: 'Test',
+        lastName: 'User',
+        isPremium: false
+      };
+    }
+
+    // Проверка и создание профиля пользователя
+    await checkOrCreateUserProfile(currentUser);
+
+    // Загрузка данных
+    await loadInitialData();
+    
+    // Настройка обработчиков событий
+    setupEventListeners();
+    
+    // Обновление UI
+    updateUIAfterDataLoad();
+    
+  } catch (error) {
+    console.error("❌ Ошибка инициализации:", error);
+    showNotification("Ошибка загрузки приложения", "error");
+  }
+}
+
+// Загрузка начальных данных
+async function loadInitialData() {
+  try {
+    // Загрузка кэшированных данных
+    const cachedData = localStorage.getItem('market_cache');
+    if (cachedData) {
+      serverCache = JSON.parse(cachedData);
+      console.log("📦 Загружены кэшированные данные");
+    }
+
+    // Загрузка данных из Firebase
+    await loadFromServer();
+    
+  } catch (error) {
+    console.error("❌ Ошибка загрузки данных:", error);
+    showNotification("Ошибка загрузки данных", "error");
+  }
+}
+
+// Загрузка данных с сервера
+async function loadFromServer() {
+  console.log("📡 Загрузка данных с сервера...");
+  
+  try {
+    // Получение всех товаров
+    const itemsSnapshot = await db.ref('items').once('value');
+    const itemsData = itemsSnapshot.val() || {};
+    
+    // Получение категорий
+    const categoriesSnapshot = await db.ref('categories').once('value');
+    const categoriesData = categoriesSnapshot.val() || {};
+    
+    // Получение отзывов
+    const reviewsSnapshot = await db.ref('reviews').once('value');
+    const reviewsData = reviewsSnapshot.val() || {};
+    
+    // Получение рейтингов
+    const ratings = await FirebaseMarketServer.getRatings();
+    
+    // Сохранение в кэш
+    serverCache = {
+      items: itemsData,
+      categories: categoriesData,
+      reviews: reviewsData,
+      ratings: ratings,
+      lastUpdated: Date.now()
+    };
+    
+    // Сохранение в localStorage
+    localStorage.setItem('market_cache', JSON.stringify(serverCache));
+    
+    // Преобразование товаров в массив
+    allItems = Object.entries(itemsData).map(([id, item]) => ({
+      id,
+      ...item,
+      rating: calculateItemRating(id, ratings)
+    }));
+    
+    console.log("✅ Данные загружены:", {
+      items: allItems.length,
+      categories: Object.keys(categoriesData).length,
+      reviews: Object.keys(reviewsData).length,
+      ratings: Object.keys(ratings).length
+    });
+    
+  } catch (error) {
+    console.error("❌ Ошибка загрузки данных:", error);
+    throw error;
+  }
 }
 
 // Проверка и создание профиля пользователя
@@ -372,35 +392,6 @@ async function checkOrCreateUserProfile(user) {
   } catch (error) {
     console.error("❌ Ошибка создания профиля:", error);
   }
-}
-
-// Расчет рейтинга товара
-function calculateItemRating(itemId, ratings) {
-  if (!ratings || !ratings[itemId]) return null;
-  
-  const itemRatings = ratings[itemId];
-  const values = Object.values(itemRatings).map(r => r.rating || r.value || r);
-  
-  if (values.length === 0) return null;
-  
-  const sum = values.reduce((a, b) => a + b, 0);
-  return sum / values.length;
-}
-
-// Получение названия категории
-function getCategoryName(categoryId) {
-  if (!categoryId) return 'Без категории';
-  
-  const categories = serverCache.categories || {};
-  return categories[categoryId]?.name || 'Без категории';
-}
-
-// Форматирование цены
-function formatPrice(price) {
-  if (typeof price === 'number') {
-    return `${price.toLocaleString('ru-RU')} ₽`;
-  }
-  return `${price} ₽`;
 }
 
 // Показать модальное окно покупки
@@ -595,6 +586,34 @@ if (!document.querySelector('#notification-styles')) {
       border: none;
       padding: 10px 20px;
       border-radius: 5px;
+      cursor: pointer;
+    }
+    .item-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 10px;
+    }
+    .item-image {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+    .item-title {
+      margin: 10px 0 5px 0;
+      font-size: 16px;
+    }
+    .item-price {
+      font-weight: bold;
+      color: #007aff;
+    }
+    .buy-btn {
+      background: #007aff;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
       cursor: pointer;
     }
   `;
