@@ -20,7 +20,7 @@ body {
     position: relative;
 }
 
-/* ==================== ШАПКА АДМИНА ==================== */
+/* ==================== ШАПКА ==================== */
 .admin-header {
     background: linear-gradient(135deg, rgba(30, 27, 75, 0.95) 0%, rgba(23, 25, 55, 0.95) 100%);
     backdrop-filter: blur(20px);
@@ -147,26 +147,6 @@ body {
     font-weight: 500;
 }
 
-.clear-search {
-    background: transparent;
-    border: none;
-    color: #94A3B8;
-    cursor: pointer;
-    padding: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.3s ease;
-}
-
-.clear-search:hover {
-    color: #FFFFFF;
-}
-
-.clear-search i {
-    font-size: 18px;
-}
-
 /* ==================== ФИЛЬТРЫ ==================== */
 .filters-container {
     margin-bottom: 24px;
@@ -192,21 +172,12 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
 }
 
 .filter-btn.active {
     background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(124, 58, 237, 0.15) 100%);
     color: #FFFFFF;
     box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
-}
-
-.filter-btn:hover:not(.active) {
-    background: rgba(255, 255, 255, 0.05);
-    color: #CBD5E1;
 }
 
 /* ==================== КНОПКА СОЗДАНИЯ ==================== */
@@ -232,20 +203,7 @@ body {
     box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
 }
 
-.create-ad-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 28px rgba(139, 92, 246, 0.4);
-}
-
-.create-ad-btn:active {
-    transform: translateY(0);
-}
-
-.create-ad-btn i {
-    font-size: 22px;
-}
-
-/* ==================== СЕКЦИЯ ОБЪЯВЛЕНИЙ ==================== */
+/* ==================== ОБЪЯВЛЕНИЯ ==================== */
 .ads-section {
     margin-top: 32px;
 }
@@ -272,24 +230,17 @@ body {
     border: 1px solid rgba(168, 85, 247, 0.2);
     overflow: hidden;
     transition: all 0.3s ease;
-    cursor: pointer;
     backdrop-filter: blur(10px);
-}
-
-.ad-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(168, 85, 247, 0.4);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
 }
 
 .ad-image {
     width: 100%;
-    height: 180px;
+    height: 200px;
+    position: relative;
     background: rgba(30, 41, 59, 0.8);
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
 }
 
 .ad-image img {
@@ -298,43 +249,61 @@ body {
     object-fit: cover;
 }
 
-.no-image {
+.no-photo {
     color: #64748B;
-    font-size: 40px;
+    font-size: 48px;
+}
+
+.ad-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .ad-info {
     padding: 20px;
 }
 
+.ad-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
 .ad-title {
     font-size: 18px;
     font-weight: 700;
     color: #FFFFFF;
-    margin-bottom: 10px;
+    flex: 1;
     line-height: 1.4;
-}
-
-.ad-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
 }
 
 .ad-price {
     font-size: 22px;
     font-weight: 800;
     color: #10B981;
+    margin-left: 15px;
 }
 
-.ad-category {
-    background: rgba(168, 85, 247, 0.2);
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    color: #C084FC;
+.ad-description {
+    color: #CBD5E1;
+    font-size: 14px;
+    margin-bottom: 15px;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .ad-footer {
@@ -373,428 +342,107 @@ body {
     color: #94A3B8;
 }
 
-/* ==================== ЗАГРУЗКА ==================== */
-.loading-ads {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 60px 20px;
+.ad-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
 }
 
-.spinner {
-    width: 50px;
-    height: 50px;
-    border: 4px solid rgba(139, 92, 246, 0.2);
-    border-top: 4px solid #8B5CF6;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 20px;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.loading-ads p {
-    color: #94A3B8;
-    font-size: 16px;
-}
-
-/* ==================== ПУСТОЕ СОСТОЯНИЕ ==================== */
-.empty-state {
-    text-align: center;
-    padding: 80px 20px;
-}
-
-.empty-state i {
-    font-size: 60px;
-    color: #8B5CF6;
-    margin-bottom: 20px;
-    opacity: 0.7;
-}
-
-.empty-state h3 {
-    font-size: 22px;
-    color: #FFFFFF;
-    margin-bottom: 10px;
-    font-weight: 700;
-}
-
-.empty-state p {
-    color: #94A3B8;
-    font-size: 16px;
-}
-
-/* ==================== МОДАЛЬНОЕ ОКНО ==================== */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(20px);
+.action-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    background: rgba(168, 85, 247, 0.1);
+    color: #C084FC;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 2000;
-    padding: 20px;
-    animation: fadeIn 0.3s ease;
+    gap: 6px;
+    transition: all 0.3s ease;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+.action-btn:hover {
+    background: rgba(168, 85, 247, 0.2);
+    border-color: rgba(168, 85, 247, 0.5);
 }
 
-.modal-container {
-    background: linear-gradient(135deg, rgba(30, 27, 75, 0.95) 0%, rgba(23, 25, 55, 0.95) 100%);
-    border-radius: 24px;
-    border: 2px solid rgba(168, 85, 247, 0.3);
-    width: 100%;
-    max-width: 500px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+.action-btn.report {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #EF4444;
 }
 
-.modal-header {
-    padding: 24px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.action-btn.like {
+    background: rgba(34, 197, 94, 0.1);
+    border-color: rgba(34, 197, 94, 0.3);
+    color: #10B981;
+}
+
+.action-btn.dislike {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #EF4444;
+}
+
+.action-btn.message {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #3B82F6;
+}
+
+/* ==================== РЕЙТИНГ ==================== */
+.rating-stars {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    gap: 2px;
+    margin: 5px 0;
 }
 
-.modal-header h2 {
-    font-size: 22px;
-    font-weight: 700;
-    color: #FFFFFF;
+.star {
+    color: #F59E0B;
+    font-size: 14px;
+}
+
+.star.empty {
+    color: #475569;
+}
+
+/* ==================== ПРОФИЛЬ ==================== */
+.profile-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.stat-card {
+    background: rgba(30, 41, 59, 0.6);
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid rgba(168, 85, 247, 0.2);
+}
+
+.stat-number {
+    font-size: 28px;
+    font-weight: 800;
     background: linear-gradient(135deg, #FFFFFF 0%, #C084FC 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-}
-
-.modal-close {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    color: #94A3B8;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-}
-
-.modal-close:hover {
-    background: rgba(255, 255, 255, 0.2);
-    color: #FFFFFF;
-}
-
-.modal-body {
-    padding: 24px;
-}
-
-/* ==================== ЗАГРУЗКА ФОТО ==================== */
-.photo-upload-section {
-    margin-bottom: 24px;
-}
-
-.upload-area {
-    background: rgba(30, 41, 59, 0.6);
-    border: 3px dashed rgba(168, 85, 247, 0.3);
-    border-radius: 20px;
-    padding: 40px 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-bottom: 12px;
-}
-
-.upload-area:hover {
-    border-color: #8B5CF6;
-    background: rgba(30, 41, 59, 0.8);
-}
-
-.upload-area i {
-    font-size: 48px;
-    color: #8B5CF6;
-    margin-bottom: 16px;
-}
-
-.upload-area p {
-    color: #FFFFFF;
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-.upload-info {
-    color: #94A3B8 !important;
-    font-size: 14px !important;
-    font-weight: normal !important;
-    margin-bottom: 20px !important;
-}
-
-.upload-btn {
-    background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
-    border: none;
-    border-radius: 14px;
-    padding: 14px 28px;
-    color: white;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.upload-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
-}
-
-.upload-hint {
-    color: #94A3B8;
-    font-size: 14px;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.upload-hint span {
-    color: #8B5CF6;
-    font-weight: 600;
-}
-
-.photo-preview {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 20px;
-}
-
-.preview-image {
-    width: 100px;
-    height: 100px;
-    border-radius: 12px;
-    overflow: hidden;
-    position: relative;
-    border: 2px solid rgba(168, 85, 247, 0.3);
-}
-
-.preview-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.remove-photo {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background: rgba(239, 68, 68, 0.9);
-    border: none;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    color: white;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-}
-
-/* ==================== ФОРМА ==================== */
-.ad-form {
-    margin-top: 24px;
-}
-
-.form-row {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 20px;
-}
-
-.form-group {
-    flex: 1;
-}
-
-.form-group label {
     display: block;
-    color: #CBD5E1;
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
 }
 
-.deal-type-group {
-    flex: 1;
-}
-
-.deal-type-buttons {
-    display: flex;
-    gap: 10px;
-    background: rgba(30, 41, 59, 0.6);
-    border-radius: 14px;
-    padding: 6px;
-}
-
-.deal-type-btn {
-    flex: 1;
-    padding: 14px;
-    background: transparent;
-    border: none;
-    border-radius: 10px;
-    color: #94A3B8;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.3s ease;
-}
-
-.deal-type-btn.active {
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(124, 58, 237, 0.15) 100%);
-    color: #FFFFFF;
-}
-
-.deal-type-btn i {
-    font-size: 16px;
-}
-
-.category-select {
-    width: 100%;
-    padding: 16px;
-    background: rgba(30, 41, 59, 0.8);
-    border: 2px solid rgba(168, 85, 247, 0.2);
-    border-radius: 14px;
-    color: #FFFFFF;
-    font-size: 15px;
-    outline: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.category-select:focus {
-    border-color: #8B5CF6;
-}
-
-.form-input {
-    width: 100%;
-    padding: 16px;
-    background: rgba(30, 41, 59, 0.8);
-    border: 2px solid rgba(168, 85, 247, 0.2);
-    border-radius: 14px;
-    color: #FFFFFF;
-    font-size: 15px;
-    outline: none;
-    transition: all 0.3s ease;
-}
-
-.form-input:focus {
-    border-color: #8B5CF6;
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-}
-
-.form-input::placeholder {
-    color: #64748B;
-}
-
-.form-textarea {
-    width: 100%;
-    padding: 16px;
-    background: rgba(30, 41, 59, 0.8);
-    border: 2px solid rgba(168, 85, 247, 0.2);
-    border-radius: 14px;
-    color: #FFFFFF;
-    font-size: 15px;
-    outline: none;
-    resize: vertical;
-    min-height: 120px;
-    transition: all 0.3s ease;
-}
-
-.form-textarea:focus {
-    border-color: #8B5CF6;
-}
-
-.char-counter {
-    text-align: right;
+.stat-label {
     color: #94A3B8;
     font-size: 12px;
-    margin-top: 5px;
-}
-
-.char-counter span {
-    color: #8B5CF6;
     font-weight: 600;
 }
 
-/* ==================== ФУТЕР МОДАЛКИ ==================== */
-.modal-footer {
-    padding: 24px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex;
-    gap: 12px;
-}
-
-.btn-cancel {
-    flex: 1;
-    padding: 18px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 14px;
-    color: #CBD5E1;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.btn-cancel:hover {
-    background: rgba(255, 255, 255, 0.2);
-    color: #FFFFFF;
-}
-
-.btn-publish {
-    flex: 1;
-    padding: 18px;
-    background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
-    border: none;
-    border-radius: 14px;
-    color: white;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-.btn-publish:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
-}
-
-.btn-publish:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none !important;
-}
-
-.btn-publish i {
-    font-size: 18px;
-}
-
-/* ==================== НАВИГАЦИЯ ВНИЗУ ==================== */
+/* ==================== НАВИГАЦИЯ ==================== */
 .bottom-nav {
     position: fixed;
     bottom: 0;
@@ -807,7 +455,6 @@ body {
     justify-content: space-around;
     padding: 12px 20px;
     z-index: 1000;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .nav-btn {
@@ -822,8 +469,6 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 6px;
-    flex: 1;
-    max-width: 120px;
 }
 
 .nav-btn.active {
@@ -831,149 +476,93 @@ body {
     color: #C084FC;
 }
 
-.nav-btn:hover:not(.active) {
-    background: rgba(255, 255, 255, 0.05);
-    color: #CBD5E1;
-}
-
-.nav-btn i {
-    font-size: 22px;
-}
-
-.nav-btn span {
-    font-size: 12px;
-    font-weight: 600;
-}
-
-/* ==================== УВЕДОМЛЕНИЯ ==================== */
-.notification {
+/* ==================== АДМИН ПАНЕЛЬ ==================== */
+.admin-panel-btn {
     position: fixed;
-    top: 100px;
+    top: 16px;
     right: 20px;
-    background: linear-gradient(135deg, rgba(30, 27, 75, 0.95) 0%, rgba(23, 25, 55, 0.95) 100%);
-    border: 2px solid rgba(168, 85, 247, 0.3);
-    border-radius: 16px;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1001;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+/* ==================== РЕКЛАМА ==================== */
+.ad-banner {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.1) 100%);
+    border: 2px solid rgba(59, 130, 246, 0.3);
+    border-radius: 20px;
     padding: 20px;
-    color: #FFFFFF;
-    font-weight: 600;
-    z-index: 3000;
-    animation: slideInRight 0.3s ease;
-    max-width: 400px;
+    margin: 20px 0;
+    text-align: center;
+    position: relative;
+}
+
+.ad-banner h3 {
+    color: #3B82F6;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.ad-banner p {
+    color: #94A3B8;
+    font-size: 14px;
+}
+
+.ad-banner.admin-only {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.1) 100%);
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.ad-banner.admin-only h3 {
+    color: #F59E0B;
+}
+
+/* ==================== МОДАЛЬНЫЕ ОКНА ==================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(20px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 20px;
 }
 
-.notification.error {
-    border-color: rgba(239, 68, 68, 0.4);
-    background: linear-gradient(135deg, rgba(75, 27, 27, 0.95) 0%, rgba(55, 23, 23, 0.95) 100%);
-}
-
-.notification.success {
-    border-color: rgba(34, 197, 94, 0.4);
-    background: linear-gradient(135deg, rgba(27, 75, 45, 0.95) 0%, rgba(23, 55, 35, 0.95) 100%);
-}
-
-@keyframes slideInRight {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
+.modal-container {
+    background: linear-gradient(135deg, rgba(30, 27, 75, 0.95) 0%, rgba(23, 25, 55, 0.95) 100%);
+    border-radius: 24px;
+    border: 2px solid rgba(168, 85, 247, 0.3);
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 /* ==================== АДАПТИВНОСТЬ ==================== */
 @media (max-width: 768px) {
-    .main-content {
-        padding: 80px 16px 100px;
-    }
-    
     .ads-grid {
         grid-template-columns: 1fr;
-        gap: 16px;
     }
     
-    .form-row {
-        flex-direction: column;
-        gap: 16px;
+    .profile-stats-grid {
+        grid-template-columns: 1fr;
     }
     
-    .deal-type-buttons {
-        flex-direction: column;
+    .ad-actions {
+        flex-wrap: wrap;
     }
-    
-    .modal-container {
-        margin: 0 16px;
-    }
-    
-    .notification {
-        left: 16px;
-        right: 16px;
-        top: 90px;
-        max-width: none;
-    }
-}
-
-@media (max-width: 480px) {
-    .admin-header {
-        padding: 12px 16px;
-    }
-    
-    .admin-logo h1 {
-        font-size: 18px;
-    }
-    
-    .search-input {
-        padding: 16px 12px;
-        font-size: 15px;
-    }
-    
-    .filter-btn {
-        padding: 12px 16px;
-        font-size: 14px;
-    }
-    
-    .create-ad-btn {
-        padding: 18px;
-        font-size: 16px;
-    }
-    
-    .bottom-nav {
-        padding: 10px 16px;
-    }
-    
-    .nav-btn {
-        padding: 10px 12px;
-    }
-    
-    .nav-btn i {
-        font-size: 20px;
-    }
-}
-
-/* ==================== УТИЛИТЫ ==================== */
-.hidden {
-    display: none !important;
-}
-
-/* ==================== СКРОЛЛБАР ==================== */
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: rgba(30, 41, 59, 0.3);
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
 }
