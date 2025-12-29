@@ -22,6 +22,42 @@ let allItems = [];
 const tg = window.Telegram.WebApp;
 tg.expand();
 
+// Сервер API для получения данных (если используется отдельный сервер)
+const FirebaseMarketServer = {
+  // Загрузка рейтингов товаров
+  async getRatings() {
+    try {
+      const snapshot = await db.ref('ratings').once('value');
+      return snapshot.val() || {};
+    } catch (error) {
+      console.error("❌ Ошибка загрузки рейтингов:", error);
+      return {};
+    }
+  },
+  
+  // Загрузка заказов пользователя
+  async getUserOrders(userId) {
+    try {
+      const snapshot = await db.ref('orders').orderByChild('userId').equalTo(userId).once('value');
+      return snapshot.val() || {};
+    } catch (error) {
+      console.error("❌ Ошибка загрузки заказов:", error);
+      return {};
+    }
+  },
+  
+  // Загрузка профиля пользователя
+  async getUserProfile(userId) {
+    try {
+      const snapshot = await db.ref(`users/${userId}`).once('value');
+      return snapshot.val();
+    } catch (error) {
+      console.error("❌ Ошибка загрузки профиля:", error);
+      return null;
+    }
+  }
+};
+
 // Инициализация приложения
 async function initApp() {
   console.log("🚀 Инициализация приложения...");
@@ -55,13 +91,71 @@ async function initApp() {
     // Загрузка данных
     await loadInitialData();
     
+    // Настройка обработчиков событий
+    setupEventListeners();
+    
     // Обновление UI
-    updateMainUI();
+    updateUIAfterDataLoad();
     
   } catch (error) {
     console.error("❌ Ошибка инициализации:", error);
     showNotification("Ошибка загрузки приложения", "error");
   }
+}
+
+// Настройка обработчиков событий
+function setupEventListeners() {
+  console.log("🎯 Настройка обработчиков событий...");
+  
+  // Кнопка профиля
+  const profileBtn = document.getElementById('profileBtn');
+  if (profileBtn) {
+    profileBtn.addEventListener('click', () => {
+      window.location.href = 'pages/profile.html';
+    });
+  }
+  
+  // Кнопка FAQ
+  const faqBtn = document.getElementById('faqBtn');
+  if (faqBtn) {
+    faqBtn.addEventListener('click', () => {
+      window.location.href = 'pages/faq.html';
+    });
+  }
+  
+  // Поиск
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', handleSearch);
+  }
+  
+  // Кнопка обновления
+  const refreshBtn = document.getElementById('refreshBtn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', async () => {
+      showNotification("Обновление данных...", "info");
+      await loadFromServer();
+      updateUIAfterDataLoad();
+    });
+  }
+  
+  // Кнопка корзины
+  const cartBtn = document.getElementById('cartBtn');
+  if (cartBtn) {
+    cartBtn.addEventListener('click', () => {
+      showNotification("Корзина в разработке", "info");
+    });
+  }
+  
+  // Фильтры категорий
+  document.querySelectorAll('.category-filter').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const categoryId = e.target.dataset.category;
+      if (categoryId) {
+        filterItemsByCategory(categoryId);
+      }
+    });
+  });
 }
 
 // Загрузка начальных данных
@@ -103,11 +197,15 @@ async function loadFromServer() {
     const reviewsSnapshot = await db.ref('reviews').once('value');
     const reviewsData = reviewsSnapshot.val() || {};
     
+    // Получение рейтингов
+    const ratings = await FirebaseMarketServer.getRatings();
+    
     // Сохранение в кэш
     serverCache = {
       items: itemsData,
       categories: categoriesData,
       reviews: reviewsData,
+      ratings: ratings,
       lastUpdated: Date.now()
     };
     
@@ -117,19 +215,197 @@ async function loadFromServer() {
     // Преобразование товаров в массив
     allItems = Object.entries(itemsData).map(([id, item]) => ({
       id,
-      ...item
+      ...item,
+      rating: calculateItemRating(id, ratings)
     }));
     
     console.log("✅ Данные загружены:", {
       items: allItems.length,
       categories: Object.keys(categoriesData).length,
-      reviews: Object.keys(reviewsData).length
+      reviews: Object.keys(reviewsData).length,
+      ratings: Object.keys(ratings).length
     });
     
   } catch (error) {
     console.error("❌ Ошибка загрузки данных:", error);
     throw error;
   }
+}
+
+// Обновление UI после загрузки данных
+function updateUIAfterDataLoad() {
+  console.log("🎨 Обновление интерфейса после загрузки данных...");
+  
+  // Обновление имени пользователя
+  updateUserInfo();
+  
+  // Обновление категорий
+  updateCategories();
+  
+  // Обновление товаров
+  updateItemsGrid();
+  
+  // Обновление счетчиков
+  updateCounters();
+  
+  // Инициализация обработчиков для динамически созданных элементов
+  initDynamicEventListeners();
+}
+
+// Обновление информации о пользователе
+function updateUserInfo() {
+  const userNameElement = document.getElementById('userName');
+  if (userNameElement && currentUser) {
+    userNameElement.textContent = currentUser.firstName;
+  }
+  
+  const userAvatar = document.getElementById('userAvatar');
+  if (userAvatar && currentUser.isPremium) {
+    userAvatar.classList.add('premium');
+  }
+}
+
+// Обновление категорий
+function updateCategories() {
+  const categoriesContainer = document.getElementById('categories');
+  if (!categoriesContainer) return;
+  
+  const categories = serverCache.categories || {};
+  
+  if (Object.keys(categories).length === 0) {
+    categoriesContainer.innerHTML = '<p class="no-data">Категории не найдены</p>';
+    return;
+  }
+  
+  categoriesContainer.innerHTML = '';
+  Object.entries(categories).forEach(([id, category]) => {
+    const categoryElement = document.createElement('div');
+    categoryElement.className = 'category-item';
+    categoryElement.dataset.category = id;
+    categoryElement.innerHTML = `
+      <img src="${category.image || 'https://via.placeholder.com/150'}" alt="${category.name}">
+      <span>${category.name}</span>
+    `;
+    categoriesContainer.appendChild(categoryElement);
+  });
+}
+
+// Обновление сетки товаров
+function updateItemsGrid(items = allItems) {
+  const itemsGrid = document.getElementById('itemsGrid');
+  if (!itemsGrid) return;
+  
+  if (items.length === 0) {
+    itemsGrid.innerHTML = '<p class="no-data">Товары не найдены</p>';
+    return;
+  }
+  
+  itemsGrid.innerHTML = '';
+  items.forEach(item => {
+    const itemElement = createItemCard(item);
+    itemsGrid.appendChild(itemElement);
+  });
+}
+
+// Создание карточки товара
+function createItemCard(item) {
+  const div = document.createElement('div');
+  div.className = 'item-card';
+  div.innerHTML = `
+    <img src="${item.image || 'https://via.placeholder.com/200'}" alt="${item.name}" class="item-image">
+    <div class="item-info">
+      <h3 class="item-title">${item.name}</h3>
+      <div class="item-meta">
+        <span class="item-category">${getCategoryName(item.categoryId)}</span>
+        ${item.rating ? `<span class="item-rating">⭐ ${item.rating.toFixed(1)}</span>` : ''}
+      </div>
+      <p class="item-description">${item.description?.substring(0, 100) || ''}${item.description?.length > 100 ? '...' : ''}</p>
+      <div class="item-footer">
+        <span class="item-price">${formatPrice(item.price)}</span>
+        <button class="buy-btn" data-id="${item.id}">Купить</button>
+      </div>
+    </div>
+  `;
+  
+  return div;
+}
+
+// Обновление счетчиков
+function updateCounters() {
+  // Обновление счетчика товаров
+  const itemsCount = document.getElementById('itemsCount');
+  if (itemsCount) {
+    itemsCount.textContent = allItems.length;
+  }
+  
+  // Обновление счетчика категорий
+  const categoriesCount = document.getElementById('categoriesCount');
+  if (categoriesCount) {
+    const categories = serverCache.categories || {};
+    categoriesCount.textContent = Object.keys(categories).length;
+  }
+}
+
+// Инициализация обработчиков для динамических элементов
+function initDynamicEventListeners() {
+  // Обработчики для кнопок покупки
+  document.querySelectorAll('.buy-btn').forEach(button => {
+    button.addEventListener('click', handleBuyClick);
+  });
+  
+  // Обработчики для категорий
+  document.querySelectorAll('.category-item').forEach(category => {
+    category.addEventListener('click', handleCategoryClick);
+  });
+}
+
+// Обработчик клика на покупку
+function handleBuyClick(e) {
+  const itemId = e.target.dataset.id;
+  const item = allItems.find(i => i.id === itemId);
+  if (item) {
+    showBuyModal(item);
+  }
+}
+
+// Обработчик клика на категорию
+function handleCategoryClick(e) {
+  const categoryId = e.currentTarget.dataset.category;
+  filterItemsByCategory(categoryId);
+}
+
+// Фильтрация товаров по категории
+function filterItemsByCategory(categoryId) {
+  if (!categoryId || categoryId === 'all') {
+    updateItemsGrid(allItems);
+    return;
+  }
+  
+  const filteredItems = allItems.filter(item => item.categoryId === categoryId);
+  updateItemsGrid(filteredItems);
+  
+  // Подсветка активной категории
+  document.querySelectorAll('.category-item').forEach(cat => {
+    cat.classList.toggle('active', cat.dataset.category === categoryId);
+  });
+}
+
+// Обработчик поиска
+function handleSearch(e) {
+  const searchTerm = e.target.value.toLowerCase().trim();
+  
+  if (!searchTerm) {
+    updateItemsGrid(allItems);
+    return;
+  }
+  
+  const filteredItems = allItems.filter(item => 
+    item.name.toLowerCase().includes(searchTerm) ||
+    (item.description && item.description.toLowerCase().includes(searchTerm)) ||
+    (item.tags && item.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
+  );
+  
+  updateItemsGrid(filteredItems);
 }
 
 // Загрузка рекламы
@@ -139,7 +415,6 @@ async function loadAds() {
     if (response.ok) {
       const adsScript = await response.text();
       console.log("📢 Рекламный скрипт загружен");
-      // Здесь можно выполнить скрипт или обработать данные
     }
   } catch (error) {
     console.error("❌ Ошибка загрузки рекламы:", error);
@@ -158,12 +433,13 @@ async function checkOrCreateUserProfile(user) {
         id: user.id,
         username: user.username,
         firstName: user.firstName,
-        lastName: user.lastName,
+        lastName: user.lastLastName,
         isPremium: user.isPremium,
         joined: Date.now(),
         balance: 0,
         orders: 0,
-        reviews: 0
+        reviews: 0,
+        lastSeen: Date.now()
       };
       
       await userRef.set(userData);
@@ -184,232 +460,118 @@ async function checkOrCreateUserProfile(user) {
   }
 }
 
-// Обновление основного UI
-function updateMainUI() {
-  console.log("🎨 Обновление интерфейса...");
+// Расчет рейтинга товара
+function calculateItemRating(itemId, ratings) {
+  if (!ratings || !ratings[itemId]) return null;
   
-  // Отображение имени пользователя
-  const userNameElement = document.getElementById('userName');
-  if (userNameElement && currentUser) {
-    userNameElement.textContent = currentUser.firstName;
-  }
+  const itemRatings = ratings[itemId];
+  const values = Object.values(itemRatings).map(r => r.rating || r.value || r);
   
-  // Отображение категорий
-  updateCategoriesUI();
+  if (values.length === 0) return null;
   
-  // Отображение товаров
-  updateItemsUI();
-  
-  // Инициализация обработчиков событий
-  initEventListeners();
+  const sum = values.reduce((a, b) => a + b, 0);
+  return sum / values.length;
 }
 
-// Обновление UI категорий
-function updateCategoriesUI() {
-  const categoriesContainer = document.getElementById('categories');
-  if (!categoriesContainer) return;
+// Получение названия категории
+function getCategoryName(categoryId) {
+  if (!categoryId) return 'Без категории';
   
   const categories = serverCache.categories || {};
-  
-  if (Object.keys(categories).length === 0) {
-    categoriesContainer.innerHTML = '<p class="no-data">Категории не найдены</p>';
-    return;
-  }
-  
-  categoriesContainer.innerHTML = '';
-  Object.entries(categories).forEach(([id, category]) => {
-    const categoryElement = document.createElement('div');
-    categoryElement.className = 'category-item';
-    categoryElement.innerHTML = `
-      <img src="${category.image || 'https://via.placeholder.com/150'}" alt="${category.name}">
-      <span>${category.name}</span>
-    `;
-    categoryElement.addEventListener('click', () => filterByCategory(id));
-    categoriesContainer.appendChild(categoryElement);
-  });
+  return categories[categoryId]?.name || 'Без категории';
 }
 
-// Обновление UI товаров
-function updateItemsUI() {
-  const itemsGrid = document.getElementById('itemsGrid');
-  if (!itemsGrid) return;
-  
-  if (allItems.length === 0) {
-    itemsGrid.innerHTML = '<p class="no-data">Товары не найдены</p>';
-    return;
+// Форматирование цены
+function formatPrice(price) {
+  if (typeof price === 'number') {
+    return `${price.toLocaleString('ru-RU')} ₽`;
   }
-  
-  itemsGrid.innerHTML = '';
-  allItems.forEach(item => {
-    const itemElement = document.createElement('div');
-    itemElement.className = 'item-card';
-    itemElement.innerHTML = `
-      <img src="${item.image || 'https://via.placeholder.com/200'}" alt="${item.name}">
-      <h3>${item.name}</h3>
-      <p class="price">${formatPrice(item.price)}</p>
-      <p class="description">${item.description || ''}</p>
-      <button class="buy-btn" data-id="${item.id}">Купить</button>
-    `;
-    itemsGrid.appendChild(itemElement);
-  });
-}
-
-// Фильтрация по категории
-function filterByCategory(categoryId) {
-  const filteredItems = allItems.filter(item => item.categoryId === categoryId);
-  console.log(`🔍 Фильтр: ${filteredItems.length} товаров в категории`);
-  
-  // Обновление отображения товаров
-  const itemsGrid = document.getElementById('itemsGrid');
-  if (!itemsGrid) return;
-  
-  if (filteredItems.length === 0) {
-    itemsGrid.innerHTML = '<p class="no-data">Товары не найдены</p>';
-    return;
-  }
-  
-  itemsGrid.innerHTML = '';
-  filteredItems.forEach(item => {
-    const itemElement = document.createElement('div');
-    itemElement.className = 'item-card';
-    itemElement.innerHTML = `
-      <img src="${item.image || 'https://via.placeholder.com/200'}" alt="${item.name}">
-      <h3>${item.name}</h3>
-      <p class="price">${formatPrice(item.price)}</p>
-      <p class="description">${item.description || ''}</p>
-      <button class="buy-btn" data-id="${item.id}">Купить</button>
-    `;
-    itemsGrid.appendChild(itemElement);
-  });
-}
-
-// Инициализация обработчиков событий
-function initEventListeners() {
-  // Обработчики для кнопок покупки
-  document.querySelectorAll('.buy-btn').forEach(button => {
-    button.addEventListener('click', (e) => {
-      const itemId = e.target.dataset.id;
-      const item = allItems.find(i => i.id === itemId);
-      if (item) {
-        showBuyModal(item);
-      }
-    });
-  });
-  
-  // Обработчик поиска
-  const searchInput = document.getElementById('searchInput');
-  if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-      const searchTerm = e.target.value.toLowerCase();
-      const filteredItems = allItems.filter(item => 
-        item.name.toLowerCase().includes(searchTerm) || 
-        (item.description && item.description.toLowerCase().includes(searchTerm))
-      );
-      updateItemsGrid(filteredItems);
-    });
-  }
-  
-  // Обработчики навигации
-  const profileBtn = document.getElementById('profileBtn');
-  if (profileBtn) {
-    profileBtn.addEventListener('click', () => {
-      window.location.href = 'pages/profile.html';
-    });
-  }
-  
-  const faqBtn = document.getElementById('faqBtn');
-  if (faqBtn) {
-    faqBtn.addEventListener('click', () => {
-      window.location.href = 'pages/faq.html';
-    });
-  }
-}
-
-// Обновление сетки товаров
-function updateItemsGrid(items) {
-  const itemsGrid = document.getElementById('itemsGrid');
-  if (!itemsGrid) return;
-  
-  if (items.length === 0) {
-    itemsGrid.innerHTML = '<p class="no-data">Товары не найдены</p>';
-    return;
-  }
-  
-  itemsGrid.innerHTML = '';
-  items.forEach(item => {
-    const itemElement = document.createElement('div');
-    itemElement.className = 'item-card';
-    itemElement.innerHTML = `
-      <img src="${item.image || 'https://via.placeholder.com/200'}" alt="${item.name}">
-      <h3>${item.name}</h3>
-      <p class="price">${formatPrice(item.price)}</p>
-      <p class="description">${item.description || ''}</p>
-      <button class="buy-btn" data-id="${item.id}">Купить</button>
-    `;
-    itemsGrid.appendChild(itemElement);
-  });
+  return `${price} ₽`;
 }
 
 // Показать модальное окно покупки
 function showBuyModal(item) {
   const modal = document.createElement('div');
-  modal.className = 'modal';
+  modal.className = 'modal-overlay';
   modal.innerHTML = `
-    <div class="modal-content">
-      <span class="close">&times;</span>
-      <h2>${item.name}</h2>
-      <img src="${item.image || 'https://via.placeholder.com/300'}" alt="${item.name}">
-      <p>${item.description || ''}</p>
-      <p class="price">Цена: ${formatPrice(item.price)}</p>
-      <button class="confirm-buy-btn">Подтвердить покупку</button>
+    <div class="modal">
+      <div class="modal-header">
+        <h2>${item.name}</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <img src="${item.image || 'https://via.placeholder.com/300'}" alt="${item.name}" class="modal-image">
+        <div class="modal-info">
+          <p><strong>Категория:</strong> ${getCategoryName(item.categoryId)}</p>
+          <p><strong>Цена:</strong> <span class="modal-price">${formatPrice(item.price)}</span></p>
+          <p><strong>Описание:</strong> ${item.description || 'Нет описания'}</p>
+          ${item.rating ? `<p><strong>Рейтинг:</strong> ⭐ ${item.rating.toFixed(1)}</p>` : ''}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary modal-close">Отмена</button>
+        <button class="btn-primary" id="confirmPurchase">Купить за ${formatPrice(item.price)}</button>
+      </div>
     </div>
   `;
   
   document.body.appendChild(modal);
   
-  // Обработчик закрытия
-  modal.querySelector('.close').addEventListener('click', () => {
-    document.body.removeChild(modal);
+  // Обработчики закрытия
+  modal.querySelectorAll('.modal-close').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.body.removeChild(modal);
+    });
   });
   
   // Обработчик подтверждения покупки
-  modal.querySelector('.confirm-buy-btn').addEventListener('click', () => {
-    processPurchase(item);
+  modal.querySelector('#confirmPurchase').addEventListener('click', async () => {
+    await processPurchase(item);
     document.body.removeChild(modal);
+  });
+  
+  // Закрытие по клику на overlay
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      document.body.removeChild(modal);
+    }
   });
 }
 
 // Обработка покупки
 async function processPurchase(item) {
   try {
-    // Создание заказа
     const orderId = `order_${Date.now()}_${currentUser.id}`;
     const orderData = {
+      id: orderId,
       itemId: item.id,
       itemName: item.name,
       price: item.price,
       userId: currentUser.id,
       userName: currentUser.username,
       timestamp: Date.now(),
-      status: 'pending'
+      status: 'pending',
+      paymentMethod: 'telegram'
     };
     
     await db.ref(`orders/${orderId}`).set(orderData);
     
     // Обновление статистики пользователя
-    await db.ref(`users/${currentUser.id}/orders`).transaction(current => (current || 0) + 1);
+    const userRef = db.ref(`users/${currentUser.id}`);
+    await userRef.transaction((user) => {
+      if (user) {
+        user.orders = (user.orders || 0) + 1;
+        user.totalSpent = (user.totalSpent || 0) + item.price;
+      }
+      return user;
+    });
     
-    showNotification(`✅ Заказ "${item.name}" оформлен!`, "success");
+    showNotification(`✅ Товар "${item.name}" успешно заказан!`, "success");
     
   } catch (error) {
     console.error("❌ Ошибка оформления заказа:", error);
     showNotification("Ошибка оформления заказа", "error");
   }
-}
-
-// Форматирование цены
-function formatPrice(price) {
-  return typeof price === 'number' ? `${price.toLocaleString()} ₽` : `${price} ₽`;
 }
 
 // Показать уведомление
@@ -427,6 +589,7 @@ function showNotification(message, type = "info") {
     border-radius: 5px;
     z-index: 1000;
     animation: slideIn 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   `;
   
   document.body.appendChild(notification);
@@ -444,18 +607,25 @@ function showNotification(message, type = "info") {
 }
 
 // Добавление стилей для анимации
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-  @keyframes slideOut {
-    from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(100%); opacity: 0; }
-  }
-`;
-document.head.appendChild(style);
+if (!document.querySelector('#notification-styles')) {
+  const style = document.createElement('style');
+  style.id = 'notification-styles';
+  style.textContent = `
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+    .notification {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+    }
+  `;
+  document.head.appendChild(style);
+}
 
 // Запуск приложения при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
@@ -463,13 +633,13 @@ document.addEventListener('DOMContentLoaded', () => {
   initApp();
 });
 
-// Обработчик обновления данных
+// Обновление данных каждые 5 минут
 setInterval(async () => {
   try {
     await loadFromServer();
-    updateMainUI();
+    updateUIAfterDataLoad();
     console.log("🔄 Данные обновлены");
   } catch (error) {
     console.error("❌ Ошибка обновления данных:", error);
   }
-}, 300000); // Обновление каждые 5 минут
+}, 300000);
