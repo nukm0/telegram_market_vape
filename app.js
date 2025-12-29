@@ -18,6 +18,63 @@ let currentUser = null;
 let serverCache = {};
 let allItems = [];
 
+// Настройка обработчиков событий
+function setupEventListeners() {
+  console.log("Настройка обработчиков событий...");
+  
+  // Кнопка профиля
+  const profileBtn = document.getElementById('profileBtn');
+  if (profileBtn) {
+    profileBtn.addEventListener('click', () => {
+      window.location.href = 'pages/profile.html';
+    });
+  }
+  
+  // Кнопка FAQ
+  const faqBtn = document.getElementById('faqBtn');
+  if (faqBtn) {
+    faqBtn.addEventListener('click', () => {
+      window.location.href = 'pages/faq.html';
+    });
+  }
+  
+  // Поиск
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      // Тут будет логика поиска
+    });
+  }
+}
+
+// Обновление UI
+function updateUIAfterDataLoad() {
+  console.log("Обновление интерфейса...");
+  
+  // Имя пользователя
+  const userNameElement = document.getElementById('userName');
+  if (userNameElement && currentUser) {
+    userNameElement.textContent = currentUser.firstName;
+  }
+  
+  // Здесь будет обновление товаров и категорий
+}
+
+// Добавь метод getRatings в FirebaseMarketServer
+// Найди в коде где определен FirebaseMarketServer и добавь туда:
+// const FirebaseMarketServer = {
+//   async getRatings() {
+//     try {
+//       const snapshot = await db.ref('ratings').once('value');
+//       return snapshot.val() || {};
+//     } catch (error) {
+//       console.error("Ошибка загрузки рейтингов:", error);
+//       return {};
+//     }
+//   }
+// };
+
 // Инициализация Telegram Web App
 const tg = window.Telegram.WebApp;
 tg.expand();
