@@ -3,316 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Профиль - Vape Market</title>
+    <title>Личный кабинет - Vape Market</title>
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Шапка (такая же как в index.html) -->
-        <header class="header">
-            <div class="header-content">
-                <h1 class="logo">Vape Market</h1>
-                <nav class="nav-menu">
-                    <a href="../index.html" class="nav-item">
-                        <i class="fas fa-home"></i>
-                        <span>Главная</span>
-                    </a>
-                    <a href="profile.html" class="nav-item active">
-                        <i class="fas fa-user"></i>
-                        <span>Профиль</span>
-                    </a>
-                    <a href="faq.html" class="nav-item">
-                        <i class="fas fa-question-circle"></i>
-                        <span>FAQ</span>
-                    </a>
-                    <div id="adminPanelNav" style="display: none;">
-                        <a href="admin.html" class="nav-item">
-                            <i class="fas fa-shield-alt"></i>
-                            <span>Админ-панель</span>
-                        </a>
-                    </div>
-                </nav>
-            </div>
-        </header>
-
-        <!-- Заголовок профиля -->
-        <div class="profile-header">
-            <div class="profile-avatar">
-                <i class="fas fa-user" style="font-size: 50px; color: #667eea; line-height: 100px;"></i>
-            </div>
-            <h2 id="userName">Загрузка...</h2>
-            <div class="user-rating">
-                <div class="rating-stats">
-                    <span class="rating-value" id="userRating">0%</span>
-                    <div class="rating-stars">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                    </div>
-                </div>
-                <div class="rating-counts">
-                    <span class="like-count" id="likeCount">0 лайков</span>
-                    <span class="dislike-count" id="dislikeCount">0 дизлайков</span>
+    <div class="app-container">
+        <!-- Навигация -->
+        <nav class="navbar">
+            <a href="../index.html" class="logo">
+                <i class="fas fa-smoking"></i>
+                VapeMarket
+            </a>
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link">
+                    <i class="fas fa-home"></i> Главная
+                </a>
+                <a href="profile.html" class="nav-link active">
+                    <i class="fas fa-user"></i> Кабинет
+                </a>
+                <a href="../index.html#create" class="nav-link">
+                    <i class="fas fa-plus-circle"></i> Разместить
+                </a>
+                <a href="faq.html" class="nav-link">
+                    <i class="fas fa-question-circle"></i> FAQ
+                </a>
+                <div class="user-avatar">
+                    Г
                 </div>
             </div>
-        </div>
+        </nav>
 
-        <!-- Статистика профиля -->
-        <div class="profile-stats">
-            <div class="stat-card">
-                <div class="stat-value" id="totalAds">0</div>
-                <div class="stat-label">Объявления</div>
+        <div class="profile-container">
+            <!-- Заголовок профиля -->
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    Г
+                </div>
+                <div class="profile-info">
+                    <h1 style="color: var(--dark-color);">Гость</h1>
+                    <p style="color: var(--primary-color); font-weight: 500;">
+                        <i class="fas fa-user"></i> @guest_user
+                    </p>
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt"></i> Войти
+                        </button>
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-user-plus"></i> Регистрация
+                        </button>
+                    </div>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-value" id="activeAds">0</div>
-                <div class="stat-label">Активные</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="totalViews">0</div>
-                <div class="stat-label">Просмотры</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="soldItems">0</div>
-                <div class="stat-label">Продано</div>
-            </div>
-        </div>
 
-        <!-- Мои объявления -->
-        <div class="ads-container">
-            <div class="section-header">
-                <h3>Мои объявления</h3>
-                <button class="btn btn-primary" onclick="window.App.openCreateAdModal()">
-                    <i class="fas fa-plus"></i>
-                    <span>Новое объявление</span>
-                </button>
+            <!-- Статистика -->
+            <div class="profile-stats">
+                <div class="stat-card">
+                    <span class="stat-number">2</span>
+                    <span class="stat-label">Объявления</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">8</span>
+                    <span class="stat-label">Лайки</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">4.7</span>
+                    <span class="stat-label">Рейтинг</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">12</span>
+                    <span class="stat-label">Сделки</span>
+                </div>
             </div>
-            <div id="myAdsList" class="ads-grid">
-                <!-- Мои объявления будут здесь -->
-            </div>
-        </div>
 
-        <!-- Настройки профиля -->
-        <div class="admin-section">
-            <h3>Настройки профиля</h3>
-            <div class="settings-grid">
-                <button class="btn btn-secondary" onclick="editProfile()">
-                    <i class="fas fa-edit"></i>
-                    <span>Редактировать профиль</span>
-                </button>
-                <button class="btn btn-secondary" onclick="changeAvatar()">
-                    <i class="fas fa-camera"></i>
-                    <span>Сменить аватар</span>
-                </button>
-                <button class="btn btn-secondary" onclick="showNotificationsSettings()">
-                    <i class="fas fa-bell"></i>
-                    <span>Уведомления</span>
-                </button>
-                <button class="btn btn-danger" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Выйти</span>
+            <!-- Навигация кабинета -->
+            <div style="
+                background: var(--light-color);
+                padding: 1.5rem;
+                border-radius: var(--radius);
+                margin-bottom: 2rem;
+            ">
+                <h3 style="color: var(--dark-color); margin-bottom: 1rem;">
+                    <i class="fas fa-bars"></i> Меню кабинета
+                </h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <button class="btn btn-secondary" style="justify-content: start;">
+                        <i class="fas fa-history"></i> История сделок
+                    </button>
+                    <button class="btn btn-secondary" style="justify-content: start;">
+                        <i class="fas fa-cog"></i> Настройки профиля
+                    </button>
+                    <button class="btn btn-secondary" style="justify-content: start;">
+                        <i class="fas fa-bell"></i> Уведомления
+                    </button>
+                    <button class="btn btn-secondary" style="justify-content: start;">
+                        <i class="fas fa-heart"></i> Избранное
+                    </button>
+                    <button class="btn btn-secondary" style="justify-content: start;">
+                        <i class="fas fa-comments"></i> Мои сообщения
+                    </button>
+                    <button class="btn btn-secondary" style="justify-content: start;">
+                        <i class="fas fa-shield-alt"></i> Безопасность
+                    </button>
+                </div>
+            </div>
+
+            <!-- Мои объявления -->
+            <h2 style="color: var(--dark-color); margin-bottom: 1.5rem;">
+                <i class="fas fa-list-alt"></i> Мои объявления
+            </h2>
+            
+            <div class="ads-grid">
+                <!-- Примеры объявлений пользователя -->
+                <div class="ad-card">
+                    <div class="ad-image">
+                        <div style="width: 100%; height: 100%; background: var(--gradient-secondary);"></div>
+                    </div>
+                    <div class="ad-content">
+                        <div class="ad-header">
+                            <h3 class="ad-title">Caliburn G3</h3>
+                            <span class="ad-price">1500 ₽</span>
+                        </div>
+                        <p class="ad-description">
+                            Новое устройство, в упаковке. Использовался 1 раз.
+                        </p>
+                        <div class="ad-meta">
+                            <span class="ad-category">Устройства</span>
+                            <span class="ad-type">Продажа</span>
+                        </div>
+                        <div class="ad-actions">
+                            <button class="btn btn-primary btn-small">
+                                <i class="fas fa-edit"></i> Изменить
+                            </button>
+                            <button class="btn btn-danger btn-small">
+                                <i class="fas fa-trash"></i> Удалить
+                            </button>
+                            <button class="btn btn-success btn-small">
+                                <i class="fas fa-chart-line"></i> Статистика
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="ad-card">
+                    <div class="ad-image">
+                        <div style="width: 100%; height: 100%; background: var(--gradient-secondary);"></div>
+                    </div>
+                    <div class="ad-content">
+                        <div class="ad-header">
+                            <h3 class="ad-title">Жидкости Vampire Vape</h3>
+                            <span class="ad-price">800 ₽</span>
+                        </div>
+                        <p class="ad-description">
+                            Набор из 3 жидкостей, 60ml каждая
+                        </p>
+                        <div class="ad-meta">
+                            <span class="ad-category">Жидкости</span>
+                            <span class="ad-type">Продажа</span>
+                        </div>
+                        <div class="ad-actions">
+                            <button class="btn btn-primary btn-small">
+                                <i class="fas fa-edit"></i> Изменить
+                            </button>
+                            <button class="btn btn-danger btn-small">
+                                <i class="fas fa-trash"></i> Удалить
+                            </button>
+                            <button class="btn btn-success btn-small">
+                                <i class="fas fa-chart-line"></i> Статистика
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Выйти из аккаунта -->
+            <div style="
+                text-align: center;
+                margin-top: 3rem;
+                padding-top: 2rem;
+                border-top: 2px solid var(--light-color);
+            ">
+                <button class="btn btn-danger" style="padding: 0.8rem 2rem;">
+                    <i class="fas fa-sign-out-alt"></i> Выйти из аккаунта
                 </button>
             </div>
         </div>
     </div>
 
-    <script src="../config.js"></script>
-    <script src="../api/ads.js"></script>
-    <script src="../api/server-api.js"></script>
     <script src="../app.js"></script>
-    <script>
-        // Загрузка данных профиля
-        document.addEventListener('DOMContentLoaded', async function() {
-            const userId = localStorage.getItem('tg_user_id');
-            const userName = localStorage.getItem('tg_user_name');
-            
-            if (!userId || userId === 'guest') {
-                window.location.href = '../index.html';
-                return;
-            }
-            
-            // Устанавливаем имя
-            document.getElementById('userName').textContent = userName;
-            
-            // Загружаем рейтинг
-            const rating = await ServerAPI.getUserRating(userId);
-            document.getElementById('userRating').textContent = `${rating.rating}%`;
-            document.getElementById('likeCount').textContent = `${rating.likes} лайков`;
-            document.getElementById('dislikeCount').textContent = `${rating.dislikes} дизлайков`;
-            
-            // Загружаем статистику
-            await loadUserStats(userId);
-            
-            // Загружаем объявления пользователя
-            await loadUserAds(userId);
-            
-            // Проверяем права доступа
-            const userRole = localStorage.getItem('user_role');
-            if (userRole === 'admin1' || userRole === 'admin2' || userRole === 'owner') {
-                document.getElementById('adminPanelNav').style.display = 'block';
-            }
-        });
-        
-        // Загрузка статистики пользователя
-        async function loadUserStats(userId) {
-            try {
-                const ads = await AdsAPI.getUserAds(userId);
-                
-                const totalAds = ads.length;
-                const activeAds = ads.filter(ad => !ad.isBlocked).length;
-                const totalViews = ads.reduce((sum, ad) => sum + (ad.views || 0), 0);
-                const soldItems = ads.filter(ad => ad.status === 'sold').length;
-                
-                document.getElementById('totalAds').textContent = totalAds;
-                document.getElementById('activeAds').textContent = activeAds;
-                document.getElementById('totalViews').textContent = totalViews;
-                document.getElementById('soldItems').textContent = soldItems;
-            } catch (error) {
-                console.error('Ошибка загрузки статистики:', error);
-            }
-        }
-        
-        // Загрузка объявлений пользователя
-        async function loadUserAds(userId) {
-            try {
-                const ads = await AdsAPI.getUserAds(userId);
-                const adsList = document.getElementById('myAdsList');
-                
-                if (!ads.length) {
-                    adsList.innerHTML = `
-                        <div class="no-ads" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-                            <i class="fas fa-box-open" style="font-size: 48px; color: #667eea; margin-bottom: 15px;"></i>
-                            <p style="color: #666; margin-bottom: 20px;">У вас пока нет объявлений</p>
-                            <button class="btn btn-primary" onclick="window.App.openCreateAdModal()">
-                                <i class="fas fa-plus"></i>
-                                <span>Создать первое объявление</span>
-                            </button>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                adsList.innerHTML = ads.map(ad => createMyAdCard(ad)).join('');
-                
-                // Добавляем обработчики для кнопок
-                ads.forEach(ad => {
-                    const editBtn = document.getElementById(`editBtn_${ad.id}`);
-                    const deleteBtn = document.getElementById(`deleteBtn_${ad.id}`);
-                    
-                    if (editBtn) {
-                        editBtn.addEventListener('click', () => editAd(ad.id));
-                    }
-                    
-                    if (deleteBtn) {
-                        deleteBtn.addEventListener('click', () => deleteAd(ad.id));
-                    }
-                });
-            } catch (error) {
-                console.error('Ошибка загрузки объявлений:', error);
-            }
-        }
-        
-        // Создание карточки "моего" объявления
-        function createMyAdCard(ad) {
-            const hasImage = ad.images && ad.images.length > 0;
-            const imageUrl = hasImage ? ad.images[0] : '';
-            const isBlocked = ad.isBlocked;
-            
-            return `
-                <div class="ad-card ${isBlocked ? 'blocked' : ''}" data-ad-id="${ad.id}">
-                    ${isBlocked ? 
-                        `<div class="ad-blocked-banner">
-                            <i class="fas fa-ban"></i>
-                            <span>Заблокировано</span>
-                        </div>` : ''
-                    }
-                    <div class="ad-image-container">
-                        ${hasImage ? 
-                            `<img src="${imageUrl}" alt="${ad.title}" class="ad-image">` : 
-                            `<div class="no-image">
-                                <i class="fas fa-camera"></i>
-                                <p>Нет фото</p>
-                            </div>`
-                        }
-                    </div>
-                    <div class="ad-content">
-                        <h3 class="ad-title">${ad.title}</h3>
-                        <div class="ad-price">${ad.price} ₽</div>
-                        <div class="ad-meta">
-                            <span class="ad-views">
-                                <i class="fas fa-eye"></i>
-                                ${ad.views || 0}
-                            </span>
-                            <span class="ad-date">
-                                <i class="fas fa-calendar"></i>
-                                ${new Date(ad.createdAt).toLocaleDateString()}
-                            </span>
-                        </div>
-                        <div class="ad-actions">
-                            <button class="btn btn-primary btn-small" id="editBtn_${ad.id}">
-                                <i class="fas fa-edit"></i>
-                                Редактировать
-                            </button>
-                            <button class="btn btn-danger btn-small" id="deleteBtn_${ad.id}">
-                                <i class="fas fa-trash"></i>
-                                Удалить
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-        
-        // Редактирование объявления
-        function editAd(adId) {
-            alert('Редактирование объявления ID: ' + adId);
-            // Здесь должна быть реализация редактирования
-        }
-        
-        // Удаление объявления
-        async function deleteAd(adId) {
-            if (!confirm('Вы уверены, что хотите удалить это объявление?')) {
-                return;
-            }
-            
-            try {
-                const userId = localStorage.getItem('tg_user_id');
-                const success = await AdsAPI.deleteAd(adId, userId);
-                
-                if (success) {
-                    alert('Объявление удалено');
-                    await loadUserAds(userId);
-                    await loadUserStats(userId);
-                } else {
-                    alert('Ошибка при удалении объявления');
-                }
-            } catch (error) {
-                console.error('Ошибка удаления объявления:', error);
-                alert('Ошибка при удалении объявления');
-            }
-        }
-        
-        // Другие функции профиля
-        function editProfile() {
-            alert('Функция редактирования профиля будет реализована позже');
-        }
-        
-        function changeAvatar() {
-            alert('Функция смены аватара будет реализована позже');
-        }
-        
-        function showNotificationsSettings() {
-            alert('Настройки уведомлений будут реализованы позже');
-        }
-        
-        function logout() {
-            if (confirm('Вы уверены, что хотите выйти?')) {
-                localStorage.clear();
-                window.location.href = '../index.html';
-            }
-        }
-    </script>
 </body>
 </html>
