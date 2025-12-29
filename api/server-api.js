@@ -3,32 +3,32 @@ class ServerAPI {
     constructor(firebaseApp) {
         this.db = firebaseApp.database();
     }
-    
+
     // Получить объявления с пагинацией и фильтрами
     async getAds(filters = {}, page = 1, limit = 20) {
         try {
             let query = this.db.ref('ads').orderByChild('createdAt');
-            
+
             // Применяем фильтры
             if (filters.category && filters.category !== 'all') {
                 query = query.orderByChild('category').equalTo(filters.category);
             }
-            
+
             if (filters.dealType && filters.dealType !== 'all') {
                 query = query.orderByChild('dealType').equalTo(filters.dealType);
             }
-            
+
             if (filters.userId) {
                 query = query.orderByChild('sellerId').equalTo(filters.userId);
             }
-            
+
             const snapshot = await query.once('value');
             let ads = [];
-            
+
             snapshot.forEach((child) => {
                 const ad = child.val();
                 ad.id = child.key;
-                
+
                 // Фильтрация по поиску
                 if (filters.search) {
                     const searchLower = filters.search.toLowerCase();
@@ -39,26 +39,26 @@ class ServerAPI {
                     );
                     if (!matches) return;
                 }
-                
+
                 // Фильтрация по цене
                 if (filters.minPrice && ad.price < filters.minPrice) return;
                 if (filters.maxPrice && ad.price > filters.maxPrice) return;
-                
+
                 // Фильтрация по статусу
                 if (filters.status && ad.status !== filters.status) return;
-                
+
                 ads.push(ad);
             });
-            
+
             // Сортировка по дате (новые сначала)
             ads.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-            
+
             // Пагинация
             const total = ads.length;
             const start = (page - 1) * limit;
             const end = start + limit;
             const paginatedAds = ads.slice(start, end);
-            
+
             return {
                 ads: paginatedAds,
                 pagination: {
@@ -70,13 +70,13 @@ class ServerAPI {
                     hasPrev: page > 1
                 }
             };
-            
+
         } catch (error) {
             console.error('API Error in getAds:', error);
             throw error;
         }
     }
-    
+
     // Получить статистику
     async getStats() {
         try {
@@ -86,12 +86,12 @@ class ServerAPI {
                 this.db.ref('ratings').once('value'),
                 this.db.ref('complaints').once('value')
             ]);
-            
+
             // Общая статистика
             const totalAds = adsSnapshot.numChildren();
             const totalUsers = usersSnapshot.numChildren();
             const totalComplaints = complaintsSnapshot.numChildren();
-            
+
             // Статистика за сегодня
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -102,7 +102,7 @@ class ServerAPI {
                     todayAds.push(ad);
                 }
             });
-            
+
             // Статистика по категориям
             const categories = { liquids: 0, disposable: 0, pod: 0, consumables: 0, other: 0 };
             adsSnapshot.forEach((child) => {
@@ -114,7 +114,7 @@ class ServerAPI {
                     categories.other++;
                 }
             });
-            
+
             // Статистика по типам сделок
             const dealTypes = { sell: 0, buy: 0 };
             adsSnapshot.forEach((child) => {
@@ -122,7 +122,7 @@ class ServerAPI {
                 const dealType = ad.dealType || 'sell';
                 dealTypes[dealType] = (dealTypes[dealType] || 0) + 1;
             });
-            
+
             // Подсчет лайков/дизлайков
             let totalLikes = 0;
             let totalDislikes = 0;
@@ -132,7 +132,7 @@ class ServerAPI {
                     if (rating.val() === 'dislike') totalDislikes++;
                 });
             });
-            
+
             return {
                 totals: {
                     ads: totalAds,
@@ -148,43 +148,43 @@ class ServerAPI {
                 dealTypes,
                 lastUpdated: new Date().toISOString()
             };
-            
+
         } catch (error) {
             console.error('API Error in getStats:', error);
             throw error;
         }
     }
-    
+
     // Получить жалобы с фильтрами
     async getComplaints(filters = {}, page = 1, limit = 20) {
         try {
             let query = this.db.ref('complaints').orderByChild('createdAt');
-            
+
             if (filters.status && filters.status !== 'all') {
                 query = query.orderByChild('status').equalTo(filters.status);
             }
-            
+
             if (filters.reporterId) {
                 query = query.orderByChild('reporterId').equalTo(filters.reporterId);
             }
-            
+
             if (filters.targetId) {
                 query = query.orderByChild('targetId').equalTo(filters.targetId);
             }
-            
+
             const snapshot = await query.once('value');
             let complaints = [];
-            
+
             snapshot.forEach((child) => {
                 complaints.unshift({ id: child.key, ...child.val() });
             });
-            
+
             // Пагинация
             const total = complaints.length;
             const start = (page - 1) * limit;
             const end = start + limit;
             const paginated = complaints.slice(start, end);
-            
+
             return {
                 complaints: paginated,
                 pagination: {
@@ -194,13 +194,13 @@ class ServerAPI {
                     pages: Math.ceil(total / limit)
                 }
             };
-            
+
         } catch (error) {
             console.error('API Error in getComplaints:', error);
             throw error;
         }
     }
-    
+
     // Обновить статус жалобы
     async updateComplaintStatus(complaintId, status, adminNote = '') {
         try {
@@ -208,15 +208,15 @@ class ServerAPI {
                 status,
                 updatedAt: firebase.database.ServerValue.TIMESTAMP
             };
-            
+
             if (adminNote) {
                 updates.adminNote = adminNote;
             }
-            
+
             if (status === 'resolved' || status === 'rejected') {
                 updates.resolvedAt = firebase.database.ServerValue.TIMESTAMP;
             }
-            
+
             await this.db.ref(`complaints/${complaintId}`).update(updates);
             return true;
         } catch (error) {
@@ -224,7 +224,7 @@ class ServerAPI {
             throw error;
         }
     }
-    
+
     // Получить пользователя
     async getUser(userId) {
         try {
@@ -235,7 +235,7 @@ class ServerAPI {
             throw error;
         }
     }
-    
+
     // Обновить пользователя
     async updateUser(userId, data) {
         try {
@@ -249,21 +249,21 @@ class ServerAPI {
             throw error;
         }
     }
-    
+
     // Блокировать пользователя
     async blockUser(userId, reason, durationHours = 24) {
         try {
             const blockedUntil = durationHours === 0 ? 
                 'permanent' : 
                 Date.now() + (durationHours * 60 * 60 * 1000);
-            
+
             await this.db.ref(`users/${userId}`).update({
                 blocked: true,
                 blockReason: reason,
                 blockedUntil: blockedUntil,
                 blockedAt: firebase.database.ServerValue.TIMESTAMP
             });
-            
+
             // Запись в историю модерации
             await this.db.ref('moderationHistory').push().set({
                 action: 'block',
@@ -273,14 +273,14 @@ class ServerAPI {
                 blockedUntil: blockedUntil,
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             });
-            
+
             return true;
         } catch (error) {
             console.error('API Error in blockUser:', error);
             throw error;
         }
     }
-    
+
     // Получить историю пользователя
     async getUserHistory(userId, limit = 50) {
         try {
@@ -288,19 +288,19 @@ class ServerAPI {
                 .orderByChild('timestamp')
                 .limitToLast(limit)
                 .once('value');
-            
+
             const history = [];
             snapshot.forEach((child) => {
                 history.unshift(child.val());
             });
-            
+
             return history;
         } catch (error) {
             console.error('API Error in getUserHistory:', error);
             throw error;
         }
     }
-    
+
     // Умный поиск
     async smartSearch(query, filters = {}) {
         try {
@@ -308,7 +308,7 @@ class ServerAPI {
             const adsSnapshot = await this.db.ref('ads').once('value');
             const results = [];
             const queryLower = query.toLowerCase();
-            
+
             // Веса для разных полей
             const weights = {
                 title: 3,
@@ -316,56 +316,56 @@ class ServerAPI {
                 category: 2,
                 sellerName: 1
             };
-            
+
             adsSnapshot.forEach((child) => {
                 const ad = child.val();
                 ad.id = child.key;
-                
+
                 // Проверяем фильтры
                 if (filters.category && filters.category !== 'all' && ad.category !== filters.category) {
                     return;
                 }
-                
+
                 if (filters.dealType && filters.dealType !== 'all' && ad.dealType !== filters.dealType) {
                     return;
                 }
-                
+
                 if (filters.minPrice && ad.price < filters.minPrice) {
                     return;
                 }
-                
+
                 if (filters.maxPrice && ad.price > filters.maxPrice) {
                     return;
                 }
-                
+
                 // Подсчет релевантности
                 let relevance = 0;
-                
+
                 // Поиск в заголовке
                 if (ad.title && ad.title.toLowerCase().includes(queryLower)) {
                     relevance += weights.title;
-                    
+
                     // Бонус за точное совпадение в начале
                     if (ad.title.toLowerCase().startsWith(queryLower)) {
                         relevance += 2;
                     }
                 }
-                
+
                 // Поиск в описании
                 if (ad.description && ad.description.toLowerCase().includes(queryLower)) {
                     relevance += weights.description;
                 }
-                
+
                 // Поиск в категории
                 if (ad.category && ad.category.toLowerCase().includes(queryLower)) {
                     relevance += weights.category;
                 }
-                
+
                 // Поиск по имени продавца
                 if (ad.sellerName && ad.sellerName.toLowerCase().includes(queryLower)) {
                     relevance += weights.sellerName;
                 }
-                
+
                 // Если есть релевантность, добавляем в результаты
                 if (relevance > 0) {
                     results.push({
@@ -375,7 +375,7 @@ class ServerAPI {
                     });
                 }
             });
-            
+
             // Сортировка по релевантности и дате
             results.sort((a, b) => {
                 if (b.relevance !== a.relevance) {
@@ -383,15 +383,15 @@ class ServerAPI {
                 }
                 return (b.createdAt || 0) - (a.createdAt || 0);
             });
-            
+
             return results;
-            
+
         } catch (error) {
             console.error('API Error in smartSearch:', error);
             throw error;
         }
     }
-    
+
     // Определить тип совпадения
     getMatchType(relevance, query, ad) {
         if (ad.title && ad.title.toLowerCase().startsWith(query.toLowerCase())) {
