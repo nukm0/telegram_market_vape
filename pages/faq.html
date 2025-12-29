@@ -3,416 +3,276 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Помощь - Vape Market</title>
+    <title>FAQ - Vape Market</title>
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .faq-container {
-            padding: 80px 20px 100px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .faq-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .faq-header h1 {
-            background: linear-gradient(135deg, #FFFFFF 0%, #C084FC 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-bottom: 10px;
-        }
-
-        .faq-header p {
-            color: #94A3B8;
-            font-size: 1.1rem;
-        }
-
-        .faq-section {
-            background: rgba(30, 27, 75, 0.6);
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 25px;
-            border: 1px solid rgba(168, 85, 247, 0.2);
-            backdrop-filter: blur(10px);
-        }
-
-        .faq-section h2 {
-            color: #FFFFFF;
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .faq-item {
-            margin-bottom: 25px;
-            padding-bottom: 25px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .faq-item:last-child {
-            margin-bottom: 0;
-            padding-bottom: 0;
-            border-bottom: none;
-        }
-
-        .faq-question {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #FFFFFF;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-        }
-
-        .faq-question i {
-            color: #8B5CF6;
-            font-size: 1.2rem;
-            transition: transform 0.3s ease;
-        }
-
-        .faq-question.active i {
-            transform: rotate(45deg);
-        }
-
-        .faq-answer {
-            color: #CBD5E1;
-            line-height: 1.6;
-            padding-left: 32px;
-            display: none;
-        }
-
-        .faq-answer.active {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .stat-item {
-            background: rgba(168, 85, 247, 0.1);
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            border: 1px solid rgba(168, 85, 247, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .stat-item:hover {
-            transform: translateY(-2px);
-            border-color: rgba(168, 85, 247, 0.4);
-            background: rgba(168, 85, 247, 0.15);
-        }
-
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #FFFFFF 0%, #C084FC 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            color: #94A3B8;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        .support-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .support-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            padding: 18px;
-            background: rgba(168, 85, 247, 0.1);
-            border: 2px solid rgba(168, 85, 247, 0.3);
-            border-radius: 15px;
-            color: #E2E8F0;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .support-btn:hover {
-            background: rgba(168, 85, 247, 0.2);
-            transform: translateY(-2px);
-            border-color: rgba(168, 85, 247, 0.5);
-        }
-
-        .support-btn i {
-            font-size: 1.2rem;
-        }
-
-        .important-note {
-            background: rgba(245, 158, 11, 0.1);
-            border: 2px solid rgba(245, 158, 11, 0.3);
-            border-radius: 15px;
-            padding: 25px;
-            margin-top: 25px;
-            color: #FBBF24;
-        }
-
-        .important-note h3 {
-            color: #F59E0B;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .important-note p {
-            line-height: 1.6;
-        }
-
-        .verified-info {
-            background: rgba(34, 197, 94, 0.1);
-            border: 2px solid rgba(34, 197, 94, 0.3);
-            border-radius: 15px;
-            padding: 25px;
-            margin-top: 20px;
-            color: #4ADE80;
-        }
-
-        .verified-info h3 {
-            color: #10B981;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .verified-info p {
-            line-height: 1.6;
-        }
-    </style>
 </head>
 <body>
-    <!-- Шапка -->
-    <header class="admin-header">
-        <a href="../index.html" class="back-btn">
-            <i class="fas fa-arrow-left"></i>
-            <span>Назад</span>
-        </a>
-        <div class="admin-logo">
-            <div class="logo-icon">
-                <i class="fas fa-question-circle"></i>
+    <div class="container">
+        <!-- Шапка -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">Vape Market</h1>
+                <nav class="nav-menu">
+                    <a href="../index.html" class="nav-item">
+                        <i class="fas fa-home"></i>
+                        <span>Главная</span>
+                    </a>
+                    <a href="profile.html" class="nav-item">
+                        <i class="fas fa-user"></i>
+                        <span>Профиль</span>
+                    </a>
+                    <a href="faq.html" class="nav-item active">
+                        <i class="fas fa-question-circle"></i>
+                        <span>FAQ</span>
+                    </a>
+                    <div id="adminPanelNav" style="display: none;">
+                        <a href="admin.html" class="nav-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Админ-панель</span>
+                        </a>
+                    </div>
+                </nav>
             </div>
-            <h1>Помощь</h1>
-        </div>
-        <div style="width: 60px;"></div>
-    </header>
+        </header>
 
-    <!-- Контент -->
-    <div class="faq-container">
-        <!-- Заголовок -->
-        <div class="faq-header">
-            <h1>Помощь</h1>
-            <p>Частые вопросы и поддержка</p>
-        </div>
-
-        <!-- FAQ секция -->
-        <div class="faq-section">
-            <h2><i class="fas fa-book"></i> Частые вопросы</h2>
-
-            <div class="faq-item">
-                <div class="faq-question" onclick="toggleFAQ(this)">
-                    <i class="fas fa-plus"></i>
-                    Как добавить объявление?
+        <!-- FAQ Контент -->
+        <div class="faq-container">
+            <h2>Часто задаваемые вопросы</h2>
+            
+            <div class="faq-section">
+                <h3>Общие вопросы</h3>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Как создать объявление?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Чтобы создать объявление:</p>
+                        <ol>
+                            <li>Нажмите кнопку "Создать объявление" на главной странице</li>
+                            <li>Заполните все обязательные поля: название, описание, цену, город</li>
+                            <li>Добавьте фотографии товара (до 5 фото)</li>
+                            <li>Нажмите "Опубликовать"</li>
+                        </ol>
+                    </div>
                 </div>
-                <div class="faq-answer">
-                    Нажмите кнопку "Разместить объявление" на главной странице, заполните форму, загрузите до 3 фотографий и нажмите "Опубликовать".
-                </div>
-            </div>
-
-            <div class="faq-item">
-                <div class="faq-question" onclick="toggleFAQ(this)">
-                    <i class="fas fa-plus"></i>
-                    Как работает система рейтинга?
-                </div>
-                <div class="faq-answer">
-                    Рейтинг продавца формируется на основе отзывов покупателей. После завершения сделки покупатель может оценить продавца от 1 до 5 звезд.
-                </div>
-            </div>
-
-            <div class="faq-item">
-                <div class="faq-question" onclick="toggleFAQ(this)">
-                    <i class="fas fa-plus"></i>
-                    Как загрузить фото?
-                </div>
-                <div class="faq-answer">
-                    При создании объявления нажмите "Загрузить фотографии". Можно загрузить до 3 фото в форматах JPG, PNG. Максимальный размер файла - 5MB.
-                </div>
-            </div>
-
-            <div class="faq-item">
-                <div class="faq-question" onclick="toggleFAQ(this)">
-                    <i class="fas fa-plus"></i>
-                    Как написать продавцу?
-                </div>
-                <div class="faq-answer">
-                    В карточке объявления нажмите кнопку "Написать продавцу". Откроется Telegram-чат с предзаполненным сообщением.
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Как связаться с продавцом?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Нажмите кнопку "Написать" на карточке товара. Откроется чат с продавцом в Telegram с готовым текстом сообщения.</p>
+                    </div>
                 </div>
             </div>
-
-            <div class="faq-item">
-                <div class="faq-question" onclick="toggleFAQ(this)">
-                    <i class="fas fa-plus"></i>
-                    Как оплачивать товар?
+            
+            <div class="faq-section">
+                <h3>Безопасность и правила</h3>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Что запрещено продавать?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Запрещено продавать:</p>
+                        <ul>
+                            <li>Несовершеннолетним лицам</li>
+                            <li>Контрафактную продукцию</li>
+                            <li>Товары с истекшим сроком годности</li>
+                            <li>Незаконные вещества и устройства</li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="faq-answer">
-                    Оплата осуществляется напрямую с продавцом. Рекомендуем использовать безопасные методы оплаты и проверять товар перед оплатой.
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Как подать жалобу?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Если вы столкнулись с мошенничеством или нарушением правил:</p>
+                        <ol>
+                            <li>Найдите нужное объявление</li>
+                            <li>Нажмите кнопку "Жалоба"</li>
+                            <li>Выберите причину жалобы</li>
+                            <li>Опишите проблему подробно</li>
+                            <li>Нажмите "Отправить жалобу"</li>
+                        </ol>
+                        <p>Администраторы рассмотрят жалобу в течение 24 часов.</p>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Статистика -->
-        <div class="faq-section">
-            <h2><i class="fas fa-chart-bar"></i> Статистика платформы</h2>
-            <p style="color: #CBD5E1; margin-bottom: 20px;">Актуальные данные:</p>
-
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-number" id="statUsers">15,432</div>
-                    <div class="stat-label">Пользователей</div>
+            
+            <div class="faq-section">
+                <h3>Профиль и рейтинг</h3>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Как работает система рейтинга?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>После сделки покупатель и продавец могут оценить друг друга:</p>
+                        <ul>
+                            <li>Лайк - положительная оценка</li>
+                            <li>Дизлайк - отрицательная оценка</li>
+                            <li>Рейтинг рассчитывается как процент лайков от общего числа оценок</li>
+                        </ul>
+                        <p>Чем выше рейтинг, тем больше доверия вызывает пользователь.</p>
+                    </div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-number" id="statAds">2,345</div>
-                    <div class="stat-label">Объявлений</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" id="statDeals">8,921</div>
-                    <div class="stat-label">Сделок</div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Что делать, если мой аккаунт заблокирован?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Если ваш аккаунт заблокирован:</p>
+                        <ol>
+                            <li>Проверьте, не было ли нарушений правил</li>
+                            <li>Обратитесь в поддержку через Telegram</li>
+                            <li>Предоставьте объяснение ситуации</li>
+                            <li>Дождитесь решения администрации</li>
+                        </ol>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Поддержка -->
-        <div class="faq-section">
-            <h2><i class="fas fa-headset"></i> Связь с поддержкой</h2>
-            <p style="color: #CBD5E1; margin-bottom: 20px;">Выберите тип обращения:</p>
-
-            <div class="support-buttons">
-                <button class="support-btn" onclick="contactSupport('bug')">
-                    <i class="fas fa-bug"></i>
-                    Баг/Ошибка
-                </button>
-
-                <button class="support-btn" onclick="contactSupport('cooperation')">
-                    <i class="fas fa-handshake"></i>
-                    Сотрудничество
-                </button>
-
-                <button class="support-btn" onclick="contactSupport('other')">
-                    <i class="fas fa-question"></i>
-                    Другой вопрос
-                </button>
+            
+            <div class="contact-support">
+                <h3>Не нашли ответ?</h3>
+                <p>Свяжитесь с нашей поддержкой:</p>
+                <a href="https://t.me/vape_market_support" class="btn btn-primary" target="_blank">
+                    <i class="fab fa-telegram"></i>
+                    <span>Написать в поддержку</span>
+                </a>
             </div>
-        </div>
-
-        <!-- Важная информация -->
-        <div class="important-note">
-            <h3><i class="fas fa-exclamation-triangle"></i> Важная информация</h3>
-            <p>Объявления автоматически удаляются через <strong>14 дней</strong> после публикации. Для продления нужно обновить объявление.</p>
-        </div>
-
-        <!-- Галочка проверенного продавца -->
-        <div class="verified-info">
-            <h3><i class="fas fa-check-circle"></i> Галочка проверенного продавца</h3>
-            <p>Статус проверенного продавца получают пользователи с большим количеством успешных сделок. За дополнительной информацией обращайтесь через кнопку "Сотрудничество".</p>
         </div>
     </div>
 
-    <!-- Навигация -->
-    <nav class="bottom-nav">
-        <button class="nav-btn" data-page="ads" onclick="window.location.href='../index.html'">
-            <i class="fas fa-list"></i>
-            <span>Объявления</span>
-        </button>
-        <button class="nav-btn" data-page="profile" onclick="window.location.href='profile.html'">
-            <i class="fas fa-user"></i>
-            <span>Кабинет</span>
-        </button>
-        <button class="nav-btn active" data-page="faq">
-            <i class="fas fa-question-circle"></i>
-            <span>FAQ</span>
-        </button>
-    </nav>
-
+    <script src="../config.js"></script>
+    <script src="../app.js"></script>
     <script>
-        // Переключение FAQ
-        function toggleFAQ(element) {
-            const answer = element.nextElementSibling;
-            const icon = element.querySelector('i');
-            
-            element.classList.toggle('active');
-            answer.classList.toggle('active');
-            
-            icon.className = element.classList.contains('active') 
-                ? 'fas fa-minus'
-                : 'fas fa-plus';
-        }
-
-        // Контакт с поддержкой
-        function contactSupport(type) {
-            const messages = {
-                bug: "🐛 Баг/Ошибка в приложении Vape Market",
-                cooperation: "🤝 Предложение о сотрудничестве с Vape Market",
-                other: "📝 Вопрос/Предложение по работе Vape Market"
-            };
-
-            const text = messages[type];
-            const url = `https://t.me/nukm0?text=${encodeURIComponent(text)}`;
-
-            if (window.Telegram && Telegram.WebApp) {
-                Telegram.WebApp.openTelegramLink(url);
-            } else {
-                window.open(url, '_blank');
-            }
-        }
-
-        // Обновление статистики
-        function updateStats() {
-            // Здесь будет API запрос для получения реальной статистики
-            document.getElementById('statUsers').textContent = '15,432';
-            document.getElementById('statAds').textContent = '2,345';
-            document.getElementById('statDeals').textContent = '8,921';
-        }
-
-        // Запуск при загрузке
+        // FAQ аккордеон
         document.addEventListener('DOMContentLoaded', function() {
-            updateStats();
+            // Проверяем права доступа
+            const userRole = localStorage.getItem('user_role');
+            if (userRole === 'admin1' || userRole === 'admin2' || userRole === 'owner') {
+                document.getElementById('adminPanelNav').style.display = 'block';
+            }
             
-            // Добавляем активный класс к текущей странице
-            const currentPage = window.location.pathname;
-            console.log('FAQ страница загружена');
+            // Инициализация FAQ аккордеона
+            const faqQuestions = document.querySelectorAll('.faq-question');
+            faqQuestions.forEach(question => {
+                question.addEventListener('click', () => {
+                    const answer = question.nextElementSibling;
+                    const icon = question.querySelector('i');
+                    
+                    answer.classList.toggle('active');
+                    icon.classList.toggle('fa-chevron-down');
+                    icon.classList.toggle('fa-chevron-up');
+                });
+            });
         });
     </script>
+    
+    <style>
+        .faq-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .faq-container h2 {
+            color: #667eea;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .faq-section {
+            margin-bottom: 30px;
+        }
+        
+        .faq-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .faq-item {
+            margin-bottom: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .faq-question {
+            padding: 15px;
+            background: #f8f9ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .faq-answer {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .faq-answer.active {
+            padding: 15px;
+            max-height: 500px;
+        }
+        
+        .faq-answer p,
+        .faq-answer ol,
+        .faq-answer ul {
+            margin-bottom: 10px;
+        }
+        
+        .faq-answer ol,
+        .faq-answer ul {
+            padding-left: 20px;
+        }
+        
+        .faq-answer li {
+            margin-bottom: 5px;
+        }
+        
+        .contact-support {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            color: white;
+            margin-top: 30px;
+        }
+        
+        .contact-support h3 {
+            margin-bottom: 10px;
+            color: white;
+        }
+        
+        .contact-support .btn {
+            margin-top: 15px;
+            background: white;
+            color: #667eea;
+        }
+        
+        .contact-support .btn:hover {
+            background: #f0f0f0;
+        }
+    </style>
 </body>
 </html>
