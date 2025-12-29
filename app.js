@@ -18,69 +18,13 @@ let currentUser = null;
 let serverCache = {};
 let allItems = [];
 
-// Настройка обработчиков событий
-function setupEventListeners() {
-  console.log("Настройка обработчиков событий...");
-  
-  // Кнопка профиля
-  const profileBtn = document.getElementById('profileBtn');
-  if (profileBtn) {
-    profileBtn.addEventListener('click', () => {
-      window.location.href = 'pages/profile.html';
-    });
-  }
-  
-  // Кнопка FAQ
-  const faqBtn = document.getElementById('faqBtn');
-  if (faqBtn) {
-    faqBtn.addEventListener('click', () => {
-      window.location.href = 'pages/faq.html';
-    });
-  }
-  
-  // Поиск
-  const searchInput = document.getElementById('searchInput');
-  if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-      const searchTerm = e.target.value.toLowerCase();
-      // Тут будет логика поиска
-    });
-  }
-}
-
-// Обновление UI
-function updateUIAfterDataLoad() {
-  console.log("Обновление интерфейса...");
-  
-  // Имя пользователя
-  const userNameElement = document.getElementById('userName');
-  if (userNameElement && currentUser) {
-    userNameElement.textContent = currentUser.firstName;
-  }
-  
-  // Здесь будет обновление товаров и категорий
-}
-
-// Добавь метод getRatings в FirebaseMarketServer
-// Найди в коде где определен FirebaseMarketServer и добавь туда:
-// const FirebaseMarketServer = {
-//   async getRatings() {
-//     try {
-//       const snapshot = await db.ref('ratings').once('value');
-//       return snapshot.val() || {};
-//     } catch (error) {
-//       console.error("Ошибка загрузки рейтингов:", error);
-//       return {};
-//     }
-//   }
-// };
-
 // Инициализация Telegram Web App
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-// Сервер API
+// Сервер API для получения данных
 const FirebaseMarketServer = {
+  // Загрузка рейтингов товаров
   async getRatings() {
     try {
       const snapshot = await db.ref('ratings').once('value');
@@ -92,7 +36,7 @@ const FirebaseMarketServer = {
   }
 };
 
-// 1. Настройка обработчиков событий
+// Настройка обработчиков событий
 function setupEventListeners() {
   console.log("🎯 Настройка обработчиков событий...");
 
@@ -115,18 +59,7 @@ function setupEventListeners() {
   // Поиск
   const searchInput = document.getElementById('searchInput');
   if (searchInput) {
-    searchInput.addEventListener('input', function(e) {
-      const searchTerm = e.target.value.toLowerCase().trim();
-      if (!searchTerm) {
-        updateItemsGrid(allItems);
-        return;
-      }
-      const filteredItems = allItems.filter(item => 
-        item.name.toLowerCase().includes(searchTerm) ||
-        (item.description && item.description.toLowerCase().includes(searchTerm))
-      );
-      updateItemsGrid(filteredItems);
-    });
+    searchInput.addEventListener('input', handleSearch);
   }
 
   // Кнопка обновления
@@ -138,56 +71,57 @@ function setupEventListeners() {
       updateUIAfterDataLoad();
     });
   }
-
-  // Навигация внизу
-  const profileBtnNav = document.getElementById('profileBtnNav');
-  if (profileBtnNav) {
-    profileBtnNav.addEventListener('click', () => {
-      window.location.href = 'pages/profile.html';
-    });
-  }
-
-  const cartBtnNav = document.getElementById('cartBtnNav');
-  if (cartBtnNav) {
-    cartBtnNav.addEventListener('click', () => {
-      showNotification("Корзина в разработке", "info");
-    });
-  }
 }
 
-// 2. Обновление UI после загрузки данных
-function updateUIAfterDataLoad() {
-  console.log("🎨 Обновление интерфейса...");
+// Обработчик поиска
+function handleSearch(e) {
+  const searchTerm = e.target.value.toLowerCase().trim();
+  
+  if (!searchTerm) {
+    updateItemsGrid(allItems);
+    return;
+  }
+  
+  const filteredItems = allItems.filter(item => 
+    item.name.toLowerCase().includes(searchTerm) ||
+    (item.description && item.description.toLowerCase().includes(searchTerm))
+  );
+  
+  updateItemsGrid(filteredItems);
+}
 
-  // Имя пользователя
+// Обновление UI после загрузки данных
+function updateUIAfterDataLoad() {
+  console.log("🎨 Обновление интерфейса после загрузки данных...");
+
+  // Обновление имени пользователя
+  updateUserInfo();
+
+  // Обновление категорий
+  updateCategories();
+
+  // Обновление товаров
+  updateItemsGrid();
+
+  // Инициализация обработчиков для динамически созданных элементов
+  initDynamicEventListeners();
+}
+
+// Обновление информации о пользователе
+function updateUserInfo() {
   const userNameElement = document.getElementById('userName');
   if (userNameElement && currentUser) {
     userNameElement.textContent = currentUser.firstName;
   }
-
-  // Категории
-  updateCategories();
-
-  // Товары
-  updateItemsGrid();
-
-  // Счетчик товаров
-  const itemsCount = document.getElementById('itemsCount');
-  if (itemsCount) {
-    itemsCount.textContent = allItems.length;
-  }
-
-  // Динамические обработчики
-  initDynamicEventListeners();
 }
 
-// 3. Обновление категорий
+// Обновление категорий
 function updateCategories() {
   const categoriesContainer = document.getElementById('categories');
   if (!categoriesContainer) return;
 
   const categories = serverCache.categories || {};
-  
+
   if (Object.keys(categories).length === 0) {
     categoriesContainer.innerHTML = '<p class="no-data">Категории не найдены</p>';
     return;
@@ -206,7 +140,7 @@ function updateCategories() {
   });
 }
 
-// 4. Обновление сетки товаров
+// Обновление сетки товаров
 function updateItemsGrid(items = allItems) {
   const itemsGrid = document.getElementById('itemsGrid');
   if (!itemsGrid) return;
@@ -218,67 +152,82 @@ function updateItemsGrid(items = allItems) {
 
   itemsGrid.innerHTML = '';
   items.forEach(item => {
-    const itemElement = document.createElement('div');
-    itemElement.className = 'item-card';
-    itemElement.innerHTML = `
-      <img src="${item.image || 'https://via.placeholder.com/200'}" alt="${item.name}" class="item-image">
-      <div class="item-info">
-        <h3 class="item-title">${item.name}</h3>
-        <div class="item-meta">
-          <span class="item-category">${getCategoryName(item.categoryId)}</span>
-        </div>
-        <p class="item-description">${item.description?.substring(0, 100) || ''}${item.description?.length > 100 ? '...' : ''}</p>
-        <div class="item-footer">
-          <span class="item-price">${formatPrice(item.price)}</span>
-          <button class="buy-btn" data-id="${item.id}">Купить</button>
-        </div>
-      </div>
-    `;
+    const itemElement = createItemCard(item);
     itemsGrid.appendChild(itemElement);
   });
 }
 
-// 5. Динамические обработчики
+// Создание карточки товара
+function createItemCard(item) {
+  const div = document.createElement('div');
+  div.className = 'item-card';
+  div.innerHTML = `
+    <img src="${item.image || 'https://via.placeholder.com/200'}" alt="${item.name}" class="item-image">
+    <div class="item-info">
+      <h3 class="item-title">${item.name}</h3>
+      <div class="item-meta">
+        <span class="item-category">${getCategoryName(item.categoryId)}</span>
+        ${item.rating ? `<span class="item-rating">⭐ ${item.rating.toFixed(1)}</span>` : ''}
+      </div>
+      <p class="item-description">${item.description?.substring(0, 100) || ''}${item.description?.length > 100 ? '...' : ''}</p>
+      <div class="item-footer">
+        <span class="item-price">${formatPrice(item.price)}</span>
+        <button class="buy-btn" data-id="${item.id}">Купить</button>
+      </div>
+    </div>
+  `;
+
+  return div;
+}
+
+// Инициализация обработчиков для динамических элементов
 function initDynamicEventListeners() {
-  // Кнопки покупки
+  // Обработчики для кнопок покупки
   document.querySelectorAll('.buy-btn').forEach(button => {
-    button.addEventListener('click', function(e) {
-      const itemId = e.target.dataset.id;
-      const item = allItems.find(i => i.id === itemId);
-      if (item) {
-        showBuyModal(item);
-      }
-    });
+    button.addEventListener('click', handleBuyClick);
   });
 
-  // Категории
+  // Обработчики для категорий
   document.querySelectorAll('.category-item').forEach(category => {
-    category.addEventListener('click', function(e) {
-      const categoryId = e.currentTarget.dataset.category;
-      filterItemsByCategory(categoryId);
-    });
+    category.addEventListener('click', handleCategoryClick);
   });
 }
 
-// 6. Фильтрация по категории
+// Обработчик клика на покупку
+function handleBuyClick(e) {
+  const itemId = e.target.dataset.id;
+  const item = allItems.find(i => i.id === itemId);
+  if (item) {
+    showBuyModal(item);
+  }
+}
+
+// Обработчик клика на категорию
+function handleCategoryClick(e) {
+  const categoryId = e.currentTarget.dataset.category;
+  filterItemsByCategory(categoryId);
+}
+
+// Фильтрация товаров по категории
 function filterItemsByCategory(categoryId) {
   if (!categoryId) {
     updateItemsGrid(allItems);
     return;
   }
-  
+
   const filteredItems = allItems.filter(item => item.categoryId === categoryId);
   updateItemsGrid(filteredItems);
 }
 
-// 7. Получение названия категории
+// Получение названия категории
 function getCategoryName(categoryId) {
   if (!categoryId) return 'Без категории';
+
   const categories = serverCache.categories || {};
   return categories[categoryId]?.name || 'Без категории';
 }
 
-// 8. Форматирование цены
+// Форматирование цены
 function formatPrice(price) {
   if (typeof price === 'number') {
     return `${price.toLocaleString('ru-RU')} ₽`;
@@ -286,12 +235,25 @@ function formatPrice(price) {
   return `${price} ₽`;
 }
 
-// 9. Инициализация приложения
+// Расчет рейтинга товара
+function calculateItemRating(itemId, ratings) {
+  if (!ratings || !ratings[itemId]) return null;
+
+  const itemRatings = ratings[itemId];
+  const values = Object.values(itemRatings).map(r => r.rating || r.value || r);
+
+  if (values.length === 0) return null;
+
+  const sum = values.reduce((a, b) => a + b, 0);
+  return sum / values.length;
+}
+
+// Инициализация приложения
 async function initApp() {
   console.log("🚀 Инициализация приложения...");
 
   try {
-    // Пользователь Telegram
+    // Получение данных пользователя из Telegram
     const user = tg.initDataUnsafe?.user;
     if (user) {
       currentUser = {
@@ -313,13 +275,13 @@ async function initApp() {
       };
     }
 
-    // Проверка профиля
+    // Проверка и создание профиля пользователя
     await checkOrCreateUserProfile(currentUser);
 
     // Загрузка данных
     await loadInitialData();
 
-    // Настройка обработчиков
+    // Настройка обработчиков событий
     setupEventListeners();
 
     // Обновление UI
@@ -331,46 +293,46 @@ async function initApp() {
   }
 }
 
-// 10. Загрузка начальных данных
+// Загрузка начальных данных
 async function loadInitialData() {
   try {
-    // Кэш
+    // Загрузка кэшированных данных
     const cachedData = localStorage.getItem('market_cache');
     if (cachedData) {
       serverCache = JSON.parse(cachedData);
       console.log("📦 Загружены кэшированные данные");
     }
 
-    // Данные с сервера
+    // Загрузка данных из Firebase
     await loadFromServer();
-    
+
   } catch (error) {
     console.error("❌ Ошибка загрузки данных:", error);
     showNotification("Ошибка загрузки данных", "error");
   }
 }
 
-// 11. Загрузка данных с сервера
+// Загрузка данных с сервера
 async function loadFromServer() {
   console.log("📡 Загрузка данных с сервера...");
 
   try {
-    // Товары
+    // Получение всех товаров
     const itemsSnapshot = await db.ref('items').once('value');
     const itemsData = itemsSnapshot.val() || {};
-    
-    // Категории
+
+    // Получение категорий
     const categoriesSnapshot = await db.ref('categories').once('value');
     const categoriesData = categoriesSnapshot.val() || {};
-    
-    // Отзывы
+
+    // Получение отзывов
     const reviewsSnapshot = await db.ref('reviews').once('value');
     const reviewsData = reviewsSnapshot.val() || {};
-    
-    // Рейтинги
+
+    // Получение рейтингов
     const ratings = await FirebaseMarketServer.getRatings();
-    
-    // Кэш
+
+    // Сохранение в кэш
     serverCache = {
       items: itemsData,
       categories: categoriesData,
@@ -378,33 +340,38 @@ async function loadFromServer() {
       ratings: ratings,
       lastUpdated: Date.now()
     };
-    
+
+    // Сохранение в localStorage
     localStorage.setItem('market_cache', JSON.stringify(serverCache));
-    
-    // Массив товаров
+
+    // Преобразование товаров в массив
     allItems = Object.entries(itemsData).map(([id, item]) => ({
       id,
-      ...item
+      ...item,
+      rating: calculateItemRating(id, ratings)
     }));
-    
+
     console.log("✅ Данные загружены:", {
       items: allItems.length,
-      categories: Object.keys(categoriesData).length
+      categories: Object.keys(categoriesData).length,
+      reviews: Object.keys(reviewsData).length,
+      ratings: Object.keys(ratings).length
     });
-    
+
   } catch (error) {
     console.error("❌ Ошибка загрузки данных:", error);
     throw error;
   }
 }
 
-// 12. Проверка профиля
+// Проверка и создание профиля пользователя
 async function checkOrCreateUserProfile(user) {
   try {
     const userRef = db.ref(`users/${user.id}`);
     const snapshot = await userRef.once('value');
-    
+
     if (!snapshot.exists()) {
+      // Создание нового профиля
       const userData = {
         id: user.id,
         username: user.username,
@@ -417,10 +384,11 @@ async function checkOrCreateUserProfile(user) {
         reviews: 0,
         lastSeen: Date.now()
       };
-      
+
       await userRef.set(userData);
-      console.log("✅ Создан новый профиль");
+      console.log("✅ Создан новый профиль пользователя");
     } else {
+      // Обновление существующего профиля
       await userRef.update({
         username: user.username,
         firstName: user.firstName,
@@ -428,14 +396,14 @@ async function checkOrCreateUserProfile(user) {
         isPremium: user.isPremium,
         lastSeen: Date.now()
       });
-      console.log("✅ Профиль обновлен");
+      console.log("✅ Профиль пользователя обновлен");
     }
   } catch (error) {
     console.error("❌ Ошибка создания профиля:", error);
   }
 }
 
-// 13. Модальное окно покупки
+// Показать модальное окно покупки
 function showBuyModal(item) {
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
@@ -446,32 +414,37 @@ function showBuyModal(item) {
         <button class="modal-close">×</button>
       </div>
       <div class="modal-body">
-        <img src="${item.image || 'https://via.placeholder.com/300'}" alt="${item.name}">
+        <img src="${item.image || 'https://via.placeholder.com/300'}" alt="${item.name}" class="modal-image">
         <div class="modal-info">
-          <p><strong>Цена:</strong> ${formatPrice(item.price)}</p>
+          <p><strong>Категория:</strong> ${getCategoryName(item.categoryId)}</p>
+          <p><strong>Цена:</strong> <span class="modal-price">${formatPrice(item.price)}</span></p>
           <p><strong>Описание:</strong> ${item.description || 'Нет описания'}</p>
+          ${item.rating ? `<p><strong>Рейтинг:</strong> ⭐ ${item.rating.toFixed(1)}</p>` : ''}
         </div>
       </div>
       <div class="modal-footer">
         <button class="btn-secondary modal-close">Отмена</button>
-        <button class="btn-primary" id="confirmPurchase">Купить</button>
+        <button class="btn-primary" id="confirmPurchase">Купить за ${formatPrice(item.price)}</button>
       </div>
     </div>
   `;
-  
+
   document.body.appendChild(modal);
-  
+
+  // Обработчики закрытия
   modal.querySelectorAll('.modal-close').forEach(btn => {
     btn.addEventListener('click', () => {
       document.body.removeChild(modal);
     });
   });
-  
+
+  // Обработчик подтверждения покупки
   modal.querySelector('#confirmPurchase').addEventListener('click', async () => {
     await processPurchase(item);
     document.body.removeChild(modal);
   });
-  
+
+  // Закрытие по клику на overlay
   modal.addEventListener('click', (e) => {
     if (e.target === modal) {
       document.body.removeChild(modal);
@@ -479,7 +452,7 @@ function showBuyModal(item) {
   });
 }
 
-// 14. Обработка покупки
+// Обработка покупки
 async function processPurchase(item) {
   try {
     const orderId = `order_${Date.now()}_${currentUser.id}`;
@@ -491,11 +464,13 @@ async function processPurchase(item) {
       userId: currentUser.id,
       userName: currentUser.username,
       timestamp: Date.now(),
-      status: 'pending'
+      status: 'pending',
+      paymentMethod: 'telegram'
     };
-    
+
     await db.ref(`orders/${orderId}`).set(orderData);
-    
+
+    // Обновление статистики пользователя
     const userRef = db.ref(`users/${currentUser.id}`);
     await userRef.transaction((user) => {
       if (user) {
@@ -504,16 +479,16 @@ async function processPurchase(item) {
       }
       return user;
     });
-    
-    showNotification(`✅ Товар "${item.name}" заказан!`, "success");
-    
+
+    showNotification(`✅ Товар "${item.name}" успешно заказан!`, "success");
+
   } catch (error) {
     console.error("❌ Ошибка оформления заказа:", error);
     showNotification("Ошибка оформления заказа", "error");
   }
 }
 
-// 15. Уведомление
+// Показать уведомление
 function showNotification(message, type = "info") {
   const notification = document.createElement('div');
   notification.className = `notification ${type}`;
@@ -530,9 +505,9 @@ function showNotification(message, type = "info") {
     animation: slideIn 0.3s ease;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   `;
-  
+
   document.body.appendChild(notification);
-  
+
   setTimeout(() => {
     if (notification.parentNode) {
       notification.style.animation = 'slideOut 0.3s ease';
@@ -545,7 +520,7 @@ function showNotification(message, type = "info") {
   }, 3000);
 }
 
-// 16. Стили для анимации
+// Добавление стилей для анимации
 if (!document.querySelector('#notification-styles')) {
   const style = document.createElement('style');
   style.id = 'notification-styles';
@@ -562,13 +537,13 @@ if (!document.querySelector('#notification-styles')) {
   document.head.appendChild(style);
 }
 
-// 17. Запуск приложения
+// Запуск приложения при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
   console.log("📄 DOM загружен");
   initApp();
 });
 
-// 18. Обновление данных
+// Обновление данных каждые 5 минут
 setInterval(async () => {
   try {
     await loadFromServer();
