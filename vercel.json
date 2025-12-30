@@ -1,50 +1,8 @@
 {
   "version": 2,
-  "name": "vape-market",
-  "builds": [
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "*.html",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ],
-  "env": {
-    "FIREBASE_PROJECT_ID": "@firebase-project-id",
-    "FIREBASE_CLIENT_EMAIL": "@firebase-client-email",
-    "FIREBASE_PRIVATE_KEY": "@firebase-private-key",
-    "TELEGRAM_BOT_TOKEN": "@telegram-bot-token",
-    "ADMIN_IDS": "998579758"
-  },
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        }
-      ]
-    }
-  ]
+  "buildCommand": null,
+  "outputDirectory": ".",
+  "devCommand": null,
+  "installCommand": null,
+  "framework": "vite"
 }
