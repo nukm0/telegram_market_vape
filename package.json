@@ -1,0 +1,10 @@
+{
+  "name": "vape-market",
+  "version": "1.0.0",
+  "description": "Telegram Vape Market App",
+  "main": "index.html",
+  "scripts": {},
+  "keywords": ["telegram", "market", "vape"],
+  "author": "",
+  "license": "MIT"
+}
